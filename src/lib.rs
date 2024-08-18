@@ -1,9 +1,29 @@
 use futures::channel::oneshot;
 use rand::prelude::*;
+use serde::Deserialize;
+use std::collections::HashMap;
 use std::rc::Rc;
 use std::sync::Mutex;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
+
+#[derive(Deserialize)]
+struct Rect {
+    x: u16,
+    y: u16,
+    w: u16,
+    h: u16,
+}
+
+#[derive(Deserialize)]
+struct Cell {
+    frame: Rect,
+}
+
+#[derive(Deserialize)]
+struct Sheet {
+    frames: HashMap<String, Cell>,
+}
 
 // This is like the `main` function, except for JavaScript.
 #[wasm_bindgen(start)]
@@ -56,6 +76,10 @@ pub fn main_js() -> Result<(), JsValue> {
         );
 
         let json = fetch_json("rhb.json").await.unwrap();
+        // TODO: into_serde is deprecated (presumably after book was written)
+        let sheet: Sheet = json
+            .into_serde()
+            .expect("Could not convert rhb.json into a Sheet structure");
     });
 
     Ok(())
