@@ -28,8 +28,6 @@ pub fn main_js() -> Result<(), JsValue> {
         let (success_tx, success_rx) = futures::channel::oneshot::channel::<Result<(), JsValue>>();
         let success_tx = Rc::new(Mutex::new(Some(success_tx)));
         let error_tx = Rc::clone(&success_tx);
-
-        let image = web_sys::HtmlImageElement::new().unwrap();
         let callback = Closure::once(move || {
             if let Some(success_tx) = success_tx.lock().ok().and_then(|mut opt| opt.take()) {
                 success_tx.send(Ok(()));
@@ -40,11 +38,14 @@ pub fn main_js() -> Result<(), JsValue> {
                 error_tx.send(Err(err));
             }
         });
+
+        let image = web_sys::HtmlImageElement::new().unwrap();
         image.set_onload(Some(callback.as_ref().unchecked_ref()));
         image.set_onerror(Some(error_callback.as_ref().unchecked_ref()));
-
         image.set_src("Idle (1).png");
+
         success_rx.await;
+
         context.draw_image_with_html_image_element(&image, 0.0, 0.0);
 
         sierpinski(
@@ -53,9 +54,18 @@ pub fn main_js() -> Result<(), JsValue> {
             (0, 255, 0),
             5,
         );
+
+        let json = fetch_json("rhb.json").await.unwrap();
     });
 
     Ok(())
+}
+
+async fn fetch_json(json_path: &str) -> Result<JsValue, JsValue> {
+    let window = web_sys::window().unwrap();
+    let resp_value = wasm_bindgen_futures::JsFuture::from(window.fetch_with_str(json_path)).await?;
+    let resp: web_sys::Response = resp_value.dyn_into()?;
+    wasm_bindgen_futures::JsFuture::from(resp.json()?).await
 }
 
 fn sierpinski(
