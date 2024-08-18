@@ -21,6 +21,16 @@ pub fn main_js() -> Result<(), JsValue> {
         .dyn_into::<web_sys::CanvasRenderingContext2d>()
         .unwrap();
 
+    let image = web_sys::HtmlImageElement::new().unwrap();
+    let callback = Closure::once(|| {
+        web_sys::console::log_1(&JsValue::from_str("loaded"));
+    });
+    image.set_onload(Some(callback.as_ref().unchecked_ref()));
+    callback.forget();
+
+    image.set_src("Idle (1).png");
+    context.draw_image_with_html_image_element(&image, 0.0, 0.0);
+
     sierpinski(
         &context,
         [(300.0, 0.0), (0.0, 600.0), (600.0, 600.0)],
