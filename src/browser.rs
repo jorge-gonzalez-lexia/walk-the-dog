@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use std::future::Future;
-use wasm_bindgen::closure::WasmClosureFnOnce;
+use wasm_bindgen::closure::{WasmClosure, WasmClosureFnOnce};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{
@@ -28,6 +28,10 @@ where
     Closure::once(fn_once)
 }
 
+pub fn closure_wrap<T: WasmClosure + ?Sized>(data: Box<T>) -> Closure<T> {
+    Closure::wrap(data)
+}
+
 pub fn context() -> Result<CanvasRenderingContext2d> {
     canvas()?
         .get_context("2d")
@@ -40,6 +44,10 @@ pub fn context() -> Result<CanvasRenderingContext2d> {
                 element
             )
         })
+}
+
+pub fn create_raf_closure(f: impl FnMut(f64) + 'static) -> LoopClosure {
+    closure_wrap(Box::new(f))
 }
 
 pub fn document() -> Result<Document> {
@@ -69,6 +77,14 @@ pub async fn fetch_with_str(resource: &str) -> Result<JsValue> {
 
 pub fn new_image() -> Result<HtmlImageElement> {
     HtmlImageElement::new().map_err(|err| anyhow!("Could not create HtmlImageElement {:#?}", err))
+}
+
+pub type LoopClosure = Closure<dyn FnMut(f64)>;
+
+pub fn request_animation_frame(callback: &LoopClosure) -> Result<i32> {
+    window()?
+        .request_animation_frame(callback.as_ref().unchecked_ref())
+        .map_err(|err| anyhow!("Cannot request animation frame {:#?}", err))
 }
 
 pub fn spawn_local<F>(future: F)
