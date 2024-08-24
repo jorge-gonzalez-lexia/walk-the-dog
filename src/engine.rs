@@ -14,17 +14,36 @@ pub trait Game {
     fn update(&mut self);
 }
 
-pub struct GameLoop;
+const FRAME_SIZE: f32 = 1.0 / 60.0 * 1000.0;
+
+pub struct GameLoop {
+    accumulated_delta: f32,
+    last_frame: f64,
+}
 
 type SharedLoopClosure = Rc<RefCell<Option<LoopClosure>>>;
 
 impl GameLoop {
-    /// Described in book pages 140-145
     pub async fn start(mut game: impl Game + 'static) -> Result<()> {
+        let mut game_loop = GameLoop {
+            last_frame: browser::now()?,
+            accumulated_delta: 0.0,
+        };
+
+        // The use of Rc and RefCell is described in book pages 140-145. It is what
+        // allows borrowing the closure multiple times.
         let f: SharedLoopClosure = Rc::new(RefCell::new(None));
+
         let g = f.clone();
         *g.borrow_mut() = Some(browser::create_raf_closure(move |perf: f64| {
-            game.update();
+            // Fixing the time step. See pp 145-151
+            game_loop.accumulated_delta += (perf - game_loop.last_frame) as f32;
+            while game_loop.accumulated_delta > FRAME_SIZE {
+                game.update();
+                game_loop.accumulated_delta -= FRAME_SIZE;
+            }
+            game_loop.last_frame = perf;
+
             game.draw(&browser::context().expect("Context should exist"));
 
             browser::request_animation_frame(f.borrow().as_ref().unwrap());

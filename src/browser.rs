@@ -79,6 +79,13 @@ pub fn new_image() -> Result<HtmlImageElement> {
     HtmlImageElement::new().map_err(|err| anyhow!("Could not create HtmlImageElement {:#?}", err))
 }
 
+pub fn now() -> Result<f64> {
+    Ok(window()?
+        .performance()
+        .ok_or_else(|| anyhow!("Performance object not found"))?
+        .now())
+}
+
 pub type LoopClosure = Closure<dyn FnMut(f64)>;
 
 pub fn request_animation_frame(callback: &LoopClosure) -> Result<i32> {
