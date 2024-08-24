@@ -14,15 +14,26 @@ pub struct Sheet {
 }
 
 pub struct WalkTheDog {
+    frame: u8,
     image: Option<HtmlImageElement>,
     sheet: Option<Sheet>,
-    frame: u8,
+}
+
+impl WalkTheDog {
+    pub fn new() -> Self {
+        WalkTheDog {
+            frame: 0,
+            image: None,
+            sheet: None,
+        }
+    }
 }
 
 #[async_trait(?Send)]
 impl Game for WalkTheDog {
     fn draw(&self, renderer: &Renderer) {
-        let frame_name = format!("Run ({}).png", self.frame + 1);
+        let current_sprite = (self.frame / 3) + 1;
+        let frame_name = format!("Run ({}).png", current_sprite);
         let sprite = self
             .sheet
             .as_ref()
@@ -65,7 +76,13 @@ impl Game for WalkTheDog {
         }))
     }
 
-    fn update(&mut self) {}
+    fn update(&mut self) {
+        if self.frame < 23 {
+            self.frame += 1;
+        } else {
+            self.frame = 0;
+        }
+    }
 }
 
 #[derive(Deserialize)]
