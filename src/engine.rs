@@ -1,6 +1,7 @@
 use crate::browser::{self, LoopClosure};
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
+use futures::channel::mpsc::{unbounded, UnboundedReceiver};
 use futures::channel::oneshot::channel;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -129,4 +130,32 @@ pub async fn load_image(source: &str) -> Result<HtmlImageElement> {
     complete_rx.await??;
 
     Ok(image)
+}
+
+enum KeyPress {
+    KeyDown(web_sys::KeyboardEvent),
+    KeyUp(web_sys::KeyboardEvent),
+}
+
+fn prepare_input() -> Result<UnboundedReceiver<KeyPress>> {
+    let (keydown_sender, keyevent_receiver) = unbounded();
+    let keydown_sender = Rc::new(RefCell::new(keydown_sender));
+    let keyup_sender = Rc::clone(&keydown_sender);
+    let onkeydown = browser::closure_wrap(Box::new(move |keycode: web_sys::KeyboardEvent| {
+        keydown_sender
+            .borrow_mut()
+            .start_send(KeyPress::KeyDown(keycode));
+    }) as Box<dyn FnMut(web_sys::KeyboardEvent)>);
+    browser::window()?.set_onkeydown(Some(onkeydown.as_ref().unchecked_ref()));
+    onkeydown.forget();
+
+    let onkeyup = browser::closure_wrap(Box::new(move |keycode: web_sys::KeyboardEvent| {
+        keyup_sender
+            .borrow_mut()
+            .start_send(KeyPress::KeyUp(keycode));
+    }) as Box<dyn FnMut(web_sys::KeyboardEvent)>);
+    browser::window()?.set_onkeyup(Some(onkeyup.as_ref().unchecked_ref()));
+    onkeyup.forget();
+
+    Ok(keyevent_receiver)
 }
