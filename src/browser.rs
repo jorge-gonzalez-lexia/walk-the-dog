@@ -1,9 +1,11 @@
-use std::future::Future;
-
 use anyhow::{anyhow, Result};
-use wasm_bindgen::{JsCast, JsValue};
+use std::future::Future;
+use wasm_bindgen::closure::WasmClosureFnOnce;
+use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
-use web_sys::{CanvasRenderingContext2d, Document, HtmlCanvasElement, Response, Window};
+use web_sys::{
+    CanvasRenderingContext2d, Document, HtmlCanvasElement, HtmlImageElement, Response, Window,
+};
 
 macro_rules!log {
   ($($t:tt)*) => {
@@ -17,6 +19,13 @@ pub fn canvas() -> Result<HtmlCanvasElement> {
         .ok_or_else(|| anyhow!("No Canvas Element found with ID 'canvas'"))?
         .dyn_into::<web_sys::HtmlCanvasElement>()
         .map_err(|element| anyhow!("Error converting {:#?} to HtmlCanvasElement", element))
+}
+
+pub fn closure_once<F, A, R>(fn_once: F) -> Closure<F::FnMut>
+where
+    F: 'static + WasmClosureFnOnce<A, R>,
+{
+    Closure::once(fn_once)
 }
 
 pub fn context() -> Result<CanvasRenderingContext2d> {
@@ -56,6 +65,10 @@ pub async fn fetch_with_str(resource: &str) -> Result<JsValue> {
     JsFuture::from(window()?.fetch_with_str(resource))
         .await
         .map_err(|err| anyhow!("error fetching {:#?}", err))
+}
+
+pub fn new_image() -> Result<HtmlImageElement> {
+    HtmlImageElement::new().map_err(|err| anyhow!("Could not create HtmlImageElement {:#?}", err))
 }
 
 pub fn spawn_local<F>(future: F)
