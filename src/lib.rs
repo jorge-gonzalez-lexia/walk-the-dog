@@ -1,4 +1,7 @@
-use futures::channel::oneshot;
+#[macro_use]
+mod browser;
+
+use anyhow::{anyhow, Result};
 use rand::prelude::*;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -30,7 +33,7 @@ struct Sheet {
 pub fn main_js() -> Result<(), JsValue> {
     console_error_panic_hook::set_once();
 
-    let window = web_sys::window().unwrap();
+    let window = browser::window().expect("No Window Found");
     let document = window.document().unwrap();
     let canvas = document
         .get_element_by_id("canvas")

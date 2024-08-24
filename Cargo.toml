@@ -16,6 +16,7 @@ crate-type = ["cdylib"]
 lto = true
 
 [dependencies]
+anyhow="1.0.51"
 # The `wasm-bindgen` crate provides the bare minimum functionality needed
 # to interact with JavaScript.
 wasm-bindgen = {version="0.2.78", features=["serde-serialize"]}
