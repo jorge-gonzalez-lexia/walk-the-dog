@@ -9,7 +9,7 @@ use web_sys::{
 
 macro_rules!log {
   ($($t:tt)*) => {
-    web_sys::consol::log_1($format!($($t)*).into());
+    web_sys::console::log_1(&format!($($t)*).into());
   }
 }
 
