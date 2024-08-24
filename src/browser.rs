@@ -1,6 +1,9 @@
+use std::future::Future;
+
 use anyhow::{anyhow, Result};
-use wasm_bindgen::JsCast;
-use web_sys::{CanvasRenderingContext2d, Document, HtmlCanvasElement, Window};
+use wasm_bindgen::{JsCast, JsValue};
+use wasm_bindgen_futures::JsFuture;
+use web_sys::{CanvasRenderingContext2d, Document, HtmlCanvasElement, Response, Window};
 
 macro_rules!log {
   ($($t:tt)*) => {
@@ -34,6 +37,32 @@ pub fn document() -> Result<Document> {
     window()?
         .document()
         .ok_or_else(|| anyhow!("No Document Found"))
+}
+
+pub async fn fetch_json(json_path: &str) -> Result<JsValue> {
+    let resp_value = fetch_with_str(json_path).await?;
+    let resp: Response = resp_value
+        .dyn_into()
+        .map_err(|element| anyhow!("Error converting {:#?} to Response", element))?;
+    JsFuture::from(
+        resp.json()
+            .map_err(|err| anyhow!("Cold not get JSON from response {:#?}", err))?,
+    )
+    .await
+    .map_err(|err| anyhow!("error fetching JSON {:#?}", err))
+}
+
+pub async fn fetch_with_str(resource: &str) -> Result<JsValue> {
+    JsFuture::from(window()?.fetch_with_str(resource))
+        .await
+        .map_err(|err| anyhow!("error fetching {:#?}", err))
+}
+
+pub fn spawn_local<F>(future: F)
+where
+    F: Future<Output = ()> + 'static,
+{
+    wasm_bindgen_futures::spawn_local(future)
 }
 
 pub fn window() -> Result<Window> {
