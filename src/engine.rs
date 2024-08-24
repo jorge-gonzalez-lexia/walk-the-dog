@@ -180,6 +180,7 @@ impl KeyState {
     }
 
     pub fn set_pressed(&mut self, code: &str, event: web_sys::KeyboardEvent) {
+        log!("Pressed {code}");
         self.pressed_keys.insert(code.into(), event);
     }
 
@@ -195,8 +196,14 @@ fn process_input(state: &mut KeyState, keyevent_receiver: &mut UnboundedReceiver
             Err(_err) => break,
             Ok(Some(evt)) => match evt {
                 KeyPress::KeyDown(evt) => state.set_pressed(&evt.code(), evt),
-                KeyPress::KeyUp(evt) => state.set_pressed(&evt.code(), evt),
+                KeyPress::KeyUp(evt) => state.set_released(&evt.code()),
             },
         }
     }
+}
+
+#[derive(Clone, Copy)]
+pub struct Point {
+    pub x: i16,
+    pub y: i16,
 }

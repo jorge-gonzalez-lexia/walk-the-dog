@@ -1,6 +1,6 @@
 use crate::{
     browser,
-    engine::{self, Game, KeyState, Rect, Renderer},
+    engine::{self, Game, KeyState, Point, Rect, Renderer},
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -16,6 +16,7 @@ pub struct Sheet {
 pub struct WalkTheDog {
     frame: u8,
     image: Option<HtmlImageElement>,
+    position: Point,
     sheet: Option<Sheet>,
 }
 
@@ -24,6 +25,7 @@ impl WalkTheDog {
         WalkTheDog {
             frame: 0,
             image: None,
+            position: Point { x: 0, y: 0 },
             sheet: None,
         }
     }
@@ -55,8 +57,8 @@ impl Game for WalkTheDog {
                     height: sprite.frame.h.into(),
                 },
                 &Rect {
-                    x: 300.0,
-                    y: 300.0,
+                    x: self.position.x.into(),
+                    y: self.position.y.into(),
                     width: sprite.frame.w.into(),
                     height: sprite.frame.h.into(),
                 },
@@ -71,12 +73,40 @@ impl Game for WalkTheDog {
 
         Ok(Box::new(WalkTheDog {
             image,
-            sheet,
             frame: self.frame,
+            position: self.position,
+            sheet,
         }))
     }
 
     fn update(&mut self, keystate: &KeyState) {
+        let mut velocity = Point { x: 0, y: 0 };
+        if keystate.is_pressed("ArrowDown") {
+            velocity.y += 3;
+        }
+        if keystate.is_pressed("ArrowUp") {
+            velocity.y -= 3;
+        }
+        if keystate.is_pressed("ArrowRight") {
+            velocity.x += 3;
+        }
+        if keystate.is_pressed("ArrowLeft") {
+            velocity.x -= 3;
+        }
+
+        self.position.x += velocity.x;
+        self.position.y += velocity.y;
+
+        if velocity.x != 0 || velocity.y != 0 {
+            log!(
+                "velocity ({},{}) position ({},{})",
+                velocity.x,
+                velocity.y,
+                self.position.x,
+                self.position.y
+            );
+        }
+
         if self.frame < 23 {
             self.frame += 1;
         } else {
