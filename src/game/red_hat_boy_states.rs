@@ -94,8 +94,10 @@ impl RedHatBoyState<Idle> {
         }
     }
 
-    pub fn update(&mut self) {
+    pub fn update(mut self) -> Self {
         self.context = self.context.update(IDLE_FRAMES);
+
+        self
     }
 }
 
@@ -113,8 +115,10 @@ impl RedHatBoyState<Running> {
         }
     }
 
-    pub fn update(&mut self) {
+    pub fn update(mut self) -> Self {
         self.context = self.context.update(RUNNING_FRAMES);
+
+        self
     }
 }
 
@@ -123,7 +127,9 @@ impl RedHatBoyState<Sliding> {
         SLIDE_FRAME_NAME
     }
 
-    pub fn update(&mut self) {
-        self.context = self.context.update(SLIDING_FRAMES)
+    pub fn update(mut self) -> Self {
+        self.context = self.context.update(SLIDING_FRAMES);
+
+        self
     }
 }

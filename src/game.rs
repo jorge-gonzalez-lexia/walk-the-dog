@@ -143,6 +143,7 @@ enum RedHatBoyStateMachine {
 pub enum Event {
     Run,
     Slide,
+    Update,
 }
 
 impl RedHatBoyStateMachine {
@@ -166,28 +167,21 @@ impl RedHatBoyStateMachine {
         match (self, event) {
             (RedHatBoyStateMachine::Idle(state), Event::Run) => state.run().into(),
             (RedHatBoyStateMachine::Running(state), Event::Slide) => state.slide().into(),
+
+            (RedHatBoyStateMachine::Idle(state), Event::Update) => state.update().into(),
+            (RedHatBoyStateMachine::Running(state), Event::Update) => state.update().into(),
             _ => self,
         }
     }
 
     fn update(self) -> Self {
-        match self {
-            RedHatBoyStateMachine::Idle(mut state) => {
-                state.update();
+        self.transition(Event::Update)
+    }
+}
 
-                RedHatBoyStateMachine::Idle(state)
-            }
-            RedHatBoyStateMachine::Running(mut state) => {
-                state.update();
-
-                RedHatBoyStateMachine::Running(state)
-            }
-            RedHatBoyStateMachine::Sliding(mut state) => {
-                state.update();
-
-                RedHatBoyStateMachine::Sliding(state)
-            }
-        }
+impl From<RedHatBoyState<Idle>> for RedHatBoyStateMachine {
+    fn from(state: RedHatBoyState<Idle>) -> Self {
+        RedHatBoyStateMachine::Idle(state)
     }
 }
 
