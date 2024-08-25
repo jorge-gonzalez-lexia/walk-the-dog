@@ -1,5 +1,7 @@
 use crate::engine::Point;
 
+use super::RedHatBoyStateMachine;
+
 #[derive(Clone, Copy)]
 pub struct RedHatBoyState<S> {
     context: RedHatBoyContext,
@@ -127,9 +129,36 @@ impl RedHatBoyState<Sliding> {
         SLIDE_FRAME_NAME
     }
 
-    pub fn update(mut self) -> Self {
+    pub fn update(mut self) -> SlidingEndState {
         self.context = self.context.update(SLIDING_FRAMES);
 
-        self
+        if self.context.frame >= SLIDING_FRAMES {
+            SlidingEndState::Complete(self.stand())
+        } else {
+            SlidingEndState::Sliding(self)
+        }
+    }
+
+    fn stand(self) -> RedHatBoyState<Running> {
+        log!("Sliding->Running");
+
+        RedHatBoyState {
+            context: self.context().reset_frame(),
+            _state: Running {},
+        }
+    }
+}
+
+pub enum SlidingEndState {
+    Complete(RedHatBoyState<Running>),
+    Sliding(RedHatBoyState<Sliding>),
+}
+
+impl From<SlidingEndState> for RedHatBoyStateMachine {
+    fn from(end_state: SlidingEndState) -> Self {
+        match end_state {
+            SlidingEndState::Complete(running_state) => running_state.into(),
+            SlidingEndState::Sliding(sliding_state) => sliding_state.into(),
+        }
     }
 }
