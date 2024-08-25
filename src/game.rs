@@ -5,13 +5,13 @@ use crate::{
     browser,
     engine::{self, Game, KeyState, Point, Rect, Renderer},
 };
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use serde::Deserialize;
 use std::collections::HashMap;
 use web_sys::HtmlImageElement;
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 pub struct Sheet {
     frames: HashMap<String, Cell>,
 }
@@ -20,6 +20,7 @@ pub struct WalkTheDog {
     frame: u8,
     image: Option<HtmlImageElement>,
     position: Point,
+    rhb: Option<RedHatBoy>,
     sheet: Option<Sheet>,
 }
 
@@ -29,6 +30,7 @@ impl WalkTheDog {
             frame: 0,
             image: None,
             position: Point { x: 0, y: 0 },
+            rhb: None,
             sheet: None,
         }
     }
@@ -72,14 +74,18 @@ impl Game for WalkTheDog {
 
     async fn initialize(&self) -> Result<Box<dyn Game>> {
         // TODO: into_serde is deprecated (presumably after book was written)
-        let sheet = browser::fetch_json("rhb.json").await?.into_serde()?;
+        let sheet: Option<Sheet> = browser::fetch_json("rhb.json").await?.into_serde()?;
         let image = Some(engine::load_image("rhb.png").await?);
 
         Ok(Box::new(WalkTheDog {
-            image,
+            image: image.clone(),
             frame: self.frame,
             position: self.position,
-            sheet,
+            rhb: Some(RedHatBoy::new(
+                sheet.clone().ok_or_else(|| anyhow!("No Sheet Present"))?,
+                image.clone().ok_or_else(|| anyhow!("No Image Present"))?,
+            )),
+            sheet: sheet.clone(),
         }))
     }
 
@@ -122,7 +128,7 @@ impl Game for WalkTheDog {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 struct SheetRect {
     x: i16,
     y: i16,
@@ -130,9 +136,25 @@ struct SheetRect {
     h: i16,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 struct Cell {
     frame: SheetRect,
+}
+
+struct RedHatBoy {
+    image: HtmlImageElement,
+    sprite_sheet: Sheet,
+    state_machine: RedHatBoyStateMachine,
+}
+
+impl RedHatBoy {
+    pub fn new(sprite_sheet: Sheet, image: HtmlImageElement) -> Self {
+        RedHatBoy {
+            image,
+            sprite_sheet,
+            state_machine: RedHatBoyStateMachine::Idle(RedHatBoyState::new()),
+        }
+    }
 }
 
 #[derive(Clone, Copy)]
