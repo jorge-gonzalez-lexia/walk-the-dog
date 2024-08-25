@@ -8,6 +8,8 @@ pub struct RedHatBoyState<S> {
     _state: S,
 }
 
+const GRAVITY: i16 = 1;
+const JUMP_SPEED: i16 = -25;
 const RUNNING_SPEED: i16 = 3;
 
 #[derive(Clone, Copy)]
@@ -21,6 +23,7 @@ impl RedHatBoyContext {
     /// Update the frame count or loop back to frame 0 when current frame hits
     ///  `frame_count` (the number of frames in the active state animation)
     pub fn update(mut self, frame_count: u8) -> Self {
+        self.velocity.y += GRAVITY;
         if self.frame < frame_count {
             self.frame += 1;
         } else {
@@ -29,6 +32,10 @@ impl RedHatBoyContext {
 
         self.position.x += self.velocity.x;
         self.position.y += self.velocity.y;
+
+        if self.position.y > FLOOR {
+            self.position.y = FLOOR;
+        }
 
         self
     }
@@ -41,6 +48,12 @@ impl RedHatBoyContext {
 
     fn run_right(mut self) -> Self {
         self.velocity.x += RUNNING_SPEED;
+
+        self
+    }
+
+    fn set_vertical_velocity(mut self, y: i16) -> Self {
+        self.velocity.y = y;
 
         self
     }
@@ -129,7 +142,7 @@ impl RedHatBoyState<Running> {
         log!("Running->Jumping");
 
         RedHatBoyState {
-            context: self.context.reset_frame(),
+            context: self.context.set_vertical_velocity(JUMP_SPEED).reset_frame(),
             _state: Jumping {},
         }
     }
