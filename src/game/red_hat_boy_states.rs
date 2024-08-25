@@ -1,8 +1,11 @@
 use crate::engine::Point;
 
+const IDLE_FRAMES: u8 = 29;
+const RUNNING_FRAMES: u8 = 23;
+
 #[derive(Clone, Copy)]
 pub struct RedHatBoyState<S> {
-    pub context: RedHatBoyContext,
+    context: RedHatBoyContext,
     _state: S,
 }
 
@@ -11,6 +14,18 @@ pub struct RedHatBoyContext {
     pub frame: u8,
     pub position: Point,
     pub velocity: Point,
+}
+
+impl RedHatBoyContext {
+    pub fn update(mut self, frame_count: u8) -> Self {
+        if self.frame < frame_count {
+            self.frame += 1;
+        } else {
+            self.frame = 0;
+        }
+
+        self
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -51,10 +66,18 @@ impl RedHatBoyState<Idle> {
             _state: Running {},
         }
     }
+
+    pub fn update(&mut self) {
+        self.context = self.context.update(IDLE_FRAMES);
+    }
 }
 
 impl RedHatBoyState<Running> {
     pub fn frame_name(&self) -> &str {
         RUN_FRAME_NAME
+    }
+
+    pub fn update(mut self) {
+        self.context = self.context.update(RUNNING_FRAMES);
     }
 }

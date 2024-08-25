@@ -229,24 +229,15 @@ impl RedHatBoyStateMachine {
     fn update(self) -> Self {
         match self {
             RedHatBoyStateMachine::Idle(mut state) => {
-                if state.context.frame < 29 {
-                    state.context.frame += 1;
-                } else {
-                    state.context.frame = 0;
-                }
+                state.update();
 
                 RedHatBoyStateMachine::Idle(state)
             }
-            RedHatBoyStateMachine::Running(_) => self,
-            // RedHatBoyStateMachine::Running(mut state) => {
-            //     if state.context.frame < 23 {
-            //         state.context.frame += 1;
-            //     } else {
-            //         state.context.frame = 0;
-            //     }
+            RedHatBoyStateMachine::Running(mut state) => {
+                state.update();
 
-            //     RedHatBoyStateMachine::Running(state)
-            // }
+                RedHatBoyStateMachine::Running(state)
+            }
         }
     }
 }
