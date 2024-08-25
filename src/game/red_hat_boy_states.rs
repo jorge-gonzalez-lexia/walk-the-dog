@@ -16,6 +16,8 @@ pub struct RedHatBoyContext {
 }
 
 impl RedHatBoyContext {
+    /// Update the frame count or loop back to frame 0 when current frame hits
+    ///  `frame_count` (the number of frames in the active state animation)
     pub fn update(mut self, frame_count: u8) -> Self {
         if self.frame < frame_count {
             self.frame += 1;
