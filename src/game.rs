@@ -55,6 +55,9 @@ impl Game for WalkTheDog {
         if keystate.is_pressed("ArrowRight") {
             self.rhb.as_mut().unwrap().run_right();
         }
+        if keystate.is_pressed("ArrowDown") {
+            self.rhb.as_mut().unwrap().slide();
+        }
 
         self.rhb.as_mut().unwrap().update();
     }
@@ -120,6 +123,10 @@ impl RedHatBoy {
         self.state_machine = self.state_machine.transition(Event::Run);
     }
 
+    fn slide(&mut self) {
+        self.state_machine = self.state_machine.transition(Event::Slide);
+    }
+
     fn update(&mut self) {
         self.state_machine = self.state_machine.update();
     }
@@ -130,10 +137,12 @@ impl RedHatBoy {
 enum RedHatBoyStateMachine {
     Idle(RedHatBoyState<Idle>),
     Running(RedHatBoyState<Running>),
+    Sliding(RedHatBoyState<Sliding>),
 }
 
 pub enum Event {
     Run,
+    Slide,
 }
 
 impl RedHatBoyStateMachine {
@@ -141,6 +150,7 @@ impl RedHatBoyStateMachine {
         match self {
             RedHatBoyStateMachine::Idle(state) => &state.context(),
             RedHatBoyStateMachine::Running(state) => &state.context(),
+            RedHatBoyStateMachine::Sliding(state) => &state.context(),
         }
     }
 
@@ -148,12 +158,14 @@ impl RedHatBoyStateMachine {
         match self {
             RedHatBoyStateMachine::Idle(state) => state.frame_name(),
             RedHatBoyStateMachine::Running(state) => state.frame_name(),
+            RedHatBoyStateMachine::Sliding(state) => state.frame_name(),
         }
     }
 
     fn transition(self, event: Event) -> Self {
         match (self, event) {
             (RedHatBoyStateMachine::Idle(state), Event::Run) => state.run().into(),
+            (RedHatBoyStateMachine::Running(state), Event::Slide) => state.slide().into(),
             _ => self,
         }
     }
@@ -170,6 +182,11 @@ impl RedHatBoyStateMachine {
 
                 RedHatBoyStateMachine::Running(state)
             }
+            RedHatBoyStateMachine::Sliding(mut state) => {
+                state.update();
+
+                RedHatBoyStateMachine::Sliding(state)
+            }
         }
     }
 }
@@ -177,5 +194,11 @@ impl RedHatBoyStateMachine {
 impl From<RedHatBoyState<Running>> for RedHatBoyStateMachine {
     fn from(state: RedHatBoyState<Running>) -> Self {
         RedHatBoyStateMachine::Running(state)
+    }
+}
+
+impl From<RedHatBoyState<Sliding>> for RedHatBoyStateMachine {
+    fn from(state: RedHatBoyState<Sliding>) -> Self {
+        RedHatBoyStateMachine::Sliding(state)
     }
 }
