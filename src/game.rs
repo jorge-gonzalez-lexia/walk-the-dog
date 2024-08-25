@@ -1,3 +1,6 @@
+mod red_hat_boy_states;
+
+use self::red_hat_boy_states::*;
 use crate::{
     browser,
     engine::{self, Game, KeyState, Point, Rect, Renderer},
@@ -34,6 +37,7 @@ impl WalkTheDog {
 #[async_trait(?Send)]
 impl Game for WalkTheDog {
     fn draw(&self, renderer: &Renderer) {
+        // self.frame = 0-22. convert to sprite animation frame = 1-8
         let current_sprite = (self.frame / 3) + 1;
         let frame_name = format!("Run ({}).png", current_sprite);
         let sprite = self
@@ -107,6 +111,9 @@ impl Game for WalkTheDog {
             );
         }
 
+        // See p. 162. Given running animation has 8 frames, it should change
+        // every 3 updates to change animation frame every ~50ms
+        // (16.7ms/frame * 3 ~= 50ms)
         if self.frame < 23 {
             self.frame += 1;
         } else {
@@ -126,4 +133,10 @@ struct SheetRect {
 #[derive(Deserialize)]
 struct Cell {
     frame: SheetRect,
+}
+
+#[derive(Clone, Copy)]
+enum RedHatBoyStateMachine {
+    Idle(RedHatBoyState<Idle>),
+    Running(RedHatBoyState<Running>),
 }

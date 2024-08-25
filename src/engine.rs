@@ -93,6 +93,8 @@ impl Renderer {
         );
     }
 
+    /// Copy the given `frame` rectangle from the `image` and draw it on the
+    /// canvas at the given `destination`
     pub fn draw_image(&self, image: &HtmlImageElement, frame: &Rect, destination: &Rect) {
         self.context
             .draw_image_with_html_image_element_and_sw_and_sh_and_dx_and_dy_and_dw_and_dh(
