@@ -126,10 +126,37 @@ impl RedHatBoyState<Jumping> {
         JUMP_FRAME_NAME
     }
 
-    pub fn update(mut self) -> Self {
+    pub fn update(mut self) -> JumpingEndState {
         self.context = self.context.update(JUMPING_FRAMES);
 
-        self
+        if self.context.position.y >= FLOOR {
+            JumpingEndState::Complete(self.land())
+        } else {
+            JumpingEndState::Jumping(self)
+        }
+    }
+
+    fn land(self) -> RedHatBoyState<Running> {
+        log!("Jumping->Running");
+
+        RedHatBoyState {
+            context: self.context.reset_frame(),
+            _state: Running {},
+        }
+    }
+}
+
+pub enum JumpingEndState {
+    Complete(RedHatBoyState<Running>),
+    Jumping(RedHatBoyState<Jumping>),
+}
+
+impl From<JumpingEndState> for RedHatBoyStateMachine {
+    fn from(end_state: JumpingEndState) -> Self {
+        match end_state {
+            JumpingEndState::Complete(running_state) => running_state.into(),
+            JumpingEndState::Jumping(jumping_state) => jumping_state.into(),
+        }
     }
 }
 
