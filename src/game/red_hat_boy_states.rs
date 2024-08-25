@@ -50,6 +50,9 @@ impl RedHatBoyContext {
 pub struct Idle;
 
 #[derive(Clone, Copy)]
+pub struct Jumping;
+
+#[derive(Clone, Copy)]
 pub struct Running;
 
 #[derive(Clone, Copy)]
@@ -58,10 +61,12 @@ pub struct Sliding;
 const FLOOR: i16 = 475;
 
 const IDLE_FRAME_NAME: &str = "Idle";
+const JUMP_FRAME_NAME: &str = "Jump";
 const RUN_FRAME_NAME: &str = "Run";
 const SLIDE_FRAME_NAME: &str = "Slide";
 
 const IDLE_FRAMES: u8 = 29;
+const JUMPING_FRAMES: u8 = 35;
 const RUNNING_FRAMES: u8 = 23;
 const SLIDING_FRAMES: u8 = 14;
 
@@ -103,9 +108,30 @@ impl RedHatBoyState<Idle> {
     }
 }
 
+impl RedHatBoyState<Jumping> {
+    pub fn frame_name(&self) -> &str {
+        JUMP_FRAME_NAME
+    }
+
+    pub fn update(mut self) -> Self {
+        self.context = self.context.update(JUMPING_FRAMES);
+
+        self
+    }
+}
+
 impl RedHatBoyState<Running> {
     pub fn frame_name(&self) -> &str {
         RUN_FRAME_NAME
+    }
+
+    pub fn jump(self) -> RedHatBoyState<Jumping> {
+        log!("Running->Jumping");
+
+        RedHatBoyState {
+            context: self.context.reset_frame(),
+            _state: Jumping {},
+        }
     }
 
     pub fn slide(self) -> RedHatBoyState<Sliding> {
