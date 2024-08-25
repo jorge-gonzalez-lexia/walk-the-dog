@@ -18,3 +18,12 @@ pub struct Idle;
 
 #[derive(Clone, Copy)]
 pub struct Running;
+
+impl RedHatBoyState<Idle> {
+    pub fn run(self) -> RedHatBoyState<Running> {
+        RedHatBoyState {
+            context: self.context,
+            _state: Running {},
+        }
+    }
+}
