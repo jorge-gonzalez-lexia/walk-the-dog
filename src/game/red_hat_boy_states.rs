@@ -1,13 +1,12 @@
 use crate::engine::Point;
 
-const IDLE_FRAMES: u8 = 29;
-const RUNNING_FRAMES: u8 = 23;
-
 #[derive(Clone, Copy)]
 pub struct RedHatBoyState<S> {
     context: RedHatBoyContext,
     _state: S,
 }
+
+const RUNNING_SPEED: i16 = 3;
 
 #[derive(Clone, Copy)]
 pub struct RedHatBoyContext {
@@ -24,6 +23,21 @@ impl RedHatBoyContext {
             self.frame = 0;
         }
 
+        self.position.x += self.velocity.x;
+        self.position.y += self.velocity.y;
+
+        self
+    }
+
+    fn reset_frame(mut self) -> Self {
+        self.frame = 0;
+
+        self
+    }
+
+    fn run_right(mut self) -> Self {
+        self.velocity.x += RUNNING_SPEED;
+
         self
     }
 }
@@ -35,8 +49,12 @@ pub struct Idle;
 pub struct Running;
 
 const FLOOR: i16 = 475;
+
 const IDLE_FRAME_NAME: &str = "Idle";
 const RUN_FRAME_NAME: &str = "Run";
+
+const IDLE_FRAMES: u8 = 29;
+const RUNNING_FRAMES: u8 = 23;
 
 impl<S> RedHatBoyState<S> {
     pub fn context(&self) -> &RedHatBoyContext {
@@ -61,8 +79,10 @@ impl RedHatBoyState<Idle> {
     }
 
     pub fn run(self) -> RedHatBoyState<Running> {
+        log!("Idle->Running");
+
         RedHatBoyState {
-            context: self.context,
+            context: self.context.reset_frame().run_right(),
             _state: Running {},
         }
     }
@@ -77,7 +97,7 @@ impl RedHatBoyState<Running> {
         RUN_FRAME_NAME
     }
 
-    pub fn update(mut self) {
+    pub fn update(&mut self) {
         self.context = self.context.update(RUNNING_FRAMES);
     }
 }
