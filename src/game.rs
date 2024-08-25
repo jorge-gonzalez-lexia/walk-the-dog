@@ -127,6 +127,8 @@ impl Game for WalkTheDog {
         } else {
             self.frame = 0;
         }
+
+        self.rhb.as_mut().unwrap().update();
     }
 }
 
@@ -185,6 +187,10 @@ impl RedHatBoy {
             },
         );
     }
+
+    fn update(&mut self) {
+        self.state_machine = self.state_machine.update();
+    }
 }
 
 // See p214. This could be implemented as a trait object instead
@@ -217,6 +223,30 @@ impl RedHatBoyStateMachine {
         match (self, event) {
             (RedHatBoyStateMachine::Idle(state), Event::Run) => state.run().into(),
             _ => self,
+        }
+    }
+
+    fn update(self) -> Self {
+        match self {
+            RedHatBoyStateMachine::Idle(mut state) => {
+                if state.context.frame < 29 {
+                    state.context.frame += 1;
+                } else {
+                    state.context.frame = 0;
+                }
+
+                RedHatBoyStateMachine::Idle(state)
+            }
+            RedHatBoyStateMachine::Running(_) => self,
+            // RedHatBoyStateMachine::Running(mut state) => {
+            //     if state.context.frame < 23 {
+            //         state.context.frame += 1;
+            //     } else {
+            //         state.context.frame = 0;
+            //     }
+
+            //     RedHatBoyStateMachine::Running(state)
+            // }
         }
     }
 }

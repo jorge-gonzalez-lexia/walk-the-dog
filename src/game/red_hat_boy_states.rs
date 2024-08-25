@@ -2,7 +2,7 @@ use crate::engine::Point;
 
 #[derive(Clone, Copy)]
 pub struct RedHatBoyState<S> {
-    context: RedHatBoyContext,
+    pub context: RedHatBoyContext,
     _state: S,
 }
 
