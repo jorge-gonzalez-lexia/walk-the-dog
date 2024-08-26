@@ -93,6 +93,12 @@ impl Renderer {
         );
     }
 
+    pub fn draw_entire_image(&self, image: &HtmlImageElement, position: &Point) {
+        self.context
+            .draw_image_with_html_image_element(image, position.x.into(), position.y.into())
+            .expect("Drawing is throwing exceptions! Unrecoverable error.");
+    }
+
     /// Copy the given `frame` rectangle from the `image` and draw it on the
     /// canvas at the given `destination`
     pub fn draw_image(&self, image: &HtmlImageElement, frame: &Rect, destination: &Rect) {
@@ -208,4 +214,19 @@ fn process_input(state: &mut KeyState, keyevent_receiver: &mut UnboundedReceiver
 pub struct Point {
     pub x: i16,
     pub y: i16,
+}
+
+pub struct Image {
+    element: HtmlImageElement,
+    position: Point,
+}
+
+impl Image {
+    pub fn new(element: HtmlImageElement, position: Point) -> Self {
+        Self { element, position }
+    }
+
+    pub fn draw(&self, renderer: &Renderer) {
+        renderer.draw_entire_image(&self.element, &self.position);
+    }
 }
