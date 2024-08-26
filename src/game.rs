@@ -24,6 +24,7 @@ pub enum WalkTheDog {
 pub struct Walk {
     background: Image,
     boy: RedHatBoy,
+    stone: Image,
 }
 
 impl WalkTheDog {
@@ -45,6 +46,7 @@ impl Game for WalkTheDog {
         if let WalkTheDog::Loaded(walk) = self {
             walk.background.draw(renderer);
             walk.boy.draw(renderer);
+            walk.stone.draw(renderer);
         }
     }
 
@@ -59,10 +61,12 @@ impl Game for WalkTheDog {
                 );
 
                 let background = engine::load_image("BG.png").await?;
+                let stone = engine::load_image("Stone.png").await?;
 
                 Ok(Box::new(WalkTheDog::Loaded(Walk {
                     background: Image::new(background, Point { x: 0, y: 0 }),
                     boy: rhb,
+                    stone: Image::new(stone, Point { x: 150, y: 546 }),
                 })))
             }
 
