@@ -3,6 +3,7 @@ use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use futures::channel::mpsc::{unbounded, UnboundedReceiver};
 use futures::channel::oneshot::channel;
+use serde::Deserialize;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -208,6 +209,26 @@ fn process_input(state: &mut KeyState, keyevent_receiver: &mut UnboundedReceiver
             },
         }
     }
+}
+
+#[derive(Clone, Deserialize)]
+pub struct Sheet {
+    pub frames: HashMap<String, Cell>,
+}
+
+#[derive(Clone, Deserialize)]
+pub struct SheetRect {
+    pub x: i16,
+    pub y: i16,
+    pub w: i16,
+    pub h: i16,
+}
+
+#[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Cell {
+    pub frame: SheetRect,
+    pub sprite_source_size: SheetRect,
 }
 
 #[derive(Clone, Copy)]

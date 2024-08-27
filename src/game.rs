@@ -3,18 +3,11 @@ mod red_hat_boy_states;
 use self::red_hat_boy_states::*;
 use crate::{
     browser,
-    engine::{self, Game, Image, KeyState, Point, Rect, Renderer},
+    engine::{self, Game, Image, KeyState, Point, Rect, Renderer, Sheet},
 };
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use serde::Deserialize;
-use std::collections::HashMap;
 use web_sys::HtmlImageElement;
-
-#[derive(Clone, Deserialize)]
-pub struct Sheet {
-    frames: HashMap<String, Cell>,
-}
 
 pub enum WalkTheDog {
     Loaded(Walk),
@@ -91,19 +84,6 @@ impl Game for WalkTheDog {
     }
 }
 
-#[derive(Clone, Deserialize)]
-struct SheetRect {
-    x: i16,
-    y: i16,
-    w: i16,
-    h: i16,
-}
-
-#[derive(Clone, Deserialize)]
-struct Cell {
-    frame: SheetRect,
-}
-
 struct RedHatBoy {
     image: HtmlImageElement,
     sprite_sheet: Sheet,
@@ -139,8 +119,10 @@ impl RedHatBoy {
                 height: sprite.frame.h.into(),
             },
             &Rect {
-                x: self.state_machine.context().position.x.into(),
-                y: self.state_machine.context().position.y.into(),
+                x: (self.state_machine.context().position.x + sprite.sprite_source_size.x as i16)
+                    .into(),
+                y: (self.state_machine.context().position.y + sprite.sprite_source_size.y as i16)
+                    .into(),
                 width: sprite.frame.w.into(),
                 height: sprite.frame.h.into(),
             },
