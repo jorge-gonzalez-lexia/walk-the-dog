@@ -9,7 +9,6 @@ pub struct RedHatBoyState<S> {
 }
 
 const GRAVITY: i16 = 1;
-const JUMP_SPEED: i16 = -25;
 const RUNNING_SPEED: i16 = 3;
 
 #[derive(Clone, Copy)]
@@ -89,12 +88,17 @@ impl<S> RedHatBoyState<S> {
     }
 }
 
+const STARTING_POINT: i16 = -20;
+
 impl RedHatBoyState<Idle> {
     pub fn new() -> Self {
         RedHatBoyState {
             context: RedHatBoyContext {
                 frame: 0,
-                position: Point { x: 0, y: FLOOR },
+                position: Point {
+                    x: STARTING_POINT,
+                    y: FLOOR,
+                },
                 velocity: Point { x: 0, y: 0 },
             },
             _state: Idle {},
@@ -159,6 +163,8 @@ impl From<JumpingEndState> for RedHatBoyStateMachine {
         }
     }
 }
+
+const JUMP_SPEED: i16 = -25;
 
 impl RedHatBoyState<Running> {
     pub fn frame_name(&self) -> &str {
