@@ -238,13 +238,28 @@ pub struct Point {
 }
 
 pub struct Image {
+    bounding_box: Rect,
     element: HtmlImageElement,
     position: Point,
 }
 
 impl Image {
     pub fn new(element: HtmlImageElement, position: Point) -> Self {
-        Self { element, position }
+        let bounding_box = Rect {
+            x: position.x.into(),
+            y: position.y.into(),
+            width: element.width() as f32,
+            height: element.height() as f32,
+        };
+        Self {
+            bounding_box,
+            element,
+            position,
+        }
+    }
+
+    pub fn bounding_box(&self) -> &Rect {
+        &self.bounding_box
     }
 
     pub fn draw(&self, renderer: &Renderer) {
