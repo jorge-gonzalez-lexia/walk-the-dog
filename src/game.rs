@@ -80,6 +80,14 @@ impl Game for WalkTheDog {
             }
 
             walk.boy.update();
+
+            if walk
+                .boy
+                .bounding_box()
+                .intersects(walk.stone.bounding_box())
+            {
+                walk.boy.knock_out();
+            }
         }
     }
 }
@@ -141,6 +149,10 @@ impl RedHatBoy {
         self.state_machine = self.state_machine.transition(Event::Jump);
     }
 
+    fn knock_out(&mut self) {
+        self.state_machine = self.state_machine.transition(Event::KnockOut);
+    }
+
     fn run_right(&mut self) {
         self.state_machine = self.state_machine.transition(Event::Run);
     }
@@ -158,13 +170,16 @@ impl RedHatBoy {
 #[derive(Clone, Copy)]
 enum RedHatBoyStateMachine {
     Idle(RedHatBoyState<Idle>),
+    Falling(RedHatBoyState<Falling>),
     Jumping(RedHatBoyState<Jumping>),
+    KnockedOut(RedHatBoyState<KnockedOut>),
     Running(RedHatBoyState<Running>),
     Sliding(RedHatBoyState<Sliding>),
 }
 
 pub enum Event {
     Jump,
+    KnockOut,
     Run,
     Slide,
     Update,
@@ -173,8 +188,10 @@ pub enum Event {
 impl RedHatBoyStateMachine {
     fn context(&self) -> &RedHatBoyContext {
         match self {
+            RedHatBoyStateMachine::Falling(state) => &state.context(),
             RedHatBoyStateMachine::Idle(state) => &state.context(),
             RedHatBoyStateMachine::Jumping(state) => &state.context(),
+            RedHatBoyStateMachine::KnockedOut(state) => &state.context(),
             RedHatBoyStateMachine::Running(state) => &state.context(),
             RedHatBoyStateMachine::Sliding(state) => &state.context(),
         }
@@ -182,8 +199,10 @@ impl RedHatBoyStateMachine {
 
     fn frame_name(&self) -> &str {
         match self {
+            RedHatBoyStateMachine::Falling(state) => state.frame_name(),
             RedHatBoyStateMachine::Idle(state) => state.frame_name(),
             RedHatBoyStateMachine::Jumping(state) => state.frame_name(),
+            RedHatBoyStateMachine::KnockedOut(state) => state.frame_name(),
             RedHatBoyStateMachine::Running(state) => state.frame_name(),
             RedHatBoyStateMachine::Sliding(state) => state.frame_name(),
         }
@@ -191,12 +210,17 @@ impl RedHatBoyStateMachine {
 
     fn transition(self, event: Event) -> Self {
         match (self, event) {
-            (RedHatBoyStateMachine::Running(state), Event::Jump) => state.jump().into(),
             (RedHatBoyStateMachine::Idle(state), Event::Run) => state.run().into(),
+            (RedHatBoyStateMachine::Running(state), Event::Jump) => state.jump().into(),
+            (RedHatBoyStateMachine::Running(state), Event::KnockOut) => state.knock_out().into(),
             (RedHatBoyStateMachine::Running(state), Event::Slide) => state.slide().into(),
+
+            (RedHatBoyStateMachine::Jumping(state), Event::KnockOut) => state.knock_out().into(),
+            (RedHatBoyStateMachine::Sliding(state), Event::KnockOut) => state.knock_out().into(),
 
             (RedHatBoyStateMachine::Idle(state), Event::Update) => state.update().into(),
             (RedHatBoyStateMachine::Jumping(state), Event::Update) => state.update().into(),
+            (RedHatBoyStateMachine::Falling(state), Event::Update) => state.update().into(),
             (RedHatBoyStateMachine::Running(state), Event::Update) => state.update().into(),
             (RedHatBoyStateMachine::Sliding(state), Event::Update) => state.update().into(),
             _ => self,
@@ -217,6 +241,18 @@ impl From<RedHatBoyState<Idle>> for RedHatBoyStateMachine {
 impl From<RedHatBoyState<Jumping>> for RedHatBoyStateMachine {
     fn from(state: RedHatBoyState<Jumping>) -> Self {
         RedHatBoyStateMachine::Jumping(state)
+    }
+}
+
+impl From<RedHatBoyState<Falling>> for RedHatBoyStateMachine {
+    fn from(state: RedHatBoyState<Falling>) -> Self {
+        RedHatBoyStateMachine::Falling(state)
+    }
+}
+
+impl From<RedHatBoyState<KnockedOut>> for RedHatBoyStateMachine {
+    fn from(state: RedHatBoyState<KnockedOut>) -> Self {
+        RedHatBoyStateMachine::KnockedOut(state)
     }
 }
 

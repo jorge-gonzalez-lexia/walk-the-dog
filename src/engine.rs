@@ -80,6 +80,25 @@ pub struct Rect {
     pub height: f32,
 }
 
+impl Rect {
+    pub fn intersects(&self, other: &Rect) -> bool {
+        let my_left = self.x;
+        let my_right = self.x + self.width;
+        let other_left = other.x;
+        let other_right = other.x + other.width;
+
+        let my_top = self.y;
+        let other_top = other.y;
+        let other_bottom = other.y + other.height;
+        let my_bottom = self.y + self.height;
+
+        my_left < other_right
+            && my_right > other_left
+            && my_top < other_bottom
+            && my_bottom > other_top
+    }
+}
+
 pub struct Renderer {
     context: CanvasRenderingContext2d,
 }
