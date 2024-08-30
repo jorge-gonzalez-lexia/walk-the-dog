@@ -1,6 +1,6 @@
 use crate::engine::Point;
 
-use super::RedHatBoyStateMachine;
+use super::{RedHatBoyStateMachine, HEIGHT};
 
 #[derive(Clone, Copy)]
 pub struct RedHatBoyState<S> {
@@ -51,6 +51,13 @@ impl RedHatBoyContext {
         self
     }
 
+    fn set_on(mut self, position: i16) -> Self {
+        let position = position - PLAYER_HEIGHT;
+        self.position.y = position;
+
+        self
+    }
+
     fn set_vertical_velocity(mut self, y: i16) -> Self {
         self.velocity.y = y;
 
@@ -82,7 +89,8 @@ pub struct Running;
 #[derive(Clone, Copy)]
 pub struct Sliding;
 
-const FLOOR: i16 = 475;
+const FLOOR: i16 = 479;
+const PLAYER_HEIGHT: i16 = HEIGHT - FLOOR;
 
 const FALL_FRAME_NAME: &str = "Dead";
 const IDLE_FRAME_NAME: &str = "Idle";
@@ -194,35 +202,35 @@ impl RedHatBoyState<Jumping> {
         }
     }
 
+    pub fn land_on(self, position: f32) -> RedHatBoyState<Running> {
+        log!("Jumping->Running");
+
+        RedHatBoyState {
+            context: self.context.reset_frame().set_on(position as i16),
+            _state: Running,
+        }
+    }
+
     pub fn update(mut self) -> JumpingEndState {
         self.context = self.context.update(JUMPING_FRAMES);
 
         if self.context.position.y >= FLOOR {
-            JumpingEndState::Complete(self.land())
+            JumpingEndState::Landing(self.land_on(HEIGHT.into()))
         } else {
             JumpingEndState::Jumping(self)
-        }
-    }
-
-    fn land(self) -> RedHatBoyState<Running> {
-        log!("Jumping->Running");
-
-        RedHatBoyState {
-            context: self.context.reset_frame(),
-            _state: Running {},
         }
     }
 }
 
 pub enum JumpingEndState {
-    Complete(RedHatBoyState<Running>),
     Jumping(RedHatBoyState<Jumping>),
+    Landing(RedHatBoyState<Running>),
 }
 
 impl From<JumpingEndState> for RedHatBoyStateMachine {
     fn from(end_state: JumpingEndState) -> Self {
         match end_state {
-            JumpingEndState::Complete(running_state) => running_state.into(),
+            JumpingEndState::Landing(running_state) => running_state.into(),
             JumpingEndState::Jumping(jumping_state) => jumping_state.into(),
         }
     }
@@ -256,6 +264,13 @@ impl RedHatBoyState<Running> {
         RedHatBoyState {
             context: self.context.reset_frame().stop(),
             _state: Falling {},
+        }
+    }
+
+    pub fn land_on(self, position: f32) -> RedHatBoyState<Running> {
+        RedHatBoyState {
+            context: self.context.set_on(position as i16),
+            _state: Running,
         }
     }
 

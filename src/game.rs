@@ -9,6 +9,8 @@ use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use web_sys::HtmlImageElement;
 
+const HEIGHT: i16 = 600;
+
 pub enum WalkTheDog {
     Loaded(Walk),
     Loading,
@@ -94,6 +96,14 @@ impl Game for WalkTheDog {
             if walk
                 .boy
                 .bounding_box()
+                .intersects(&walk.platform.bounding_box())
+            {
+                walk.boy.land_on(walk.platform.bounding_box().y);
+            }
+
+            if walk
+                .boy
+                .bounding_box()
                 .intersects(walk.stone.bounding_box())
             {
                 walk.boy.knock_out();
@@ -163,6 +173,10 @@ impl RedHatBoy {
         self.state_machine = self.state_machine.transition(Event::KnockOut);
     }
 
+    fn land_on(&mut self, position: f32) {
+        self.state_machine = self.state_machine.transition(Event::Land(position));
+    }
+
     fn run_right(&mut self) {
         self.state_machine = self.state_machine.transition(Event::Run);
     }
@@ -190,6 +204,7 @@ enum RedHatBoyStateMachine {
 pub enum Event {
     Jump,
     KnockOut,
+    Land(f32),
     Run,
     Slide,
     Update,
@@ -223,9 +238,15 @@ impl RedHatBoyStateMachine {
             (RedHatBoyStateMachine::Idle(state), Event::Run) => state.run().into(),
             (RedHatBoyStateMachine::Running(state), Event::Jump) => state.jump().into(),
             (RedHatBoyStateMachine::Running(state), Event::KnockOut) => state.knock_out().into(),
+            (RedHatBoyStateMachine::Running(state), Event::Land(position)) => {
+                state.land_on(position).into()
+            }
             (RedHatBoyStateMachine::Running(state), Event::Slide) => state.slide().into(),
 
             (RedHatBoyStateMachine::Jumping(state), Event::KnockOut) => state.knock_out().into(),
+            (RedHatBoyStateMachine::Jumping(state), Event::Land(position)) => {
+                state.land_on(position).into()
+            }
             (RedHatBoyStateMachine::Sliding(state), Event::KnockOut) => state.knock_out().into(),
 
             (RedHatBoyStateMachine::Idle(state), Event::Update) => state.update().into(),
