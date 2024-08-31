@@ -1,10 +1,10 @@
-use web_sys::HtmlImageElement;
-
+use super::obstacle::Obstacle;
 use crate::engine::{
     rect::{Point, Rect},
     renderer::Renderer,
     sheet::Sheet,
 };
+use web_sys::HtmlImageElement;
 
 pub struct Platform {
     image: HtmlImageElement,
@@ -51,8 +51,24 @@ impl Platform {
 
         Rect::new(self.position, platform.frame.w * 3, platform.frame.h)
     }
+}
 
-    pub fn draw(&self, renderer: &Renderer) {
+impl Obstacle for Platform {
+    fn check_intersection(&self, boy: &mut super::red_hat_boy::RedHatBoy) {
+        if let Some(box_to_land_on) = self
+            .bounding_boxes()
+            .iter()
+            .find(|&b| boy.bounding_box().intersects(b))
+        {
+            if boy.velocity_y() > 0 && boy.position_y() < self.position.y {
+                boy.land_on(box_to_land_on.top());
+            } else {
+                boy.knock_out();
+            }
+        }
+    }
+
+    fn draw(&self, renderer: &Renderer) {
         let platform = self
             .sheet
             .frames
@@ -72,5 +88,9 @@ impl Platform {
         self.bounding_boxes().into_iter().for_each(|b| {
             renderer.draw_rect(&b);
         });
+    }
+
+    fn move_horizontally(&mut self, x: i16) {
+        self.position.x += x;
     }
 }

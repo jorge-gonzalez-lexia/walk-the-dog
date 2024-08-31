@@ -1,3 +1,4 @@
+mod obstacle;
 mod platform;
 mod red_hat_boy;
 mod walk;
@@ -86,7 +87,7 @@ impl Game for WalkTheDog {
                         ),
                     ],
                     boy: rhb,
-                    platform,
+                    platform: Box::new(platform),
                     stone: Image::new(stone, Point { x: 150, y: 546 }),
                 })))
             }
@@ -108,7 +109,7 @@ impl Game for WalkTheDog {
             }
 
             walk.boy.update();
-            walk.platform.position.x += walk.velocity();
+            walk.platform.move_horizontally(walk.velocity());
             walk.stone.move_horizontally(walk.velocity());
             let velocity = walk.velocity();
 
@@ -122,16 +123,7 @@ impl Game for WalkTheDog {
                 second_background.set_x(first_background.right());
             }
 
-            for bounding_box in &walk.platform.bounding_boxes() {
-                if walk.boy.bounding_box().intersects(bounding_box) {
-                    if walk.boy.velocity_y() > 0 && walk.boy.position_y() < walk.platform.position.y
-                    {
-                        walk.boy.land_on(walk.platform.destination_box().top());
-                    } else {
-                        walk.boy.knock_out();
-                    }
-                }
-            }
+            walk.platform.check_intersection(&mut walk.boy);
 
             if walk
                 .boy
