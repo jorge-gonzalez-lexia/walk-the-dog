@@ -9,7 +9,8 @@ use crate::{
         input::KeyState,
         rect::{Point, Rect},
         renderer::Renderer,
-        Cell, Game, Sheet,
+        sheet::{Cell, Sheet},
+        Game,
     },
 };
 use anyhow::{anyhow, Result};

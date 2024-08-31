@@ -2,6 +2,7 @@ pub mod image;
 pub mod input;
 pub mod rect;
 pub mod renderer;
+pub mod sheet;
 
 use crate::browser::{self, LoopClosure};
 use anyhow::{anyhow, Result};
@@ -10,9 +11,7 @@ use futures::channel::mpsc::{unbounded, UnboundedReceiver};
 use futures::channel::oneshot::channel;
 use input::KeyState;
 use renderer::Renderer;
-use serde::Deserialize;
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::rc::Rc;
 use std::sync::Mutex;
 use wasm_bindgen::JsCast;
@@ -104,24 +103,4 @@ pub async fn load_image(source: &str) -> Result<HtmlImageElement> {
     complete_rx.await??;
 
     Ok(image)
-}
-
-#[derive(Clone, Deserialize)]
-pub struct Sheet {
-    pub frames: HashMap<String, Cell>,
-}
-
-#[derive(Clone, Deserialize)]
-pub struct SheetRect {
-    pub x: i16,
-    pub y: i16,
-    pub w: i16,
-    pub h: i16,
-}
-
-#[derive(Clone, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Cell {
-    pub frame: SheetRect,
-    pub sprite_source_size: SheetRect,
 }
