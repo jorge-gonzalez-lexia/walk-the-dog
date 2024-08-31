@@ -308,6 +308,13 @@ impl RedHatBoyState<Sliding> {
         }
     }
 
+    pub fn land_on(self, position: f32) -> RedHatBoyState<Sliding> {
+        RedHatBoyState {
+            context: self.context.set_on(position as i16),
+            _state: Sliding,
+        }
+    }
+
     pub fn update(mut self) -> SlidingEndState {
         self.context = self.context.update(SLIDING_FRAMES);
 

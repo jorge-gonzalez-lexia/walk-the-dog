@@ -235,25 +235,32 @@ impl RedHatBoyStateMachine {
 
     fn transition(self, event: Event) -> Self {
         match (self, event) {
+            (RedHatBoyStateMachine::Falling(state), Event::Update) => state.update().into(),
+
             (RedHatBoyStateMachine::Idle(state), Event::Run) => state.run().into(),
+            (RedHatBoyStateMachine::Idle(state), Event::Update) => state.update().into(),
+
             (RedHatBoyStateMachine::Running(state), Event::Jump) => state.jump().into(),
             (RedHatBoyStateMachine::Running(state), Event::KnockOut) => state.knock_out().into(),
             (RedHatBoyStateMachine::Running(state), Event::Land(position)) => {
                 state.land_on(position).into()
             }
             (RedHatBoyStateMachine::Running(state), Event::Slide) => state.slide().into(),
+            (RedHatBoyStateMachine::Running(state), Event::Update) => state.update().into(),
 
             (RedHatBoyStateMachine::Jumping(state), Event::KnockOut) => state.knock_out().into(),
             (RedHatBoyStateMachine::Jumping(state), Event::Land(position)) => {
                 state.land_on(position).into()
             }
-            (RedHatBoyStateMachine::Sliding(state), Event::KnockOut) => state.knock_out().into(),
-
-            (RedHatBoyStateMachine::Idle(state), Event::Update) => state.update().into(),
             (RedHatBoyStateMachine::Jumping(state), Event::Update) => state.update().into(),
-            (RedHatBoyStateMachine::Falling(state), Event::Update) => state.update().into(),
-            (RedHatBoyStateMachine::Running(state), Event::Update) => state.update().into(),
+
+            (RedHatBoyStateMachine::Sliding(state), Event::KnockOut) => state.knock_out().into(),
+            (RedHatBoyStateMachine::Sliding(state), Event::Land(position)) => {
+                state.land_on(position).into()
+            }
+
             (RedHatBoyStateMachine::Sliding(state), Event::Update) => state.update().into(),
+
             _ => self,
         }
     }
