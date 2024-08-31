@@ -19,12 +19,15 @@ use crate::{
 };
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
+use obstacle::Obstacle;
 use red_hat_boy::RedHatBoy;
 use segments::stone_and_platform;
 use std::rc::Rc;
 use walk::Walk;
 
 const HEIGHT: i16 = 600;
+const TIMELINE_MINIMUM: i16 = 1000;
+const OBSTACLE_BUFFER: i16 = 20;
 
 pub enum WalkTheDog {
     Loaded(Walk),
@@ -70,6 +73,9 @@ impl Game for WalkTheDog {
                     load_image("tiles.png").await?,
                 ));
 
+                let starting_obstacles = stone_and_platform(stone.clone(), sprite_sheet.clone(), 0);
+                let timeline = rightmost(&starting_obstacles);
+
                 let background_width = background.width() as i16;
 
                 Ok(Box::new(WalkTheDog::Loaded(Walk {
@@ -84,8 +90,10 @@ impl Game for WalkTheDog {
                         ),
                     ],
                     boy: rhb,
-                    obstacles: stone_and_platform(stone, sprite_sheet.clone(), 0),
                     obstacle_sheet: sprite_sheet,
+                    obstacles: starting_obstacles,
+                    stone,
+                    timeline,
                 })))
             }
 
@@ -124,6 +132,26 @@ impl Game for WalkTheDog {
                 obstacle.move_horizontally(velocity);
                 obstacle.check_intersection(&mut walk.boy)
             });
+
+            if walk.timeline < TIMELINE_MINIMUM {
+                let mut next_obstacles = stone_and_platform(
+                    walk.stone.clone(),
+                    walk.obstacle_sheet.clone(),
+                    walk.timeline + OBSTACLE_BUFFER,
+                );
+                walk.timeline = rightmost(&next_obstacles);
+                walk.obstacles.append(&mut next_obstacles);
+            } else {
+                walk.timeline += velocity;
+            }
         }
     }
+}
+
+fn rightmost(obstacle_list: &Vec<Box<dyn Obstacle>>) -> i16 {
+    obstacle_list
+        .iter()
+        .map(|o| o.right())
+        .max_by(|x, y| x.cmp(&y))
+        .unwrap_or(0)
 }
