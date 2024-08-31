@@ -306,7 +306,6 @@ pub struct Point {
 pub struct Image {
     bounding_box: Rect,
     element: HtmlImageElement,
-    position: Point,
 }
 
 impl Image {
@@ -315,7 +314,6 @@ impl Image {
         Self {
             bounding_box,
             element,
-            position,
         }
     }
 
@@ -324,12 +322,12 @@ impl Image {
     }
 
     pub fn draw(&self, renderer: &Renderer) {
-        renderer.draw_entire_image(&self.element, &self.position);
+        renderer.draw_entire_image(&self.element, &self.bounding_box.position);
         renderer.draw_rect(&self.bounding_box);
     }
 
     pub fn move_horizontally(&mut self, distance: i16) {
-        self.set_x(self.position.x + distance);
+        self.set_x(self.bounding_box.x() + distance);
     }
 
     pub fn right(&self) -> i16 {
@@ -338,6 +336,6 @@ impl Image {
 
     pub fn set_x(&mut self, x: i16) {
         self.bounding_box.set_x(x);
-        self.position.x = x;
+        self.bounding_box.position.x = x;
     }
 }
