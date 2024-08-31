@@ -4,8 +4,7 @@ use crate::engine::image::Image;
 pub struct Walk {
     pub backgrounds: [Image; 2],
     pub boy: RedHatBoy,
-    pub platform: Box<dyn Obstacle>,
-    pub stone: Image,
+    pub obstacles: Vec<Box<dyn Obstacle>>,
 }
 
 impl Walk {

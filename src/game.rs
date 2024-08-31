@@ -1,3 +1,4 @@
+mod barrier;
 mod obstacle;
 mod platform;
 mod red_hat_boy;
@@ -16,6 +17,7 @@ use crate::{
 };
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
+use barrier::Barrier;
 use platform::Platform;
 use red_hat_boy::RedHatBoy;
 use walk::Walk;
@@ -45,8 +47,9 @@ impl Game for WalkTheDog {
         if let WalkTheDog::Loaded(walk) = self {
             walk.backgrounds.iter().for_each(|b| b.draw(renderer));
             walk.boy.draw(renderer);
-            walk.platform.draw(renderer);
-            walk.stone.draw(renderer);
+            walk.obstacles.iter().for_each(|obstacle| {
+                obstacle.draw(renderer);
+            });
         }
     }
 
@@ -87,8 +90,10 @@ impl Game for WalkTheDog {
                         ),
                     ],
                     boy: rhb,
-                    platform: Box::new(platform),
-                    stone: Image::new(stone, Point { x: 150, y: 546 }),
+                    obstacles: vec![
+                        Box::new(Barrier::new(Image::new(stone, Point { x: 150, y: 546 }))),
+                        Box::new(platform),
+                    ],
                 })))
             }
 
@@ -109,8 +114,6 @@ impl Game for WalkTheDog {
             }
 
             walk.boy.update();
-            walk.platform.move_horizontally(walk.velocity());
-            walk.stone.move_horizontally(walk.velocity());
             let velocity = walk.velocity();
 
             let [first_background, second_background] = &mut walk.backgrounds;
@@ -123,15 +126,10 @@ impl Game for WalkTheDog {
                 second_background.set_x(first_background.right());
             }
 
-            walk.platform.check_intersection(&mut walk.boy);
-
-            if walk
-                .boy
-                .bounding_box()
-                .intersects(walk.stone.bounding_box())
-            {
-                walk.boy.knock_out();
-            }
+            walk.obstacles.iter_mut().for_each(|obstacle| {
+                obstacle.move_horizontally(velocity);
+                obstacle.check_intersection(&mut walk.boy)
+            });
         }
     }
 }
