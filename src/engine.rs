@@ -12,6 +12,8 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::{prelude::Closure, JsValue};
 use web_sys::{CanvasRenderingContext2d, HtmlImageElement};
 
+const SHOW_BOUNDING_BOXES: bool = true;
+
 #[async_trait(?Send)]
 pub trait Game {
     fn draw(&self, context: &Renderer);
@@ -135,6 +137,22 @@ impl Renderer {
                 destination.height.into(),
             )
             .expect("Drawing is throwing exceptions! Unrecoverable error.");
+    }
+
+    pub fn draw_rect(&self, bounding_box: &Rect) {
+        if !SHOW_BOUNDING_BOXES {
+            return;
+        }
+
+        self.context.set_stroke_style(&JsValue::from_str("#FF0000"));
+        self.context.begin_path();
+        self.context.rect(
+            bounding_box.x.into(),
+            bounding_box.y.into(),
+            bounding_box.width.into(),
+            bounding_box.height.into(),
+        );
+        self.context.stroke();
     }
 }
 
@@ -283,5 +301,6 @@ impl Image {
 
     pub fn draw(&self, renderer: &Renderer) {
         renderer.draw_entire_image(&self.element, &self.position);
+        renderer.draw_rect(&self.bounding_box);
     }
 }

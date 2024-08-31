@@ -98,7 +98,7 @@ impl Game for WalkTheDog {
                 .bounding_box()
                 .intersects(&walk.platform.bounding_box())
             {
-                if walk.boy.velocity_y() > 0 && walk.boy.pos_y() < walk.platform.position.y {
+                if walk.boy.velocity_y() > 0 && walk.boy.position_y() < walk.platform.position.y {
                     walk.boy.land_on(walk.platform.bounding_box().y);
                 } else {
                     walk.boy.knock_out();
@@ -159,6 +159,7 @@ impl RedHatBoy {
             },
             &self.bounding_box(),
         );
+        renderer.draw_rect(&self.bounding_box());
     }
 
     fn frame_name(&self) -> String {
@@ -213,6 +214,7 @@ enum RedHatBoyStateMachine {
     Sliding(RedHatBoyState<Sliding>),
 }
 
+#[derive(Debug, PartialEq)]
 pub enum Event {
     Jump,
     KnockOut,
@@ -246,6 +248,10 @@ impl RedHatBoyStateMachine {
     }
 
     fn transition(self, event: Event) -> Self {
+        if event != Event::Update {
+            log!("Event {event:?}");
+        }
+
         match (self, event) {
             (RedHatBoyStateMachine::Falling(state), Event::Update) => state.update().into(),
 
@@ -363,6 +369,7 @@ impl Platform {
                 height: platform.frame.h.into(),
             },
             &self.bounding_box(),
-        )
+        );
+        renderer.draw_rect(&self.bounding_box());
     }
 }
