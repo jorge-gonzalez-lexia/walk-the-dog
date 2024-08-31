@@ -5,7 +5,7 @@ use crate::{
     browser,
     engine::{
         self,
-        image::Image,
+        image::{load_image, Image},
         input::KeyState,
         rect::{Point, Rect},
         renderer::Renderer,
@@ -67,16 +67,16 @@ impl Game for WalkTheDog {
                 let rhb = RedHatBoy::new(
                     // TODO: into_serde is deprecated (presumably after book was written)
                     json.into_serde::<Sheet>()?,
-                    engine::load_image("rhb.png").await?,
+                    load_image("rhb.png").await?,
                 );
 
-                let background = engine::load_image("BG.png").await?;
-                let stone = engine::load_image("Stone.png").await?;
+                let background = load_image("BG.png").await?;
+                let stone = load_image("Stone.png").await?;
 
                 let platform_sheet = browser::fetch_json("tiles.json").await?;
                 let platform = Platform::new(
                     platform_sheet.into_serde::<Sheet>()?,
-                    engine::load_image("tiles.png").await?,
+                    load_image("tiles.png").await?,
                     Point {
                         x: FIRST_PLATFORM,
                         y: HIGH_PLATFORM,
