@@ -42,12 +42,7 @@ impl Walk {
 #[async_trait(?Send)]
 impl Game for WalkTheDog {
     fn draw(&self, renderer: &Renderer) {
-        renderer.clear(&Rect {
-            x: 0,
-            y: 0,
-            width: 600,
-            height: HEIGHT,
-        });
+        renderer.clear(&Rect::new_from_x_y(0, 0, 600, HEIGHT));
 
         if let WalkTheDog::Loaded(walk) = self {
             walk.backgrounds.iter().for_each(|b| b.draw(renderer));
@@ -134,7 +129,7 @@ impl Game for WalkTheDog {
                 if walk.boy.bounding_box().intersects(bounding_box) {
                     if walk.boy.velocity_y() > 0 && walk.boy.position_y() < walk.platform.position.y
                     {
-                        walk.boy.land_on(walk.platform.destination_box().y);
+                        walk.boy.land_on(walk.platform.destination_box().top());
                     } else {
                         walk.boy.knock_out();
                     }
@@ -173,9 +168,9 @@ impl RedHatBoy {
         const WIDTH_OFFSET: i16 = 28;
 
         let mut bounding_box = self.destination_box();
-        bounding_box.x += X_OFFSET;
+        bounding_box.set_x(bounding_box.x() + X_OFFSET);
         bounding_box.width -= WIDTH_OFFSET;
-        bounding_box.y += Y_OFFSET;
+        bounding_box.position.y += Y_OFFSET;
         bounding_box.height -= Y_OFFSET;
 
         bounding_box
@@ -187,24 +182,24 @@ impl RedHatBoy {
 
     fn destination_box(&self) -> Rect {
         let sprite = self.current_sprite().expect("Cell not found");
-        Rect {
-            x: (self.state_machine.context().position.x + sprite.sprite_source_size.x).into(),
-            y: (self.state_machine.context().position.y + sprite.sprite_source_size.y).into(),
-            width: sprite.frame.w.into(),
-            height: sprite.frame.h.into(),
-        }
+        Rect::new_from_x_y(
+            self.state_machine.context().position.x + sprite.sprite_source_size.x,
+            self.state_machine.context().position.y + sprite.sprite_source_size.y,
+            sprite.frame.w,
+            sprite.frame.h,
+        )
     }
 
     fn draw(&self, renderer: &Renderer) {
         let sprite = self.current_sprite().expect("Sprite sheet cell not found");
         renderer.draw_image(
             &self.image,
-            &Rect {
-                x: sprite.frame.x.into(),
-                y: sprite.frame.y.into(),
-                width: sprite.frame.w.into(),
-                height: sprite.frame.h.into(),
-            },
+            &&Rect::new_from_x_y(
+                sprite.frame.x,
+                sprite.frame.y,
+                sprite.frame.w,
+                sprite.frame.h,
+            ),
             &self.destination_box(),
         );
         renderer.draw_rect(&self.bounding_box());
@@ -395,24 +390,19 @@ impl Platform {
         const X_OFFSET: i16 = 60;
         const END_HEIGHT: i16 = 54;
         let destination_box = self.destination_box();
-        let bounding_box_one = Rect {
-            x: destination_box.x,
-            y: destination_box.y,
-            width: X_OFFSET,
-            height: END_HEIGHT,
-        };
-        let bounding_box_two = Rect {
-            x: destination_box.x + X_OFFSET,
-            y: destination_box.y,
-            width: destination_box.width - (X_OFFSET * 2),
-            height: destination_box.height,
-        };
-        let bounding_box_three = Rect {
-            x: destination_box.x + destination_box.width - X_OFFSET,
-            y: destination_box.y,
-            width: X_OFFSET,
-            height: END_HEIGHT,
-        };
+        let bounding_box_one = Rect::new(destination_box.position, X_OFFSET, END_HEIGHT);
+        let bounding_box_two = Rect::new_from_x_y(
+            destination_box.x() + X_OFFSET,
+            destination_box.y(),
+            destination_box.width - (X_OFFSET * 2),
+            destination_box.height,
+        );
+        let bounding_box_three = Rect::new_from_x_y(
+            destination_box.right() - X_OFFSET,
+            destination_box.y(),
+            X_OFFSET,
+            END_HEIGHT,
+        );
 
         vec![bounding_box_one, bounding_box_two, bounding_box_three]
     }
@@ -424,12 +414,7 @@ impl Platform {
             .get("13.png")
             .expect("13.png does not exist");
 
-        Rect {
-            x: self.position.x.into(),
-            y: self.position.y.into(),
-            width: (platform.frame.w * 3).into(),
-            height: platform.frame.h.into(),
-        }
+        Rect::new(self.position, platform.frame.w * 3, platform.frame.h)
     }
 
     fn draw(&self, renderer: &Renderer) {
@@ -440,12 +425,12 @@ impl Platform {
             .expect("13.png does not exist");
         renderer.draw_image(
             &self.image,
-            &Rect {
-                x: platform.frame.x.into(),
-                y: platform.frame.y.into(),
-                width: (platform.frame.w * 3).into(),
-                height: platform.frame.h.into(),
-            },
+            &&Rect::new_from_x_y(
+                platform.frame.x,
+                platform.frame.y,
+                platform.frame.w * 3,
+                platform.frame.h,
+            ),
             &self.destination_box(),
         );
 
