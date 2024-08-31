@@ -21,6 +21,7 @@ use async_trait::async_trait;
 use barrier::Barrier;
 use platform::Platform;
 use red_hat_boy::RedHatBoy;
+use std::rc::Rc;
 use walk::Walk;
 
 const HEIGHT: i16 = 600;
@@ -67,12 +68,13 @@ impl Game for WalkTheDog {
                 let background = load_image("BG.png").await?;
                 let stone = load_image("Stone.png").await?;
 
-                let platform_sheet = browser::fetch_json("tiles.json").await?;
+                let tiles = browser::fetch_json("tiles.json").await?;
+                let sprite_sheet = Rc::new(SpriteSheet::new(
+                    tiles.into_serde::<Sheet>()?,
+                    load_image("tiles.png").await?,
+                ));
                 let platform = Platform::new(
-                    SpriteSheet::new(
-                        platform_sheet.into_serde::<Sheet>()?,
-                        load_image("tiles.png").await?,
-                    ),
+                    sprite_sheet.clone(),
                     Point {
                         x: FIRST_PLATFORM,
                         y: HIGH_PLATFORM,
@@ -93,6 +95,7 @@ impl Game for WalkTheDog {
                         ),
                     ],
                     boy: rhb,
+                    obstacle_sheet: sprite_sheet,
                     obstacles: vec![
                         Box::new(Barrier::new(Image::new(stone, Point { x: 150, y: 546 }))),
                         Box::new(platform),

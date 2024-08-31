@@ -2,18 +2,17 @@ use super::obstacle::Obstacle;
 use crate::engine::{
     rect::{Point, Rect},
     renderer::Renderer,
-    sheet::Sheet,
     sprite_sheet::SpriteSheet,
 };
-use web_sys::HtmlImageElement;
+use std::rc::Rc;
 
 pub struct Platform {
     pub position: Point,
-    sheet: SpriteSheet,
+    sheet: Rc<SpriteSheet>,
 }
 
 impl Platform {
-    pub fn new(sheet: SpriteSheet, position: Point) -> Self {
+    pub fn new(sheet: Rc<SpriteSheet>, position: Point) -> Self {
         Platform { position, sheet }
     }
 
