@@ -1,5 +1,6 @@
 mod platform;
 mod red_hat_boy;
+mod walk;
 
 use crate::{
     browser,
@@ -16,6 +17,7 @@ use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use platform::Platform;
 use red_hat_boy::RedHatBoy;
+use walk::Walk;
 
 const HEIGHT: i16 = 600;
 
@@ -31,19 +33,6 @@ pub enum WalkTheDog {
 impl WalkTheDog {
     pub fn new() -> Self {
         WalkTheDog::Loading
-    }
-}
-
-pub struct Walk {
-    backgrounds: [Image; 2],
-    boy: RedHatBoy,
-    platform: Platform,
-    stone: Image,
-}
-
-impl Walk {
-    fn velocity(&self) -> i16 {
-        -self.boy.walking_speed()
     }
 }
 
