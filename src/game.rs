@@ -2,6 +2,7 @@ mod barrier;
 mod obstacle;
 mod platform;
 mod red_hat_boy;
+mod segments;
 mod walk;
 
 use crate::{
@@ -18,17 +19,12 @@ use crate::{
 };
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use barrier::Barrier;
-use platform::Platform;
 use red_hat_boy::RedHatBoy;
+use segments::stone_and_platform;
 use std::rc::Rc;
 use walk::Walk;
 
 const HEIGHT: i16 = 600;
-
-const FIRST_PLATFORM: i16 = 240;
-const HIGH_PLATFORM: i16 = 375;
-const LOW_PLATFORM: i16 = 420;
 
 pub enum WalkTheDog {
     Loaded(Walk),
@@ -73,19 +69,6 @@ impl Game for WalkTheDog {
                     tiles.into_serde::<Sheet>()?,
                     load_image("tiles.png").await?,
                 ));
-                let platform = Platform::new(
-                    sprite_sheet.clone(),
-                    Point {
-                        x: FIRST_PLATFORM,
-                        y: LOW_PLATFORM,
-                    },
-                    &["13.png", "14.png", "15.png"],
-                    &[
-                        Rect::new_from_x_y(0, 0, 60, 54),
-                        Rect::new_from_x_y(60, 0, 384 - (60 * 2), 93),
-                        Rect::new_from_x_y(384 - 60, 0, 60, 54),
-                    ],
-                );
 
                 let background_width = background.width() as i16;
 
@@ -101,11 +84,8 @@ impl Game for WalkTheDog {
                         ),
                     ],
                     boy: rhb,
+                    obstacles: stone_and_platform(stone, sprite_sheet.clone(), 0),
                     obstacle_sheet: sprite_sheet,
-                    obstacles: vec![
-                        Box::new(Barrier::new(Image::new(stone, Point { x: 150, y: 546 }))),
-                        Box::new(platform),
-                    ],
                 })))
             }
 
