@@ -12,7 +12,7 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::{prelude::Closure, JsValue};
 use web_sys::{CanvasRenderingContext2d, HtmlImageElement};
 
-const SHOW_BOUNDING_BOXES: bool = true;
+const SHOW_BOUNDING_BOXES: bool = false;
 
 #[async_trait(?Send)]
 pub trait Game {

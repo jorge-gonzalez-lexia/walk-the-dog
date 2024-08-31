@@ -9,7 +9,7 @@ pub struct RedHatBoyState<S> {
 }
 
 const GRAVITY: i16 = 1;
-const RUNNING_SPEED: i16 = 3;
+const RUNNING_SPEED: i16 = 4;
 const TERMINAL_VELOCITY: i16 = 20;
 
 #[derive(Clone, Copy)]
