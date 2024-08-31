@@ -206,11 +206,11 @@ impl RedHatBoyState<Jumping> {
         }
     }
 
-    pub fn land_on(self, position: f32) -> RedHatBoyState<Running> {
+    pub fn land_on(self, position: i16) -> RedHatBoyState<Running> {
         log!("Jumping->Running");
 
         RedHatBoyState {
-            context: self.context.reset_frame().set_on(position as i16),
+            context: self.context.reset_frame().set_on(position),
             _state: Running,
         }
     }
@@ -271,9 +271,9 @@ impl RedHatBoyState<Running> {
         }
     }
 
-    pub fn land_on(self, position: f32) -> RedHatBoyState<Running> {
+    pub fn land_on(self, position: i16) -> RedHatBoyState<Running> {
         RedHatBoyState {
-            context: self.context.set_on(position as i16),
+            context: self.context.set_on(position),
             _state: Running,
         }
     }
@@ -308,9 +308,9 @@ impl RedHatBoyState<Sliding> {
         }
     }
 
-    pub fn land_on(self, position: f32) -> RedHatBoyState<Sliding> {
+    pub fn land_on(self, position: i16) -> RedHatBoyState<Sliding> {
         RedHatBoyState {
-            context: self.context.set_on(position as i16),
+            context: self.context.set_on(position),
             _state: Sliding,
         }
     }
