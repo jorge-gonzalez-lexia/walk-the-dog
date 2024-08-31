@@ -5,9 +5,11 @@ use crate::{
     browser,
     engine::{
         self,
+        image::Image,
         input::KeyState,
         rect::{Point, Rect},
-        Cell, Game, Image, Renderer, Sheet,
+        renderer::Renderer,
+        Cell, Game, Sheet,
     },
 };
 use anyhow::{anyhow, Result};

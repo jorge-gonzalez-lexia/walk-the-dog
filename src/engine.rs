@@ -1,5 +1,7 @@
+pub mod image;
 pub mod input;
 pub mod rect;
+pub mod renderer;
 
 use crate::browser::{self, LoopClosure};
 use anyhow::{anyhow, Result};
@@ -7,7 +9,7 @@ use async_trait::async_trait;
 use futures::channel::mpsc::{unbounded, UnboundedReceiver};
 use futures::channel::oneshot::channel;
 use input::KeyState;
-use rect::{Point, Rect};
+use renderer::Renderer;
 use serde::Deserialize;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -15,9 +17,7 @@ use std::rc::Rc;
 use std::sync::Mutex;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::{prelude::Closure, JsValue};
-use web_sys::{CanvasRenderingContext2d, HtmlImageElement};
-
-const SHOW_BOUNDING_BOXES: bool = false;
+use web_sys::HtmlImageElement;
 
 #[async_trait(?Send)]
 pub trait Game {
@@ -80,61 +80,6 @@ impl GameLoop {
     }
 }
 
-pub struct Renderer {
-    context: CanvasRenderingContext2d,
-}
-
-impl Renderer {
-    pub fn clear(&self, rect: &Rect) {
-        self.context.clear_rect(
-            rect.x().into(),
-            rect.y().into(),
-            rect.width.into(),
-            rect.height.into(),
-        );
-    }
-
-    pub fn draw_entire_image(&self, image: &HtmlImageElement, position: &Point) {
-        self.context
-            .draw_image_with_html_image_element(image, position.x.into(), position.y.into())
-            .expect("Drawing is throwing exceptions! Unrecoverable error.");
-    }
-
-    /// Copy the given `frame` rectangle from the `image` and draw it on the
-    /// canvas at the given `destination`
-    pub fn draw_image(&self, image: &HtmlImageElement, frame: &Rect, destination: &Rect) {
-        self.context
-            .draw_image_with_html_image_element_and_sw_and_sh_and_dx_and_dy_and_dw_and_dh(
-                &image,
-                frame.x().into(),
-                frame.y().into(),
-                frame.width.into(),
-                frame.height.into(),
-                destination.x().into(),
-                destination.y().into(),
-                destination.width.into(),
-                destination.height.into(),
-            )
-            .expect("Drawing is throwing exceptions! Unrecoverable error.");
-    }
-
-    pub fn draw_rect(&self, bounding_box: &Rect) {
-        if !SHOW_BOUNDING_BOXES {
-            return;
-        }
-
-        self.context.set_stroke_style(&JsValue::from_str("#FF0000"));
-        self.context.begin_path();
-        self.context.rect(
-            bounding_box.x().into(),
-            bounding_box.y().into(),
-            bounding_box.width.into(),
-            bounding_box.height.into(),
-        );
-        self.context.stroke();
-    }
-}
-
 pub async fn load_image(source: &str) -> Result<HtmlImageElement> {
     let image = browser::new_image()?;
     let (complete_tx, complete_rx) = channel::<Result<()>>();
@@ -179,41 +124,4 @@ pub struct SheetRect {
 pub struct Cell {
     pub frame: SheetRect,
     pub sprite_source_size: SheetRect,
-}
-
-pub struct Image {
-    bounding_box: Rect,
-    element: HtmlImageElement,
-}
-
-impl Image {
-    pub fn new(element: HtmlImageElement, position: Point) -> Self {
-        let bounding_box = Rect::new(position, element.width() as i16, element.height() as i16);
-        Self {
-            bounding_box,
-            element,
-        }
-    }
-
-    pub fn bounding_box(&self) -> &Rect {
-        &self.bounding_box
-    }
-
-    pub fn draw(&self, renderer: &Renderer) {
-        renderer.draw_entire_image(&self.element, &self.bounding_box.position);
-        renderer.draw_rect(&self.bounding_box);
-    }
-
-    pub fn move_horizontally(&mut self, distance: i16) {
-        self.set_x(self.bounding_box.x() + distance);
-    }
-
-    pub fn right(&self) -> i16 {
-        self.bounding_box.right()
-    }
-
-    pub fn set_x(&mut self, x: i16) {
-        self.bounding_box.set_x(x);
-        self.bounding_box.position.x = x;
-    }
 }
