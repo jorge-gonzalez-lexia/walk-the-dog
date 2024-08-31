@@ -35,8 +35,8 @@ impl Game for WalkTheDog {
         renderer.clear(&Rect {
             x: 0.0,
             y: 0.0,
-            width: 600.0,
-            height: 600.0,
+            width: 700.0,
+            height: HEIGHT as f32,
         });
 
         if let WalkTheDog::Loaded(walk) = self {
