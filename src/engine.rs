@@ -83,21 +83,27 @@ pub struct Rect {
 }
 
 impl Rect {
+    pub fn bottom(&self) -> i16 {
+        self.y + self.height
+    }
+
     pub fn intersects(&self, other: &Rect) -> bool {
-        let my_left = self.x;
-        let my_right = self.x + self.width;
-        let other_left = other.x;
-        let other_right = other.x + other.width;
+        self.left() < other.right()
+            && self.right() > other.left()
+            && self.top() < other.bottom()
+            && self.bottom() > other.top()
+    }
 
-        let my_top = self.y;
-        let other_top = other.y;
-        let other_bottom = other.y + other.height;
-        let my_bottom = self.y + self.height;
+    pub fn left(&self) -> i16 {
+        self.x
+    }
 
-        my_left < other_right
-            && my_right > other_left
-            && my_top < other_bottom
-            && my_bottom > other_top
+    pub fn right(&self) -> i16 {
+        self.x + self.width
+    }
+
+    pub fn top(&self) -> i16 {
+        self.y
     }
 }
 
@@ -310,7 +316,7 @@ impl Image {
     }
 
     pub fn right(&self) -> i16 {
-        self.bounding_box.x + self.bounding_box.width
+        self.bounding_box.right()
     }
 
     pub fn set_x(&mut self, x: i16) {
