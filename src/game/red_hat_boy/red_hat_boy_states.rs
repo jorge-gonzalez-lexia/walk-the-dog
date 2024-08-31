@@ -1,5 +1,6 @@
-use super::{red_hat_boy::RedHatBoyStateMachine, HEIGHT};
-use crate::engine::rect::Point;
+use crate::{engine::rect::Point, game::HEIGHT};
+
+use super::red_hat_boy_state_machine::RedHatBoyStateMachine;
 
 #[derive(Clone, Copy)]
 pub struct RedHatBoyState<S> {

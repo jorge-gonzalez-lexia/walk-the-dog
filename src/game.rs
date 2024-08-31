@@ -1,7 +1,5 @@
 mod red_hat_boy;
-mod red_hat_boy_states;
 
-use self::red_hat_boy_states::*;
 use crate::{
     browser,
     engine::{
