@@ -11,7 +11,7 @@ use web_sys::HtmlImageElement;
 
 const HEIGHT: i16 = 600;
 
-const FIRST_PLATFORM: i16 = 370;
+const FIRST_PLATFORM: i16 = 270;
 const HIGH_PLATFORM: i16 = 375;
 const LOW_PLATFORM: i16 = 420;
 
@@ -27,7 +27,7 @@ impl WalkTheDog {
 }
 
 pub struct Walk {
-    background: Image,
+    backgrounds: [Image; 2],
     boy: RedHatBoy,
     platform: Platform,
     stone: Image,
@@ -50,7 +50,7 @@ impl Game for WalkTheDog {
         });
 
         if let WalkTheDog::Loaded(walk) = self {
-            walk.background.draw(renderer);
+            walk.backgrounds.iter().for_each(|b| b.draw(renderer));
             walk.boy.draw(renderer);
             walk.platform.draw(renderer);
             walk.stone.draw(renderer);
@@ -80,8 +80,19 @@ impl Game for WalkTheDog {
                     },
                 );
 
+                let background_width = background.width() as i16;
+
                 Ok(Box::new(WalkTheDog::Loaded(Walk {
-                    background: Image::new(background, Point { x: 0, y: 0 }),
+                    backgrounds: [
+                        Image::new(background.clone(), Point { x: 0, y: 0 }),
+                        Image::new(
+                            background,
+                            Point {
+                                x: background_width,
+                                y: 0,
+                            },
+                        ),
+                    ],
                     boy: rhb,
                     platform,
                     stone: Image::new(stone, Point { x: 150, y: 546 }),
@@ -107,6 +118,17 @@ impl Game for WalkTheDog {
             walk.boy.update();
             walk.platform.position.x += walk.velocity();
             walk.stone.move_horizontally(walk.velocity());
+            let velocity = walk.velocity();
+
+            let [first_background, second_background] = &mut walk.backgrounds;
+            first_background.move_horizontally(velocity);
+            second_background.move_horizontally(velocity);
+            if first_background.right() < 0 {
+                first_background.set_x(second_background.right());
+            }
+            if second_background.right() < 0 {
+                second_background.set_x(first_background.right());
+            }
 
             for bounding_box in &walk.platform.bounding_boxes() {
                 if walk.boy.bounding_box().intersects(bounding_box) {

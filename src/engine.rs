@@ -308,4 +308,13 @@ impl Image {
         self.bounding_box.x += distance as f32;
         self.position.x += distance;
     }
+
+    pub fn right(&self) -> i16 {
+        (self.bounding_box.x + self.bounding_box.width) as i16
+    }
+
+    pub fn set_x(&mut self, x: i16) {
+        self.bounding_box.x = x as f32;
+        self.position.x = x;
+    }
 }
