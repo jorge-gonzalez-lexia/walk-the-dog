@@ -7,7 +7,6 @@ pub mod sheet;
 use crate::browser::{self, LoopClosure};
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-// use futures::channel::mpsc::{unbounded, UnboundedReceiver};
 use input::KeyState;
 use renderer::Renderer;
 use std::cell::RefCell;

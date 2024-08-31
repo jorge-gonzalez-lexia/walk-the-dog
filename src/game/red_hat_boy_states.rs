@@ -1,4 +1,4 @@
-use super::{RedHatBoyStateMachine, HEIGHT};
+use super::{red_hat_boy::RedHatBoyStateMachine, HEIGHT};
 use crate::engine::rect::Point;
 
 #[derive(Clone, Copy)]
