@@ -77,8 +77,14 @@ impl Game for WalkTheDog {
                     sprite_sheet.clone(),
                     Point {
                         x: FIRST_PLATFORM,
-                        y: HIGH_PLATFORM,
+                        y: LOW_PLATFORM,
                     },
+                    &["13.png", "14.png", "15.png"],
+                    &[
+                        Rect::new_from_x_y(0, 0, 60, 54),
+                        Rect::new_from_x_y(60, 0, 384 - (60 * 2), 93),
+                        Rect::new_from_x_y(384 - 60, 0, 60, 54),
+                    ],
                 );
 
                 let background_width = background.width() as i16;
