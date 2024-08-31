@@ -20,6 +20,12 @@ pub enum WalkTheDog {
     Loading,
 }
 
+impl WalkTheDog {
+    pub fn new() -> Self {
+        WalkTheDog::Loading
+    }
+}
+
 pub struct Walk {
     background: Image,
     boy: RedHatBoy,
@@ -27,9 +33,9 @@ pub struct Walk {
     stone: Image,
 }
 
-impl WalkTheDog {
-    pub fn new() -> Self {
-        WalkTheDog::Loading
+impl Walk {
+    fn velocity(&self) -> i16 {
+        -self.boy.walking_speed()
     }
 }
 
@@ -99,6 +105,8 @@ impl Game for WalkTheDog {
             }
 
             walk.boy.update();
+            walk.platform.position.x += walk.velocity();
+            walk.stone.move_horizontally(walk.velocity());
 
             for bounding_box in &walk.platform.bounding_boxes() {
                 if walk.boy.bounding_box().intersects(bounding_box) {
@@ -151,6 +159,10 @@ impl RedHatBoy {
         bounding_box
     }
 
+    fn current_sprite(&self) -> Option<&Cell> {
+        self.sprite_sheet.frames.get(&self.frame_name())
+    }
+
     fn destination_box(&self) -> Rect {
         let sprite = self.current_sprite().expect("Cell not found");
         Rect {
@@ -161,10 +173,6 @@ impl RedHatBoy {
             width: sprite.frame.w.into(),
             height: sprite.frame.h.into(),
         }
-    }
-
-    fn current_sprite(&self) -> Option<&Cell> {
-        self.sprite_sheet.frames.get(&self.frame_name())
     }
 
     fn draw(&self, renderer: &Renderer) {
@@ -220,6 +228,10 @@ impl RedHatBoy {
 
     fn velocity_y(&self) -> i16 {
         self.state_machine.context().velocity.y
+    }
+
+    fn walking_speed(&self) -> i16 {
+        self.state_machine.context().velocity.x
     }
 }
 
