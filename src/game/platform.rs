@@ -3,22 +3,18 @@ use crate::engine::{
     rect::{Point, Rect},
     renderer::Renderer,
     sheet::Sheet,
+    sprite_sheet::SpriteSheet,
 };
 use web_sys::HtmlImageElement;
 
 pub struct Platform {
-    image: HtmlImageElement,
     pub position: Point,
-    sheet: Sheet,
+    sheet: SpriteSheet,
 }
 
 impl Platform {
-    pub fn new(sheet: Sheet, image: HtmlImageElement, position: Point) -> Self {
-        Platform {
-            image,
-            position,
-            sheet,
-        }
+    pub fn new(sheet: SpriteSheet, position: Point) -> Self {
+        Platform { position, sheet }
     }
 
     pub fn bounding_boxes(&self) -> Vec<Rect> {
@@ -43,11 +39,7 @@ impl Platform {
     }
 
     pub fn destination_box(&self) -> Rect {
-        let platform = self
-            .sheet
-            .frames
-            .get("13.png")
-            .expect("13.png does not exist");
+        let platform = self.sheet.cell("13.png").expect("13.png does not exist");
 
         Rect::new(self.position, platform.frame.w * 3, platform.frame.h)
     }
@@ -69,13 +61,9 @@ impl Obstacle for Platform {
     }
 
     fn draw(&self, renderer: &Renderer) {
-        let platform = self
-            .sheet
-            .frames
-            .get("13.png")
-            .expect("13.png does not exist");
-        renderer.draw_image(
-            &self.image,
+        let platform = self.sheet.cell("13.png").expect("13.png does not exist");
+        self.sheet.draw(
+            renderer,
             &&Rect::new_from_x_y(
                 platform.frame.x,
                 platform.frame.y,

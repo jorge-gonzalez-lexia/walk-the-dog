@@ -12,6 +12,7 @@ use crate::{
         rect::{Point, Rect},
         renderer::Renderer,
         sheet::Sheet,
+        sprite_sheet::SpriteSheet,
         Game,
     },
 };
@@ -24,7 +25,7 @@ use walk::Walk;
 
 const HEIGHT: i16 = 600;
 
-const FIRST_PLATFORM: i16 = 270;
+const FIRST_PLATFORM: i16 = 240;
 const HIGH_PLATFORM: i16 = 375;
 const LOW_PLATFORM: i16 = 420;
 
@@ -68,8 +69,10 @@ impl Game for WalkTheDog {
 
                 let platform_sheet = browser::fetch_json("tiles.json").await?;
                 let platform = Platform::new(
-                    platform_sheet.into_serde::<Sheet>()?,
-                    load_image("tiles.png").await?,
+                    SpriteSheet::new(
+                        platform_sheet.into_serde::<Sheet>()?,
+                        load_image("tiles.png").await?,
+                    ),
                     Point {
                         x: FIRST_PLATFORM,
                         y: HIGH_PLATFORM,

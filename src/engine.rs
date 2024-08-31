@@ -3,6 +3,7 @@ pub mod input;
 pub mod rect;
 pub mod renderer;
 pub mod sheet;
+pub mod sprite_sheet;
 
 use crate::browser::{self, LoopClosure};
 use anyhow::{anyhow, Result};
