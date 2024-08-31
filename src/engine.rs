@@ -1,4 +1,5 @@
-mod input;
+pub mod input;
+pub mod rect;
 
 use crate::browser::{self, LoopClosure};
 use anyhow::{anyhow, Result};
@@ -6,6 +7,7 @@ use async_trait::async_trait;
 use futures::channel::mpsc::{unbounded, UnboundedReceiver};
 use futures::channel::oneshot::channel;
 use input::KeyState;
+use rect::{Point, Rect};
 use serde::Deserialize;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -75,61 +77,6 @@ impl GameLoop {
         )?;
 
         Ok(())
-    }
-}
-
-pub struct Rect {
-    pub position: Point,
-    pub width: i16,
-    pub height: i16,
-}
-
-impl Rect {
-    pub fn new(position: Point, width: i16, height: i16) -> Self {
-        Rect {
-            position,
-            width,
-            height,
-        }
-    }
-
-    pub fn new_from_x_y(x: i16, y: i16, width: i16, height: i16) -> Self {
-        Rect::new(Point { x, y }, width, height)
-    }
-
-    pub fn bottom(&self) -> i16 {
-        self.y() + self.height
-    }
-
-    pub fn intersects(&self, other: &Rect) -> bool {
-        self.left() < other.right()
-            && self.right() > other.left()
-            && self.top() < other.bottom()
-            && self.bottom() > other.top()
-    }
-
-    pub fn left(&self) -> i16 {
-        self.x()
-    }
-
-    pub fn right(&self) -> i16 {
-        self.x() + self.width
-    }
-
-    pub fn set_x(&mut self, x: i16) {
-        self.position.x = x;
-    }
-
-    pub fn top(&self) -> i16 {
-        self.y()
-    }
-
-    pub fn x(&self) -> i16 {
-        self.position.x
-    }
-
-    pub fn y(&self) -> i16 {
-        self.position.y
     }
 }
 
@@ -232,12 +179,6 @@ pub struct SheetRect {
 pub struct Cell {
     pub frame: SheetRect,
     pub sprite_source_size: SheetRect,
-}
-
-#[derive(Clone, Copy)]
-pub struct Point {
-    pub x: i16,
-    pub y: i16,
 }
 
 pub struct Image {

@@ -4,7 +4,7 @@ use futures::channel::mpsc::{unbounded, UnboundedReceiver};
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 use wasm_bindgen::JsCast;
 
-enum KeyPress {
+pub enum KeyPress {
     KeyDown(web_sys::KeyboardEvent),
     KeyUp(web_sys::KeyboardEvent),
 }

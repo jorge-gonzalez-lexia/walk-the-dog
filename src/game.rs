@@ -3,7 +3,12 @@ mod red_hat_boy_states;
 use self::red_hat_boy_states::*;
 use crate::{
     browser,
-    engine::{self, Cell, Game, Image, KeyState, Point, Rect, Renderer, Sheet},
+    engine::{
+        self,
+        input::KeyState,
+        rect::{Point, Rect},
+        Cell, Game, Image, Renderer, Sheet,
+    },
 };
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
