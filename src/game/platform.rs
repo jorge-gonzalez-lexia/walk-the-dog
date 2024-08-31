@@ -93,4 +93,11 @@ impl Obstacle for Platform {
     fn move_horizontally(&mut self, x: i16) {
         self.position.x += x;
     }
+
+    fn right(&self) -> i16 {
+        self.bounding_boxes()
+            .last()
+            .unwrap_or(&Rect::default())
+            .right()
+    }
 }

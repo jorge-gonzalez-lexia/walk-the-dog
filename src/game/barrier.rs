@@ -25,4 +25,8 @@ impl Obstacle for Barrier {
     fn move_horizontally(&mut self, x: i16) {
         self.image.move_horizontally(x);
     }
+
+    fn right(&self) -> i16 {
+        self.image.right()
+    }
 }

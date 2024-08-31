@@ -126,6 +126,8 @@ impl Game for WalkTheDog {
                 second_background.set_x(first_background.right());
             }
 
+            walk.obstacles.retain(|obstacle| obstacle.right() > 0);
+
             walk.obstacles.iter_mut().for_each(|obstacle| {
                 obstacle.move_horizontally(velocity);
                 obstacle.check_intersection(&mut walk.boy)
