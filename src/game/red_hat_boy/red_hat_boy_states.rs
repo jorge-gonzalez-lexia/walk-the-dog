@@ -1,4 +1,10 @@
-use crate::{engine::rect::Point, game::HEIGHT};
+use crate::{
+    engine::{
+        audio::{Audio, Sound},
+        rect::Point,
+    },
+    game::HEIGHT,
+};
 
 use super::red_hat_boy_state_machine::RedHatBoyStateMachine;
 
@@ -14,7 +20,9 @@ const TERMINAL_VELOCITY: i16 = 20;
 
 #[derive(Clone)]
 pub struct RedHatBoyContext {
+    pub audio: Audio,
     pub frame: u8,
+    pub jump_sound: Sound,
     pub position: Point,
     pub velocity: Point,
 }
@@ -158,10 +166,12 @@ impl From<FallingEndState> for RedHatBoyStateMachine {
 }
 
 impl RedHatBoyState<Idle> {
-    pub fn new() -> Self {
+    pub fn new(audio: Audio, jump_sound: Sound) -> Self {
         RedHatBoyState {
             context: RedHatBoyContext {
+                audio,
                 frame: 0,
+                jump_sound,
                 position: Point {
                     x: STARTING_POINT,
                     y: FLOOR,

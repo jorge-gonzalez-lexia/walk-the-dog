@@ -2,6 +2,7 @@ mod red_hat_boy_state_machine;
 mod red_hat_boy_states;
 
 use crate::engine::{
+    audio::{Audio, Sound},
     rect::Rect,
     renderer::Renderer,
     sheet::{Cell, Sheet},
@@ -17,11 +18,16 @@ pub struct RedHatBoy {
 }
 
 impl RedHatBoy {
-    pub fn new(sprite_sheet: Sheet, image: HtmlImageElement) -> Self {
+    pub fn new(
+        audio: Audio,
+        jump_sound: Sound,
+        sprite_sheet: Sheet,
+        image: HtmlImageElement,
+    ) -> Self {
         RedHatBoy {
             image,
             sprite_sheet,
-            state_machine: RedHatBoyStateMachine::Idle(RedHatBoyState::new()),
+            state_machine: RedHatBoyStateMachine::Idle(RedHatBoyState::new(audio, jump_sound)),
         }
     }
 

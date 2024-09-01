@@ -8,6 +8,7 @@ mod walk;
 use crate::{
     browser,
     engine::{
+        audio::{self, Audio},
         image::{load_image, Image},
         input::KeyState,
         rect::{Point, Rect},
@@ -19,6 +20,7 @@ use crate::{
 };
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
+use futures::TryFutureExt;
 use red_hat_boy::RedHatBoy;
 use segments::stone_and_platform;
 use std::rc::Rc;
@@ -55,8 +57,12 @@ impl Game for WalkTheDog {
     async fn initialize(&self) -> Result<Box<dyn Game>> {
         match self {
             WalkTheDog::Loading => {
+                let audio = Audio::new()?;
+                let sound = audio.load_sound("SFX_Jump_23.mp3").await?;
                 let json = browser::fetch_json("rhb.json").await?;
                 let rhb = RedHatBoy::new(
+                    audio,
+                    sound,
                     // TODO: into_serde is deprecated (presumably after book was written)
                     json.into_serde::<Sheet>()?,
                     load_image("rhb.png").await?,
