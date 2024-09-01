@@ -1,7 +1,10 @@
 use super::{
     obstacle::Obstacle,
     red_hat_boy::RedHatBoy,
-    segments::{platform_and_stone, stone_and_platform},
+    segments::{
+        platform_and_stone, platform_high, platform_low, stone, stone_and_platform,
+        stone_on_platform,
+    },
 };
 use crate::engine::{image::Image, sprite_sheet::SpriteSheet};
 use rand::{thread_rng, Rng};
@@ -21,19 +24,18 @@ pub struct Walk {
 
 impl Walk {
     pub fn generate_next_segment(&mut self) {
+        let obstacle_sheet = self.obstacle_sheet.clone();
+        let offset_x = self.timeline + OBSTACLE_BUFFER;
+
         let mut rng = thread_rng();
-        let next_segment = rng.gen_range(0..2);
+        let next_segment = rng.gen_range(0..5);
         let mut next_obstacles = match next_segment {
-            0 => stone_and_platform(
-                self.stone.clone(),
-                self.obstacle_sheet.clone(),
-                self.timeline + OBSTACLE_BUFFER,
-            ),
-            1 => platform_and_stone(
-                self.stone.clone(),
-                self.obstacle_sheet.clone(),
-                self.timeline + OBSTACLE_BUFFER,
-            ),
+            0 => platform_and_stone(self.stone.clone(), obstacle_sheet, offset_x),
+            1 => platform_high(obstacle_sheet, offset_x),
+            2 => platform_low(obstacle_sheet, offset_x),
+            3 => stone(self.stone.clone(), offset_x),
+            4 => stone_and_platform(self.stone.clone(), obstacle_sheet, offset_x),
+            5 => stone_on_platform(self.stone.clone(), obstacle_sheet, offset_x),
 
             _ => vec![],
         };
