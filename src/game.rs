@@ -20,7 +20,7 @@ use crate::{
 };
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use red_hat_boy::RedHatBoy;
+use red_hat_boy::{context::Sfx, RedHatBoy};
 use segments::stone_and_platform;
 use std::rc::Rc;
 use walk::{rightmost, Walk};
@@ -57,8 +57,10 @@ impl Game for WalkTheDog {
         match self {
             WalkTheDog::Loading => {
                 let audio = Audio::new()?;
-                let sfx_jump = audio.load_sound("SFX_Jump_23.mp3").await?;
-                let sfx_ko = audio.load_sound("vgdeathsound.ogg").await?;
+                let sfx = Sfx::new(
+                    audio.load_sound("SFX_Jump_23.mp3").await?,
+                    audio.load_sound("vgdeathsound.ogg").await?,
+                );
                 let background_music = audio.load_sound("background_song.mp3").await?;
                 let json = browser::fetch_json("rhb.json").await?;
 
@@ -66,8 +68,7 @@ impl Game for WalkTheDog {
 
                 let rhb = RedHatBoy::new(
                     audio,
-                    sfx_jump,
-                    sfx_ko,
+                    sfx,
                     // TODO: into_serde is deprecated (presumably after book was written)
                     json.into_serde::<Sheet>()?,
                     load_image("rhb.png").await?,

@@ -15,17 +15,27 @@ const TERMINAL_VELOCITY: i16 = 20;
 
 #[derive(Clone)]
 pub struct RedHatBoyContext {
-    pub audio: Audio,
     pub frame: u8,
     pub position: Point,
-    pub sfx_jump: Sound,
-    pub sfx_ko: Sound,
     pub velocity: Point,
+
+    audio: Audio,
+    sfx: Sfx,
 }
 
 impl RedHatBoyContext {
+    pub fn new(audio: Audio, frame: u8, position: Point, sfx: Sfx, velocity: Point) -> Self {
+        RedHatBoyContext {
+            audio,
+            frame,
+            position,
+            sfx,
+            velocity,
+        }
+    }
+
     pub fn play_jump_sfx(self) -> Self {
-        if let Err(err) = self.audio.play_sound(&self.sfx_jump) {
+        if let Err(err) = self.audio.play_sound(&self.sfx.jump) {
             log!("Error playing jump sound {:#?}", err);
         }
 
@@ -33,7 +43,7 @@ impl RedHatBoyContext {
     }
 
     pub fn play_ko_sfx(self) -> Self {
-        if let Err(err) = self.audio.play_sound(&self.sfx_ko) {
+        if let Err(err) = self.audio.play_sound(&self.sfx.ko) {
             log!("Error playing knock-out sound {:#?}", err);
         }
 
@@ -92,5 +102,17 @@ impl RedHatBoyContext {
         }
 
         self
+    }
+}
+
+#[derive(Clone)]
+pub struct Sfx {
+    jump: Sound,
+    ko: Sound,
+}
+
+impl Sfx {
+    pub fn new(jump: Sound, ko: Sound) -> Self {
+        Sfx { jump, ko }
     }
 }

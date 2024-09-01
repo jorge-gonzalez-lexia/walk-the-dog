@@ -1,13 +1,14 @@
-mod context;
+pub mod context;
 mod state_machine;
 mod states;
 
 use crate::engine::{
-    audio::{Audio, Sound},
+    audio::Audio,
     rect::Rect,
     renderer::Renderer,
     sheet::{Cell, Sheet},
 };
+use context::Sfx;
 use state_machine::{Event, RedHatBoyStateMachine};
 use states::RedHatBoyState;
 use web_sys::HtmlImageElement;
@@ -19,19 +20,11 @@ pub struct RedHatBoy {
 }
 
 impl RedHatBoy {
-    pub fn new(
-        audio: Audio,
-        sfx_jump: Sound,
-        sfx_ko: Sound,
-        sprite_sheet: Sheet,
-        image: HtmlImageElement,
-    ) -> Self {
+    pub fn new(audio: Audio, sfx: Sfx, sprite_sheet: Sheet, image: HtmlImageElement) -> Self {
         RedHatBoy {
             image,
             sprite_sheet,
-            state_machine: RedHatBoyStateMachine::Idle(RedHatBoyState::new(
-                audio, sfx_jump, sfx_ko,
-            )),
+            state_machine: RedHatBoyStateMachine::Idle(RedHatBoyState::new(audio, sfx)),
         }
     }
 

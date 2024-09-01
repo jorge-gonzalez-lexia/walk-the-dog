@@ -1,9 +1,6 @@
 use super::{running::Running, RedHatBoyState};
 use crate::{
-    engine::{
-        audio::{Audio, Sound},
-        rect::Point,
-    },
+    engine::{audio::Audio, rect::Point},
     game::red_hat_boy::context::{self, RedHatBoyContext},
 };
 
@@ -16,19 +13,18 @@ const IDLE_FRAME_NAME: &str = "Idle";
 const IDLE_FRAMES: u8 = 29;
 
 impl RedHatBoyState<Idle> {
-    pub fn new(audio: Audio, sfx_jump: Sound, sfx_ko: Sound) -> Self {
+    pub fn new(audio: Audio, sfx: context::Sfx) -> Self {
         RedHatBoyState {
-            context: RedHatBoyContext {
+            context: RedHatBoyContext::new(
                 audio,
-                frame: 0,
-                sfx_jump,
-                sfx_ko,
-                position: Point {
+                0,
+                Point {
                     x: STARTING_POINT,
                     y: context::FLOOR,
                 },
-                velocity: Point { x: 0, y: 0 },
-            },
+                sfx,
+                Point { x: 0, y: 0 },
+            ),
             _state: Idle {},
         }
     }
