@@ -1,5 +1,6 @@
-use super::red_hat_boy_states::{
-    Falling, Idle, Jumping, KnockedOut, RedHatBoyContext, RedHatBoyState, Running, Sliding,
+use super::{
+    context::RedHatBoyContext,
+    states::{Falling, Idle, Jumping, KnockedOut, RedHatBoyState, Running, Sliding},
 };
 
 // See p214. This could be implemented as a trait object instead

@@ -1,5 +1,6 @@
-mod red_hat_boy_state_machine;
-mod red_hat_boy_states;
+mod context;
+mod state_machine;
+mod states;
 
 use crate::engine::{
     audio::{Audio, Sound},
@@ -7,8 +8,8 @@ use crate::engine::{
     renderer::Renderer,
     sheet::{Cell, Sheet},
 };
-use red_hat_boy_state_machine::{Event, RedHatBoyStateMachine};
-use red_hat_boy_states::RedHatBoyState;
+use state_machine::{Event, RedHatBoyStateMachine};
+use states::RedHatBoyState;
 use web_sys::HtmlImageElement;
 
 pub struct RedHatBoy {
