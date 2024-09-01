@@ -50,6 +50,14 @@ impl RedHatBoyContext {
         self
     }
 
+    fn play_jump_sound(self) -> Self {
+        if let Err(err) = self.audio.play_sound(&self.jump_sound) {
+            log!("Error playing jump sound {:#?}", err);
+        }
+
+        self
+    }
+
     fn reset_frame(mut self) -> Self {
         self.frame = 0;
 
@@ -267,7 +275,11 @@ impl RedHatBoyState<Running> {
         log!("Running->Jumping");
 
         RedHatBoyState {
-            context: self.context.set_vertical_velocity(JUMP_SPEED).reset_frame(),
+            context: self
+                .context
+                .set_vertical_velocity(JUMP_SPEED)
+                .reset_frame()
+                .play_jump_sound(),
             _state: Jumping {},
         }
     }

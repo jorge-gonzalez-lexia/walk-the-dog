@@ -8,7 +8,7 @@ mod walk;
 use crate::{
     browser,
     engine::{
-        audio::{self, Audio},
+        audio::Audio,
         image::{load_image, Image},
         input::KeyState,
         rect::{Point, Rect},
@@ -20,7 +20,6 @@ use crate::{
 };
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use futures::TryFutureExt;
 use red_hat_boy::RedHatBoy;
 use segments::stone_and_platform;
 use std::rc::Rc;
