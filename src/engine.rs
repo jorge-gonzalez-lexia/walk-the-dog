@@ -1,3 +1,4 @@
+pub mod audio;
 pub mod image;
 pub mod input;
 pub mod rect;
