@@ -1,6 +1,9 @@
 use super::{
     context::RedHatBoyContext,
-    states::{Falling, Idle, Jumping, KnockedOut, RedHatBoyState, Running, Sliding},
+    states::{
+        falling::Falling, idle::Idle, jumping::Jumping, knocked_out::KnockedOut, running::Running,
+        sliding::Sliding, RedHatBoyState,
+    },
 };
 
 // See p214. This could be implemented as a trait object instead
