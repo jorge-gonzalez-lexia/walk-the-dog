@@ -50,6 +50,14 @@ impl RedHatBoyContext {
         self
     }
 
+    pub fn play_slide_sfx(self) -> Self {
+        if let Err(err) = self.audio.play_sound(&self.sfx.slide) {
+            log!("Error playing slide sound {:#?}", err);
+        }
+
+        self
+    }
+
     pub fn reset_frame(mut self) -> Self {
         self.frame = 0;
 
@@ -109,10 +117,11 @@ impl RedHatBoyContext {
 pub struct Sfx {
     jump: Sound,
     ko: Sound,
+    slide: Sound,
 }
 
 impl Sfx {
-    pub fn new(jump: Sound, ko: Sound) -> Self {
-        Sfx { jump, ko }
+    pub fn new(jump: Sound, ko: Sound, slide: Sound) -> Self {
+        Sfx { jump, ko, slide }
     }
 }

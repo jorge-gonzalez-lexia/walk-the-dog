@@ -46,7 +46,7 @@ impl RedHatBoyState<Running> {
         log!("Running->Sliding");
 
         RedHatBoyState {
-            context: self.context.reset_frame(),
+            context: self.context.play_slide_sfx().reset_frame(),
             _state: Sliding {},
         }
     }

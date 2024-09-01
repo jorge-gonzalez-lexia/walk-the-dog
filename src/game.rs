@@ -60,6 +60,7 @@ impl Game for WalkTheDog {
                 let sfx = Sfx::new(
                     audio.load_sound("SFX_Jump_23.mp3").await?,
                     audio.load_sound("vgdeathsound.ogg").await?,
+                    audio.load_sound("slide.wav").await?,
                 );
                 let background_music = audio.load_sound("background_song.mp3").await?;
                 let json = browser::fetch_json("rhb.json").await?;
