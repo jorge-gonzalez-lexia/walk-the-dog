@@ -2,7 +2,7 @@ use crate::{engine::rect::Point, game::HEIGHT};
 
 use super::red_hat_boy_state_machine::RedHatBoyStateMachine;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct RedHatBoyState<S> {
     context: RedHatBoyContext,
     _state: S,
@@ -12,7 +12,7 @@ const GRAVITY: i16 = 1;
 const RUNNING_SPEED: i16 = 4;
 const TERMINAL_VELOCITY: i16 = 20;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct RedHatBoyContext {
     pub frame: u8,
     pub position: Point,
@@ -303,7 +303,7 @@ impl RedHatBoyState<Sliding> {
         log!("Sliding->Falling");
 
         RedHatBoyState {
-            context: self.context().reset_frame().stop(),
+            context: self.context().clone().reset_frame().stop(),
             _state: Falling {},
         }
     }
@@ -329,7 +329,7 @@ impl RedHatBoyState<Sliding> {
         log!("Sliding->Running");
 
         RedHatBoyState {
-            context: self.context().reset_frame(),
+            context: self.context().clone().reset_frame(),
             _state: Running {},
         }
     }

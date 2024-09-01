@@ -3,7 +3,7 @@ use super::red_hat_boy_states::{
 };
 
 // See p214. This could be implemented as a trait object instead
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub enum RedHatBoyStateMachine {
     Idle(RedHatBoyState<Idle>),
     Falling(RedHatBoyState<Falling>),
@@ -51,7 +51,7 @@ impl RedHatBoyStateMachine {
             log!("Event {event:?}");
         }
 
-        match (self, event) {
+        match (self.clone(), event) {
             (RedHatBoyStateMachine::Falling(state), Event::Update) => state.update().into(),
 
             (RedHatBoyStateMachine::Idle(state), Event::Run) => state.run().into(),
