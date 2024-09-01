@@ -20,14 +20,17 @@ pub struct RedHatBoy {
 impl RedHatBoy {
     pub fn new(
         audio: Audio,
-        jump_sound: Sound,
+        sfx_jump: Sound,
+        sfx_ko: Sound,
         sprite_sheet: Sheet,
         image: HtmlImageElement,
     ) -> Self {
         RedHatBoy {
             image,
             sprite_sheet,
-            state_machine: RedHatBoyStateMachine::Idle(RedHatBoyState::new(audio, jump_sound)),
+            state_machine: RedHatBoyStateMachine::Idle(RedHatBoyState::new(
+                audio, sfx_jump, sfx_ko,
+            )),
         }
     }
 

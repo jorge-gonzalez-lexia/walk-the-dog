@@ -57,11 +57,13 @@ impl Game for WalkTheDog {
         match self {
             WalkTheDog::Loading => {
                 let audio = Audio::new()?;
-                let sound = audio.load_sound("SFX_Jump_23.mp3").await?;
+                let sfx_jump = audio.load_sound("SFX_Jump_23.mp3").await?;
+                let sfx_ko = audio.load_sound("vgdeathsound.ogg").await?;
                 let json = browser::fetch_json("rhb.json").await?;
                 let rhb = RedHatBoy::new(
                     audio,
-                    sound,
+                    sfx_jump,
+                    sfx_ko,
                     // TODO: into_serde is deprecated (presumably after book was written)
                     json.into_serde::<Sheet>()?,
                     load_image("rhb.png").await?,

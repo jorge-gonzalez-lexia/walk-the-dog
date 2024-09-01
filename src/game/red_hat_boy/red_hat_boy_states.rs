@@ -22,8 +22,9 @@ const TERMINAL_VELOCITY: i16 = 20;
 pub struct RedHatBoyContext {
     pub audio: Audio,
     pub frame: u8,
-    pub jump_sound: Sound,
     pub position: Point,
+    pub sfx_jump: Sound,
+    pub sfx_ko: Sound,
     pub velocity: Point,
 }
 
@@ -50,9 +51,17 @@ impl RedHatBoyContext {
         self
     }
 
-    fn play_jump_sound(self) -> Self {
-        if let Err(err) = self.audio.play_sound(&self.jump_sound) {
+    fn play_jump_sfx(self) -> Self {
+        if let Err(err) = self.audio.play_sound(&self.sfx_jump) {
             log!("Error playing jump sound {:#?}", err);
+        }
+
+        self
+    }
+
+    fn play_ko_sfx(self) -> Self {
+        if let Err(err) = self.audio.play_sound(&self.sfx_ko) {
+            log!("Error playing knock-out sound {:#?}", err);
         }
 
         self
@@ -153,7 +162,7 @@ impl RedHatBoyState<Falling> {
         log!("Falling->KnockedOut");
 
         RedHatBoyState {
-            context: self.context,
+            context: self.context.play_ko_sfx(),
             _state: KnockedOut {},
         }
     }
@@ -174,12 +183,13 @@ impl From<FallingEndState> for RedHatBoyStateMachine {
 }
 
 impl RedHatBoyState<Idle> {
-    pub fn new(audio: Audio, jump_sound: Sound) -> Self {
+    pub fn new(audio: Audio, sfx_jump: Sound, sfx_ko: Sound) -> Self {
         RedHatBoyState {
             context: RedHatBoyContext {
                 audio,
                 frame: 0,
-                jump_sound,
+                sfx_jump,
+                sfx_ko,
                 position: Point {
                     x: STARTING_POINT,
                     y: FLOOR,
@@ -279,7 +289,7 @@ impl RedHatBoyState<Running> {
                 .context
                 .set_vertical_velocity(JUMP_SPEED)
                 .reset_frame()
-                .play_jump_sound(),
+                .play_jump_sfx(),
             _state: Jumping {},
         }
     }
