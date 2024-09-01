@@ -1,7 +1,10 @@
 use anyhow::{anyhow, Result};
 use web_sys::{AudioBuffer, AudioContext};
 
-use crate::{browser, sound};
+use crate::{
+    browser,
+    sound::{self, Looping},
+};
 
 #[derive(Clone)]
 pub struct Audio {
@@ -22,8 +25,12 @@ impl Audio {
         Ok(Sound { buffer })
     }
 
+    pub fn play_looping_sound(&self, sound: &Sound) -> Result<()> {
+        sound::play_sound(&self.context, &sound.buffer, Looping::Yes)
+    }
+
     pub fn play_sound(&self, sound: &Sound) -> Result<()> {
-        sound::play_sound(&self.context, &sound.buffer)
+        sound::play_sound(&self.context, &sound.buffer, Looping::No)
     }
 }
 

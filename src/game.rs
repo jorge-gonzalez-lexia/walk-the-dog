@@ -59,7 +59,11 @@ impl Game for WalkTheDog {
                 let audio = Audio::new()?;
                 let sfx_jump = audio.load_sound("SFX_Jump_23.mp3").await?;
                 let sfx_ko = audio.load_sound("vgdeathsound.ogg").await?;
+                let background_music = audio.load_sound("background_song.mp3").await?;
                 let json = browser::fetch_json("rhb.json").await?;
+
+                audio.play_looping_sound(&background_music)?;
+
                 let rhb = RedHatBoy::new(
                     audio,
                     sfx_jump,
