@@ -1,5 +1,8 @@
 use super::{game_over::GameOver, WalkTheDogState, WalkTheDogStateMachine};
-use crate::{browser, engine::input::KeyState};
+use crate::{
+    browser,
+    engine::{self, input::KeyState},
+};
 
 pub struct Walking;
 
@@ -48,11 +51,14 @@ impl WalkTheDogState<Walking> {
     }
 
     fn end_game(self) -> WalkTheDogState<GameOver> {
-        browser::draw_ui("<button>New Game</button>");
+        let new_game_event = browser::draw_ui("<button id='new_game'>New Game</button>")
+            .and_then(|_| browser::find_html_element_by_id("new_game"))
+            .map(|btn| engine::add_click_handler(btn))
+            .unwrap();
 
         WalkTheDogState {
             walk: self.walk,
-            _state: GameOver,
+            _state: GameOver { new_game_event },
         }
     }
 }
