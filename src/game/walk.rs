@@ -50,6 +50,10 @@ impl Walk {
         self.obstacles.append(&mut next_obstacles);
     }
 
+    pub fn knocked_out(&self) -> bool {
+        self.boy.knocked_out()
+    }
+
     pub fn velocity(&self) -> i16 {
         -self.boy.walking_speed()
     }

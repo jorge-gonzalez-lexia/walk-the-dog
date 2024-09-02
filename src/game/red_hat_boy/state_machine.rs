@@ -50,6 +50,10 @@ impl RedHatBoyStateMachine {
         }
     }
 
+    pub fn knocked_out(&self) -> bool {
+        matches!(self, RedHatBoyStateMachine::KnockedOut(_))
+    }
+
     pub fn transition(self, event: Event) -> Self {
         if event != Event::Update {
             log!("Event {event:?}");

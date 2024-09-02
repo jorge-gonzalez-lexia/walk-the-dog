@@ -1,12 +1,12 @@
-use super::WalkTheDogState;
-use crate::engine::input::KeyState;
+use super::{game_over::GameOver, WalkTheDogState, WalkTheDogStateMachine};
+use crate::{browser, engine::input::KeyState};
 
 pub struct Walking;
 
 const TIMELINE_MINIMUM: i16 = 1000;
 
 impl WalkTheDogState<Walking> {
-    pub fn update(mut self, keystate: &KeyState) -> WalkTheDogState<Walking> {
+    pub fn update(mut self, keystate: &KeyState) -> WalkingEndState {
         if keystate.is_pressed("Space") {
             self.walk.boy.jump();
         }
@@ -40,6 +40,33 @@ impl WalkTheDogState<Walking> {
             self.walk.timeline += walking_speed;
         }
 
-        self
+        if self.walk.knocked_out() {
+            WalkingEndState::Complete(self.end_game())
+        } else {
+            WalkingEndState::Continue(self)
+        }
+    }
+
+    fn end_game(self) -> WalkTheDogState<GameOver> {
+        browser::draw_ui("<button>New Game</button>");
+
+        WalkTheDogState {
+            walk: self.walk,
+            _state: GameOver,
+        }
+    }
+}
+
+pub enum WalkingEndState {
+    Complete(WalkTheDogState<GameOver>),
+    Continue(WalkTheDogState<Walking>),
+}
+
+impl From<WalkingEndState> for WalkTheDogStateMachine {
+    fn from(state: WalkingEndState) -> Self {
+        match state {
+            WalkingEndState::Complete(game_over) => game_over.into(),
+            WalkingEndState::Continue(walking) => walking.into(),
+        }
     }
 }

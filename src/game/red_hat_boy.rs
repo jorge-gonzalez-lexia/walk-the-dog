@@ -65,6 +65,10 @@ impl RedHatBoy {
         self.state_machine = self.state_machine.clone().transition(Event::KnockOut);
     }
 
+    pub fn knocked_out(&self) -> bool {
+        self.state_machine.knocked_out()
+    }
+
     pub fn land_on(&mut self, position: i16) {
         self.state_machine = self.state_machine.clone().transition(Event::Land(position));
     }
