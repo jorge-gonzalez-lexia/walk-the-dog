@@ -15,6 +15,10 @@ pub enum WalkTheDogStateMachine {
 }
 
 impl WalkTheDogStateMachine {
+    pub fn new(walk: Walk) -> Self {
+        WalkTheDogStateMachine::Ready(WalkTheDogState::new(walk))
+    }
+
     pub fn draw(&self, renderer: &Renderer) {
         match self {
             WalkTheDogStateMachine::GameOver(state) => state.draw(renderer),

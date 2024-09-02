@@ -21,14 +21,13 @@ use crate::{
 };
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use game_states::{WalkTheDogState, WalkTheDogStateMachine};
+use game_states::WalkTheDogStateMachine;
 use red_hat_boy::{context::Sfx, RedHatBoy};
 use segments::stone_and_platform;
 use std::rc::Rc;
 use walk::{rightmost, Walk};
 
 const HEIGHT: i16 = 600;
-const TIMELINE_MINIMUM: i16 = 1000;
 
 pub struct WalkTheDog {
     machine: Option<WalkTheDogStateMachine>,
@@ -86,25 +85,22 @@ impl Game for WalkTheDog {
 
                 let background_width = background.width() as i16;
 
-                let machine = WalkTheDogStateMachine::Ready(WalkTheDogState {
-                    walk: Walk {
-                        backgrounds: [
-                            Image::new(background.clone(), Point { x: 0, y: 0 }),
-                            Image::new(
-                                background,
-                                Point {
-                                    x: background_width,
-                                    y: 0,
-                                },
-                            ),
-                        ],
-                        boy: rhb,
-                        obstacle_sheet: sprite_sheet,
-                        obstacles: starting_obstacles,
-                        stone,
-                        timeline,
-                    },
-                    _state: game_states::ready::Ready,
+                let machine = WalkTheDogStateMachine::new(Walk {
+                    backgrounds: [
+                        Image::new(background.clone(), Point { x: 0, y: 0 }),
+                        Image::new(
+                            background,
+                            Point {
+                                x: background_width,
+                                y: 0,
+                            },
+                        ),
+                    ],
+                    boy: rhb,
+                    obstacle_sheet: sprite_sheet,
+                    obstacles: starting_obstacles,
+                    stone,
+                    timeline,
                 });
 
                 Ok(Box::new(WalkTheDog {
@@ -119,42 +115,6 @@ impl Game for WalkTheDog {
     fn update(&mut self, keystate: &KeyState) {
         if let Some(machine) = self.machine.take() {
             self.machine.replace(machine.update(keystate));
-
-            // if keystate.is_pressed("ArrowRight") {
-            //     walk.boy.run_right();
-            // }
-            // if keystate.is_pressed("ArrowDown") {
-            //     walk.boy.slide();
-            // }
-            // if keystate.is_pressed("Space") {
-            //     walk.boy.jump();
-            // }
-
-            // walk.boy.update();
-            // let velocity = walk.velocity();
-
-            // let [first_background, second_background] = &mut walk.backgrounds;
-            // first_background.move_horizontally(velocity);
-            // second_background.move_horizontally(velocity);
-            // if first_background.right() < 0 {
-            //     first_background.set_x(second_background.right());
-            // }
-            // if second_background.right() < 0 {
-            //     second_background.set_x(first_background.right());
-            // }
-
-            // walk.obstacles.retain(|obstacle| obstacle.right() > 0);
-
-            // walk.obstacles.iter_mut().for_each(|obstacle| {
-            //     obstacle.move_horizontally(velocity);
-            //     obstacle.check_intersection(&mut walk.boy)
-            // });
-
-            // if walk.timeline < TIMELINE_MINIMUM {
-            //     walk.generate_next_segment();
-            // } else {
-            //     walk.timeline += velocity;
-            // }
         }
 
         assert!(self.machine.is_some());

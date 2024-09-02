@@ -1,10 +1,19 @@
 use super::{walking::Walking, WalkTheDogState, WalkTheDogStateMachine};
-use crate::engine::input::KeyState;
+use crate::{engine::input::KeyState, game::walk::Walk};
 
 pub struct Ready;
 
 impl WalkTheDogState<Ready> {
-    pub fn update(self, keystate: &KeyState) -> ReadyEndState {
+    pub fn new(walk: Walk) -> Self {
+        WalkTheDogState {
+            walk,
+            _state: Ready,
+        }
+    }
+
+    pub fn update(mut self, keystate: &KeyState) -> ReadyEndState {
+        self.walk.boy.update();
+
         if keystate.is_pressed("ArrowRight") {
             ReadyEndState::Complete(self.start_running())
         } else {
