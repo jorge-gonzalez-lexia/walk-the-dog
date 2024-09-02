@@ -9,10 +9,13 @@ pub mod sprite_sheet;
 use crate::browser::{self, LoopClosure};
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
+use futures::channel::mpsc::{unbounded, UnboundedReceiver};
 use input::KeyState;
 use renderer::Renderer;
 use std::cell::RefCell;
 use std::rc::Rc;
+use wasm_bindgen::JsCast;
+use web_sys::HtmlElement;
 
 #[async_trait(?Send)]
 pub trait Game {
@@ -73,4 +76,15 @@ impl GameLoop {
 
         Ok(())
     }
+}
+
+fn add_click_handler(elem: HtmlElement) -> UnboundedReceiver<()> {
+    let (mut click_sender, click_receiver) = unbounded();
+    let on_click = browser::closure_wrap(Box::new(move || {
+        click_sender.start_send(());
+    }) as Box<dyn FnMut()>);
+    elem.set_onclick(Some(on_click.as_ref().unchecked_ref()));
+    on_click.forget();
+
+    click_receiver
 }
