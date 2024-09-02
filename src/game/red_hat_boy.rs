@@ -28,6 +28,15 @@ impl RedHatBoy {
         }
     }
 
+    pub fn reset(boy: Self) -> Self {
+        RedHatBoy::new(
+            boy.state_machine.context().audio.clone(),
+            boy.state_machine.context().sfx.clone(),
+            boy.sprite_sheet,
+            boy.image,
+        )
+    }
+
     pub fn bounding_box(&self) -> Rect {
         const X_OFFSET: i16 = 18;
         const Y_OFFSET: i16 = 14;

@@ -1,5 +1,5 @@
 use super::{ready::Ready, WalkTheDogState, WalkTheDogStateMachine};
-use crate::browser;
+use crate::{browser, game::walk::Walk};
 use futures::channel::mpsc::UnboundedReceiver;
 
 pub struct GameOver {
@@ -25,7 +25,7 @@ impl WalkTheDogState<GameOver> {
         browser::hide_ui();
 
         WalkTheDogState {
-            walk: self.walk,
+            walk: Walk::reset(self.walk),
             _state: Ready,
         }
     }

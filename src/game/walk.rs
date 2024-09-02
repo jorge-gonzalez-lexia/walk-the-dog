@@ -23,6 +23,21 @@ pub struct Walk {
 }
 
 impl Walk {
+    pub fn reset(walk: Self) -> Self {
+        let starting_obstacles =
+            stone_and_platform(walk.stone.clone(), walk.obstacle_sheet.clone(), 0);
+        let timeline = rightmost(&starting_obstacles);
+
+        Walk {
+            backgrounds: walk.backgrounds,
+            boy: RedHatBoy::reset(walk.boy),
+            obstacle_sheet: walk.obstacle_sheet,
+            obstacles: starting_obstacles,
+            stone: walk.stone,
+            timeline,
+        }
+    }
+
     pub fn draw(&self, renderer: &Renderer) {
         self.backgrounds.iter().for_each(|b| b.draw(renderer));
         self.boy.draw(renderer);

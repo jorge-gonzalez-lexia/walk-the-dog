@@ -15,12 +15,11 @@ const TERMINAL_VELOCITY: i16 = 20;
 
 #[derive(Clone)]
 pub struct RedHatBoyContext {
+    pub audio: Audio,
     pub frame: u8,
     pub position: Point,
+    pub sfx: Sfx,
     pub velocity: Point,
-
-    audio: Audio,
-    sfx: Sfx,
 }
 
 impl RedHatBoyContext {
