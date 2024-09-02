@@ -30,9 +30,9 @@ impl Rect {
 
     pub fn intersects(&self, other: &Rect) -> bool {
         self.left() < other.right()
-            && self.right() > other.left()
+            && self.right() >= other.left()
             && self.top() < other.bottom()
-            && self.bottom() > other.top()
+            && self.bottom() >= other.top()
     }
 
     pub fn left(&self) -> i16 {
@@ -57,5 +57,74 @@ impl Rect {
 
     pub fn y(&self) -> i16 {
         self.position.y
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn two_rects_that_intersect_on_the_left() {
+        let rect1 = Rect {
+            position: Point { x: 10, y: 10 },
+            width: 10,
+            height: 10,
+        };
+        let rect2 = Rect {
+            position: Point { x: 0, y: 10 },
+            width: 10,
+            height: 10,
+        };
+
+        assert!(rect2.intersects(&rect1));
+    }
+
+    #[test]
+    fn two_rects_that_intersect_on_the_bottom() {
+        let rect1 = Rect {
+            position: Point { x: 10, y: 10 },
+            width: 10,
+            height: 10,
+        };
+        let rect2 = Rect {
+            position: Point { x: 10, y: 0 },
+            width: 10,
+            height: 10,
+        };
+
+        assert!(rect2.intersects(&rect1));
+    }
+
+    #[test]
+    fn one_rect_fully_below_another() {
+        let rect1 = Rect {
+            position: Point { x: 10, y: 10 },
+            width: 100,
+            height: 10,
+        };
+        let rect2 = Rect {
+            position: Point { x: 10, y: 20 },
+            width: 100,
+            height: 10,
+        };
+
+        assert!(!rect2.intersects(&rect1));
+    }
+
+    #[test]
+    fn one_rect_fully_left_of_another() {
+        let rect1 = Rect {
+            position: Point { x: 20, y: 10 },
+            width: 10,
+            height: 10,
+        };
+        let rect2 = Rect {
+            position: Point { x: 0, y: 10 },
+            width: 10,
+            height: 10,
+        };
+
+        assert!(!rect2.intersects(&rect1));
     }
 }
