@@ -6,7 +6,7 @@ use super::{
         stone_on_platform,
     },
 };
-use crate::engine::{image::Image, sprite_sheet::SpriteSheet};
+use crate::engine::{image::Image, renderer::Renderer, sprite_sheet::SpriteSheet};
 use rand::{thread_rng, Rng};
 use std::rc::Rc;
 use web_sys::HtmlImageElement;
@@ -23,6 +23,12 @@ pub struct Walk {
 }
 
 impl Walk {
+    pub fn draw(&self, renderer: &Renderer) {
+        self.backgrounds.iter().for_each(|b| b.draw(renderer));
+        self.boy.draw(renderer);
+        self.obstacles.iter().for_each(|o| o.draw(renderer));
+    }
+
     pub fn generate_next_segment(&mut self) {
         let obstacle_sheet = self.obstacle_sheet.clone();
         let offset_x = self.timeline + OBSTACLE_BUFFER;

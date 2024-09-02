@@ -1,4 +1,5 @@
 mod barrier;
+pub mod game_states;
 mod obstacle;
 mod platform;
 mod red_hat_boy;
@@ -20,6 +21,7 @@ use crate::{
 };
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
+use game_states::{WalkTheDogState, WalkTheDogStateMachine};
 use red_hat_boy::{context::Sfx, RedHatBoy};
 use segments::stone_and_platform;
 use std::rc::Rc;
@@ -28,14 +30,13 @@ use walk::{rightmost, Walk};
 const HEIGHT: i16 = 600;
 const TIMELINE_MINIMUM: i16 = 1000;
 
-pub enum WalkTheDog {
-    Loaded(Walk),
-    Loading,
+pub struct WalkTheDog {
+    machine: Option<WalkTheDogStateMachine>,
 }
 
 impl WalkTheDog {
     pub fn new() -> Self {
-        WalkTheDog::Loading
+        WalkTheDog { machine: None }
     }
 }
 
@@ -44,18 +45,14 @@ impl Game for WalkTheDog {
     fn draw(&self, renderer: &Renderer) {
         renderer.clear(&Rect::new_from_x_y(0, 0, 600, HEIGHT));
 
-        if let WalkTheDog::Loaded(walk) = self {
-            walk.backgrounds.iter().for_each(|b| b.draw(renderer));
-            walk.boy.draw(renderer);
-            walk.obstacles.iter().for_each(|obstacle| {
-                obstacle.draw(renderer);
-            });
+        if let Some(machine) = &self.machine {
+            machine.draw(renderer);
         }
     }
 
     async fn initialize(&self) -> Result<Box<dyn Game>> {
-        match self {
-            WalkTheDog::Loading => {
+        match self.machine {
+            None => {
                 let audio = Audio::new()?;
                 let sfx = Sfx::new(
                     audio.load_sound("SFX_Jump_23.mp3").await?,
@@ -89,66 +86,77 @@ impl Game for WalkTheDog {
 
                 let background_width = background.width() as i16;
 
-                Ok(Box::new(WalkTheDog::Loaded(Walk {
-                    backgrounds: [
-                        Image::new(background.clone(), Point { x: 0, y: 0 }),
-                        Image::new(
-                            background,
-                            Point {
-                                x: background_width,
-                                y: 0,
-                            },
-                        ),
-                    ],
-                    boy: rhb,
-                    obstacle_sheet: sprite_sheet,
-                    obstacles: starting_obstacles,
-                    stone,
-                    timeline,
-                })))
+                let machine = WalkTheDogStateMachine::Ready(WalkTheDogState {
+                    walk: Walk {
+                        backgrounds: [
+                            Image::new(background.clone(), Point { x: 0, y: 0 }),
+                            Image::new(
+                                background,
+                                Point {
+                                    x: background_width,
+                                    y: 0,
+                                },
+                            ),
+                        ],
+                        boy: rhb,
+                        obstacle_sheet: sprite_sheet,
+                        obstacles: starting_obstacles,
+                        stone,
+                        timeline,
+                    },
+                    _state: game_states::ready::Ready,
+                });
+
+                Ok(Box::new(WalkTheDog {
+                    machine: Some(machine),
+                }))
             }
 
-            WalkTheDog::Loaded(_) => Err(anyhow!("Error: Game is already initialized!")),
+            Some(_) => Err(anyhow!("Error: Game is already initialized!")),
         }
     }
 
     fn update(&mut self, keystate: &KeyState) {
-        if let WalkTheDog::Loaded(walk) = self {
-            if keystate.is_pressed("ArrowRight") {
-                walk.boy.run_right();
-            }
-            if keystate.is_pressed("ArrowDown") {
-                walk.boy.slide();
-            }
-            if keystate.is_pressed("Space") {
-                walk.boy.jump();
-            }
+        if let Some(machine) = self.machine.take() {
+            self.machine.replace(machine.update(keystate));
 
-            walk.boy.update();
-            let velocity = walk.velocity();
+            // if keystate.is_pressed("ArrowRight") {
+            //     walk.boy.run_right();
+            // }
+            // if keystate.is_pressed("ArrowDown") {
+            //     walk.boy.slide();
+            // }
+            // if keystate.is_pressed("Space") {
+            //     walk.boy.jump();
+            // }
 
-            let [first_background, second_background] = &mut walk.backgrounds;
-            first_background.move_horizontally(velocity);
-            second_background.move_horizontally(velocity);
-            if first_background.right() < 0 {
-                first_background.set_x(second_background.right());
-            }
-            if second_background.right() < 0 {
-                second_background.set_x(first_background.right());
-            }
+            // walk.boy.update();
+            // let velocity = walk.velocity();
 
-            walk.obstacles.retain(|obstacle| obstacle.right() > 0);
+            // let [first_background, second_background] = &mut walk.backgrounds;
+            // first_background.move_horizontally(velocity);
+            // second_background.move_horizontally(velocity);
+            // if first_background.right() < 0 {
+            //     first_background.set_x(second_background.right());
+            // }
+            // if second_background.right() < 0 {
+            //     second_background.set_x(first_background.right());
+            // }
 
-            walk.obstacles.iter_mut().for_each(|obstacle| {
-                obstacle.move_horizontally(velocity);
-                obstacle.check_intersection(&mut walk.boy)
-            });
+            // walk.obstacles.retain(|obstacle| obstacle.right() > 0);
 
-            if walk.timeline < TIMELINE_MINIMUM {
-                walk.generate_next_segment();
-            } else {
-                walk.timeline += velocity;
-            }
+            // walk.obstacles.iter_mut().for_each(|obstacle| {
+            //     obstacle.move_horizontally(velocity);
+            //     obstacle.check_intersection(&mut walk.boy)
+            // });
+
+            // if walk.timeline < TIMELINE_MINIMUM {
+            //     walk.generate_next_segment();
+            // } else {
+            //     walk.timeline += velocity;
+            // }
         }
+
+        assert!(self.machine.is_some());
     }
 }
