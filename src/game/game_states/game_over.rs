@@ -44,3 +44,80 @@ impl From<GameOverEndState> for WalkTheDogStateMachine {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        engine::{
+            audio::{Audio, Sound},
+            image::Image,
+            rect::Point,
+            sheet::Sheet,
+            sprite_sheet::SpriteSheet,
+        },
+        game::red_hat_boy::{context::Sfx, RedHatBoy},
+    };
+    use futures::channel::mpsc::unbounded;
+    use std::{collections::HashMap, rc::Rc};
+    use wasm_bindgen_test::wasm_bindgen_test;
+    use web_sys::{AudioBuffer, AudioBufferOptions, HtmlImageElement};
+    wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
+
+    #[wasm_bindgen_test]
+    fn test_transition_from_game_over_to_new_game() {
+        let (_, receiver) = unbounded();
+        let image = HtmlImageElement::new().unwrap();
+        let audio = Audio::new().unwrap();
+        let options = AudioBufferOptions::new(1, 3000.0);
+        let sound = Sound {
+            buffer: AudioBuffer::new(&options).unwrap(),
+        };
+        let sfx = Sfx::new(sound.clone(), sound.clone(), sound.clone());
+        let rhb = RedHatBoy::new(
+            audio,
+            sfx,
+            Sheet {
+                frames: HashMap::new(),
+            },
+            image.clone(),
+        );
+        let sprite_sheet = SpriteSheet::new(
+            Sheet {
+                frames: HashMap::new(),
+            },
+            image.clone(),
+        );
+        let walk = Walk {
+            backgrounds: [
+                Image::new(image.clone(), Point { x: 0, y: 0 }),
+                Image::new(image.clone(), Point { x: 0, y: 0 }),
+            ],
+            boy: rhb,
+            obstacle_sheet: Rc::new(sprite_sheet),
+            obstacles: vec![],
+            stone: image.clone(),
+            timeline: 9,
+        };
+
+        let document = browser::document().unwrap();
+        document
+            .body()
+            .unwrap()
+            .insert_adjacent_html("afterbegin", "<div id='ui'></div>")
+            .unwrap();
+        browser::draw_ui("<p>This is the UI</p>").unwrap();
+
+        let state = WalkTheDogState {
+            walk,
+            _state: GameOver {
+                new_game_event: receiver,
+            },
+        };
+
+        state.new_game();
+
+        let ui = browser::find_html_element_by_id("ui").unwrap();
+        assert_eq!(ui.child_element_count(), 0);
+    }
+}
