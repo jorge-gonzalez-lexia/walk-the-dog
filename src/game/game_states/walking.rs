@@ -53,7 +53,7 @@ impl WalkTheDogState<Walking> {
     fn end_game(self) -> WalkTheDogState<GameOver> {
         let new_game_event = browser::draw_ui("<button id='new_game'>New Game</button>")
             .and_then(|_| browser::find_html_element_by_id("new_game"))
-            .map(|btn| engine::add_click_handler(btn))
+            .map(engine::add_click_handler)
             .unwrap();
 
         WalkTheDogState {

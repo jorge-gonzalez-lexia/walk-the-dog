@@ -43,7 +43,7 @@ fn connect_with_audio_node(
     destination: &AudioDestinationNode,
 ) -> Result<AudioNode> {
     buffer_source
-        .connect_with_audio_node(&destination)
+        .connect_with_audio_node(destination)
         .map_err(|err| anyhow!("Error connecting audio source to destination {:#?}", err))
 }
 
