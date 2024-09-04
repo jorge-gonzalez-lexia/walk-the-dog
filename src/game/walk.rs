@@ -74,7 +74,7 @@ impl Walk {
     }
 }
 
-pub fn rightmost(obstacle_list: &Vec<Box<dyn Obstacle>>) -> i16 {
+pub fn rightmost(obstacle_list: &[Box<dyn Obstacle>]) -> i16 {
     obstacle_list
         .iter()
         .map(|o| o.right())

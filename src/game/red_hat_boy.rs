@@ -55,7 +55,7 @@ impl RedHatBoy {
         let sprite = self.current_sprite().expect("Sprite sheet cell not found");
         renderer.draw_image(
             &self.image,
-            &&Rect::new_from_x_y(
+            &Rect::new_from_x_y(
                 sprite.frame.x,
                 sprite.frame.y,
                 sprite.frame.w,

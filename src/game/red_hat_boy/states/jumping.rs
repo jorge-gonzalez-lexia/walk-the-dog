@@ -37,7 +37,7 @@ impl RedHatBoyState<Jumping> {
         self.context = self.context.update(JUMPING_FRAMES);
 
         if self.context.position.y >= context::FLOOR {
-            JumpingEndState::Landing(self.land_on(game::HEIGHT.into()))
+            JumpingEndState::Landing(self.land_on(game::HEIGHT))
         } else {
             JumpingEndState::Jumping(self)
         }
