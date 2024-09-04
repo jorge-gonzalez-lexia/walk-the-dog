@@ -1,5 +1,5 @@
 use crate::browser;
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use futures::channel::mpsc::{unbounded, UnboundedReceiver};
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 use wasm_bindgen::JsCast;
@@ -14,17 +14,23 @@ pub fn prepare_input() -> Result<UnboundedReceiver<KeyPress>> {
     let keydown_sender = Rc::new(RefCell::new(keydown_sender));
     let keyup_sender = Rc::clone(&keydown_sender);
     let onkeydown = browser::closure_wrap(Box::new(move |keycode: web_sys::KeyboardEvent| {
-        keydown_sender
+        if let Err(err) = keydown_sender
             .borrow_mut()
-            .start_send(KeyPress::KeyDown(keycode));
+            .start_send(KeyPress::KeyDown(keycode))
+        {
+            error!("Error sending key down event {:#?}", err);
+        }
     }) as Box<dyn FnMut(web_sys::KeyboardEvent)>);
     browser::window()?.set_onkeydown(Some(onkeydown.as_ref().unchecked_ref()));
     onkeydown.forget();
 
     let onkeyup = browser::closure_wrap(Box::new(move |keycode: web_sys::KeyboardEvent| {
-        keyup_sender
+        if let Err(err) = keyup_sender
             .borrow_mut()
-            .start_send(KeyPress::KeyUp(keycode));
+            .start_send(KeyPress::KeyUp(keycode))
+        {
+            error!("Error sending key up event {:#?}", err);
+        }
     }) as Box<dyn FnMut(web_sys::KeyboardEvent)>);
     browser::window()?.set_onkeyup(Some(onkeyup.as_ref().unchecked_ref()));
     onkeyup.forget();

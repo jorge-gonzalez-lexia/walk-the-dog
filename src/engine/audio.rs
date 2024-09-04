@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use web_sys::{AudioBuffer, AudioContext};
 
 use crate::{

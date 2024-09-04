@@ -54,13 +54,15 @@ pub async fn load_image(source: &str) -> Result<HtmlImageElement> {
 
     let success_callback = browser::closure_once(move || {
         if let Some(success_tx) = success_tx.lock().ok().and_then(|mut opt| opt.take()) {
-            success_tx.send(Ok(()));
+            success_tx.send(Ok(())).unwrap();
         }
     });
 
     let error_callback: Closure<dyn FnMut(JsValue)> = browser::closure_once(move |err| {
         if let Some(error_tx) = error_tx.lock().ok().and_then(|mut opt| opt.take()) {
-            error_tx.send(Err(anyhow!("Error Loading Image: {:#?}", err)));
+            error_tx
+                .send(Err(anyhow!("Error Loading Image: {:#?}", err)))
+                .unwrap();
         }
     });
 

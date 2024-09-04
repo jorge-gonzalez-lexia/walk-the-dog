@@ -15,6 +15,12 @@ macro_rules!log {
   }
 }
 
+macro_rules!error {
+  ($($t:tt)*) => {
+    web_sys::console::error_1(&format!($($t)*).into());
+  }
+}
+
 pub fn canvas() -> Result<HtmlCanvasElement> {
     document()?
         .get_element_by_id("canvas")
@@ -163,4 +169,18 @@ fn find_ui() -> Result<Element> {
         doc.get_element_by_id("ui")
             .ok_or_else(|| anyhow!("UI element not found"))
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use wasm_bindgen_test::wasm_bindgen_test;
+    wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
+
+    #[wasm_bindgen_test]
+    async fn test_error_loading_json() {
+        let json = fetch_json("not_there.json").await;
+
+        assert!(json.is_err());
+    }
 }

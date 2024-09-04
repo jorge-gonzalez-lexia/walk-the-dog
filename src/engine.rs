@@ -65,7 +65,7 @@ impl GameLoop {
 
             game.draw(&renderer);
 
-            browser::request_animation_frame(f.borrow().as_ref().unwrap());
+            browser::request_animation_frame(f.borrow().as_ref().unwrap()).unwrap();
         }));
 
         browser::request_animation_frame(
@@ -81,7 +81,9 @@ impl GameLoop {
 pub fn add_click_handler(elem: HtmlElement) -> UnboundedReceiver<()> {
     let (mut click_sender, click_receiver) = unbounded();
     let on_click = browser::closure_wrap(Box::new(move || {
-        click_sender.start_send(());
+        if let Err(err) = click_sender.start_send(()) {
+            error!("Error sending click event ${:#?}", err);
+        }
     }) as Box<dyn FnMut()>);
     elem.set_onclick(Some(on_click.as_ref().unchecked_ref()));
     on_click.forget();
