@@ -1,4 +1,5 @@
 use super::rect::{Point, Rect};
+use anyhow::{anyhow, Result};
 use wasm_bindgen::JsValue;
 use web_sys::{CanvasRenderingContext2d, HtmlImageElement};
 
@@ -56,5 +57,14 @@ impl Renderer {
             bounding_box.height.into(),
         );
         self.context.stroke();
+    }
+
+    pub fn draw_text(&self, text: &str, location: &Point) -> Result<()> {
+        self.context.set_font("16[t serif");
+        self.context
+            .fill_text(text, location.x.into(), location.y.into())
+            .map_err(|err| anyhow!("Error filling text {:#?}", err))?;
+
+        Ok(())
     }
 }
