@@ -11,7 +11,7 @@ jobs:
           target: wasm-32-unknown-unknown
           override: true
           components: clippy
-      - uses: actions-rs/install@v1.0
+      - uses: actions-rs/install@v0.1
         with:
           crate: wasm-pack
           version: 0.9.1
