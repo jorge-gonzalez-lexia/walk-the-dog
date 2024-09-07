@@ -49,7 +49,6 @@ impl Game for WalkTheDog {
         }
     }
 
-    #[allow(deprecated)]
     async fn initialize(&self) -> Result<Box<dyn Game>> {
         match self.machine {
             None => {
