@@ -58,7 +58,10 @@ mod tests {
             sheet::Sheet,
             sprite_sheet::SpriteSheet,
         },
-        game::red_hat_boy::{context::Sfx, RedHatBoy},
+        game::{
+            dog::Dog,
+            red_hat_boy::{context::Sfx, RedHatBoy},
+        },
     };
     use futures::channel::mpsc::unbounded;
     use std::{collections::HashMap, rc::Rc};
@@ -76,9 +79,15 @@ mod tests {
             buffer: AudioBuffer::new(&options).unwrap(),
         };
         let sfx = Sfx::new(sound.clone(), sound.clone(), sound.clone());
-        let rhb = RedHatBoy::new(
+        let boy = RedHatBoy::new(
             audio,
             sfx,
+            Sheet {
+                frames: HashMap::new(),
+            },
+            image.clone(),
+        );
+        let dog = Dog::new(
             Sheet {
                 frames: HashMap::new(),
             },
@@ -95,7 +104,8 @@ mod tests {
                 Image::new(image.clone(), Point { x: 0, y: 0 }),
                 Image::new(image.clone(), Point { x: 0, y: 0 }),
             ],
-            boy: rhb,
+            boy,
+            dog,
             obstacle_sheet: Rc::new(sprite_sheet),
             obstacles: vec![],
             stone: image.clone(),
