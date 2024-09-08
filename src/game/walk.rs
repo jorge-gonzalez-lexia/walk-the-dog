@@ -44,6 +44,7 @@ impl Walk {
     pub fn draw(&self, renderer: &Renderer) {
         self.backgrounds.iter().for_each(|b| b.draw(renderer));
         self.boy.draw(renderer);
+        self.dog.draw(renderer);
         self.obstacles.iter().for_each(|o| o.draw(renderer));
     }
 

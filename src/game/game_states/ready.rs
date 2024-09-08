@@ -13,6 +13,7 @@ impl WalkTheDogState<Ready> {
 
     pub fn update(mut self, keystate: &KeyState) -> ReadyEndState {
         self.walk.boy.update();
+        self.walk.dog.update();
 
         if keystate.is_pressed("ArrowRight") {
             ReadyEndState::Complete(self.start_running())

@@ -52,7 +52,7 @@ impl RedHatBoy {
     }
 
     pub fn draw(&self, renderer: &Renderer) {
-        let sprite = self.current_sprite().expect("Sprite sheet cell not found");
+        let sprite = self.current_sprite();
         renderer.draw_image(
             &self.image,
             &Rect::new_from_x_y(
@@ -106,12 +106,16 @@ impl RedHatBoy {
         self.state_machine.context().velocity.x
     }
 
-    fn current_sprite(&self) -> Option<&Cell> {
-        self.sprite_sheet.frames.get(&self.frame_name())
+    fn current_sprite(&self) -> &Cell {
+        let frame_name = self.frame_name();
+        self.sprite_sheet
+            .frames
+            .get(&frame_name)
+            .unwrap_or_else(|| panic!("Frame '{frame_name}' not found"))
     }
 
     fn destination_box(&self) -> Rect {
-        let sprite = self.current_sprite().expect("Cell not found");
+        let sprite = self.current_sprite();
         Rect::new_from_x_y(
             self.state_machine.context().position.x + sprite.sprite_source_size.x,
             self.state_machine.context().position.y + sprite.sprite_source_size.y,
