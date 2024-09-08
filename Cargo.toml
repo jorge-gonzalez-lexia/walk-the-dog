@@ -24,6 +24,7 @@ getrandom = { version = "0.2.3", features = ["js"] }
 js-sys = "0.3.55"
 rand = "0.8.4"
 serde = { version = "1.0.131", features = ["derive"] }
+serde-wasm-bindgen = "0.4"
 # The `wasm-bindgen` crate provides the bare minimum functionality needed
 # to interact with JavaScript.
 wasm-bindgen = { version = "0.2.78", features = ["serde-serialize"] }

@@ -1,4 +1,5 @@
 mod barrier;
+mod dog;
 pub mod game_states;
 mod obstacle;
 mod platform;
@@ -59,24 +60,21 @@ impl Game for WalkTheDog {
                     audio.load_sound("slide.wav").await?,
                 );
                 let background_music = audio.load_sound("background_song.mp3").await?;
-                let json = browser::fetch_json("rhb.json").await?;
 
                 audio.play_looping_sound(&background_music)?;
 
                 let rhb = RedHatBoy::new(
                     audio,
                     sfx,
-                    // TODO: into_serde is deprecated (presumably after book was written)
-                    json.into_serde::<Sheet>()?,
+                    Sheet::load("rhb.json").await?,
                     load_image("rhb.png").await?,
                 );
 
                 let background = load_image("BG.png").await?;
                 let stone = load_image("Stone.png").await?;
 
-                let tiles = browser::fetch_json("tiles.json").await?;
                 let sprite_sheet = Rc::new(SpriteSheet::new(
-                    tiles.into_serde::<Sheet>()?,
+                    Sheet::load("tiles.json").await?,
                     load_image("tiles.png").await?,
                 ));
 
