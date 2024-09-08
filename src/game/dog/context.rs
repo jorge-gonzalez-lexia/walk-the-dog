@@ -2,7 +2,7 @@ use crate::engine::rect::Point;
 
 #[derive(Clone)]
 pub struct DogContext {
-    frame: u8,
+    pub frame: u8,
     pub position: Point,
 }
 
@@ -18,7 +18,9 @@ impl DogContext {
             self.frame = 0
         }
 
-        self.position.x += 4; // TODO velocity
+        if self.position.x < 1000 {
+            self.position.x += 4; // TODO velocity
+        }
 
         self
     }

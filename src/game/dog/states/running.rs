@@ -23,7 +23,7 @@ impl DogState<Running> {
     }
 
     pub fn update(mut self) -> Self {
-        self.context = self.context.update(5);
+        self.context = self.context.update(60);
 
         self
     }

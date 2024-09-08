@@ -73,6 +73,10 @@ impl Dog {
     }
 
     fn frame_name(&self) -> String {
-        format!("rr_000.png")
+        let animation_frame = self.state_machine.context().frame / 3;
+        let padding = if animation_frame < 10 { "0" } else { "" };
+
+        // TODO how to zero pad
+        format!("rr_0{padding}{animation_frame}.png")
     }
 }
