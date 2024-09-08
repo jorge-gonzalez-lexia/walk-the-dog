@@ -1,4 +1,5 @@
 use super::{
+    dog::Dog,
     obstacle::Obstacle,
     red_hat_boy::RedHatBoy,
     segments::{
@@ -16,6 +17,7 @@ const OBSTACLE_BUFFER: i16 = 20;
 pub struct Walk {
     pub backgrounds: [Image; 2],
     pub boy: RedHatBoy,
+    pub dog: Dog,
     pub obstacle_sheet: Rc<SpriteSheet>,
     pub obstacles: Vec<Box<dyn Obstacle>>,
     pub stone: HtmlImageElement,
@@ -31,6 +33,7 @@ impl Walk {
         Walk {
             backgrounds: walk.backgrounds,
             boy: RedHatBoy::reset(walk.boy),
+            dog: Dog::reset(walk.dog),
             obstacle_sheet: walk.obstacle_sheet,
             obstacles: starting_obstacles,
             stone: walk.stone,

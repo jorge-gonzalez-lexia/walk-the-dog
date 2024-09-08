@@ -22,6 +22,7 @@ use crate::{
 };
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
+use dog::Dog;
 use game_states::WalkTheDogStateMachine;
 use red_hat_boy::{context::Sfx, RedHatBoy};
 use segments::stone_and_platform;
@@ -63,12 +64,13 @@ impl Game for WalkTheDog {
 
                 audio.play_looping_sound(&background_music)?;
 
-                let rhb = RedHatBoy::new(
+                let boy = RedHatBoy::new(
                     audio,
                     sfx,
                     Sheet::load("rhb.json").await?,
                     load_image("rhb.png").await?,
                 );
+                let dog = Dog::new(Sheet::load("dog.json").await?, load_image("dog.png").await?);
 
                 let background = load_image("BG.png").await?;
                 let stone = load_image("Stone.png").await?;
@@ -94,7 +96,8 @@ impl Game for WalkTheDog {
                             },
                         ),
                     ],
-                    boy: rhb,
+                    boy,
+                    dog,
                     obstacle_sheet: sprite_sheet,
                     obstacles: starting_obstacles,
                     stone,
