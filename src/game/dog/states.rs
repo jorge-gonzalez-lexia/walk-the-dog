@@ -2,6 +2,7 @@ pub mod running;
 
 use super::context::DogContext;
 
+#[derive(Clone)]
 pub struct DogState<S> {
     context: DogContext,
     _state: S,

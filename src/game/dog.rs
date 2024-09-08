@@ -51,7 +51,7 @@ impl Dog {
     }
 
     pub fn update(&mut self) {
-        // log!("Dog Update");
+        self.state_machine = self.state_machine.clone().update();
     }
 
     fn current_sprite(&self) -> &Cell {
