@@ -1,13 +1,20 @@
+mod context;
+mod state_machine;
+mod states;
+
 use crate::engine::{
     rect::Rect,
     renderer::Renderer,
     sheet::{Cell, Sheet},
 };
+use state_machine::DogStateMachine;
+use states::DogState;
 use web_sys::HtmlImageElement;
 
 pub struct Dog {
     image: HtmlImageElement,
     sprite_sheet: Sheet,
+    state_machine: DogStateMachine,
 }
 
 impl Dog {
@@ -15,6 +22,7 @@ impl Dog {
         Dog {
             image,
             sprite_sheet,
+            state_machine: DogStateMachine::Running(DogState::new()),
         }
     }
 
@@ -22,6 +30,7 @@ impl Dog {
         Dog::new(dog.sprite_sheet, dog.image)
     }
 
+    // TODO likely not needed and can just use destination box since dog will never hit an obstacle
     pub fn bounding_box(&self) -> Rect {
         self.destination_box()
     }
@@ -56,8 +65,8 @@ impl Dog {
     fn destination_box(&self) -> Rect {
         let sprite = self.current_sprite();
         Rect::new_from_x_y(
-            sprite.sprite_source_size.x,
-            sprite.sprite_source_size.y,
+            self.state_machine.context().position.x + sprite.sprite_source_size.x,
+            self.state_machine.context().position.y + sprite.sprite_source_size.y,
             sprite.frame.w,
             sprite.frame.h,
         )

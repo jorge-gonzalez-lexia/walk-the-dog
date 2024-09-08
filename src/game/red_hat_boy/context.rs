@@ -6,8 +6,7 @@ use crate::{
     game,
 };
 
-pub const FLOOR: i16 = 479;
-const PLAYER_HEIGHT: i16 = game::HEIGHT - FLOOR;
+const PLAYER_HEIGHT: i16 = game::HEIGHT - game::FLOOR;
 
 const GRAVITY: i16 = 1;
 const RUNNING_SPEED: i16 = 4;
@@ -104,8 +103,8 @@ impl RedHatBoyContext {
 
         self.position.y += self.velocity.y;
 
-        if self.position.y > FLOOR {
-            self.position.y = FLOOR;
+        if self.position.y > game::FLOOR {
+            self.position.y = game::FLOOR;
         }
 
         self

@@ -36,7 +36,7 @@ impl RedHatBoyState<Jumping> {
     pub fn update(mut self) -> JumpingEndState {
         self.context = self.context.update(JUMPING_FRAMES);
 
-        if self.context.position.y >= context::FLOOR {
+        if self.context.position.y >= game::FLOOR {
             JumpingEndState::Landing(self.land_on(game::HEIGHT))
         } else {
             JumpingEndState::Jumping(self)

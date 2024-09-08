@@ -7,18 +7,15 @@ mod red_hat_boy;
 mod segments;
 mod walk;
 
-use crate::{
-    browser,
-    engine::{
-        audio::Audio,
-        image::{load_image, Image},
-        input::KeyState,
-        rect::{Point, Rect},
-        renderer::Renderer,
-        sheet::Sheet,
-        sprite_sheet::SpriteSheet,
-        Game,
-    },
+use crate::engine::{
+    audio::Audio,
+    image::{load_image, Image},
+    input::KeyState,
+    rect::{Point, Rect},
+    renderer::Renderer,
+    sheet::Sheet,
+    sprite_sheet::SpriteSheet,
+    Game,
 };
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
@@ -28,6 +25,8 @@ use red_hat_boy::{context::Sfx, RedHatBoy};
 use segments::stone_and_platform;
 use std::rc::Rc;
 use walk::{rightmost, Walk};
+
+pub const FLOOR: i16 = 479;
 
 const HEIGHT: i16 = 600;
 

@@ -1,10 +1,13 @@
 use super::{running::Running, RedHatBoyState};
 use crate::{
     engine::{audio::Audio, rect::Point},
-    game::red_hat_boy::context::{self, RedHatBoyContext},
+    game::{
+        self,
+        red_hat_boy::context::{self, RedHatBoyContext},
+    },
 };
 
-const STARTING_POINT: i16 = -20;
+const STARTING_POINT: i16 = -60;
 
 #[derive(Clone, Copy)]
 pub struct Idle;
@@ -20,12 +23,12 @@ impl RedHatBoyState<Idle> {
                 0,
                 Point {
                     x: STARTING_POINT,
-                    y: context::FLOOR,
+                    y: game::FLOOR,
                 },
                 sfx,
                 Point { x: 0, y: 0 },
             ),
-            _state: Idle {},
+            _state: Idle,
         }
     }
 
