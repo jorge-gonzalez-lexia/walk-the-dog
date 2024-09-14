@@ -6,6 +6,7 @@ use crate::{
         dog::{
             context::{DogContext, RUNNING_FRAMES},
             state_machine::DogStateMachine,
+            states::returning_to_flee::ReturningToFlee,
         },
     },
 };
@@ -34,7 +35,7 @@ impl DogState<Running> {
         if self.context.position.x > 550 {
             self.context.velocity.x *= 2; // screen starts scrolling left
 
-            FleeingEndState::Returning(self.return_then_flee())
+            FleeingEndState::ReturningToFlee(self.return_to_flee())
         } else {
             log!("Dog Running->Fleeing");
             self.context.velocity.x = 0; // screen starts scrolling left
@@ -56,12 +57,12 @@ impl DogState<Running> {
         }
     }
 
-    fn return_then_flee(self) -> DogState<Returning> {
-        log!("Dog Running->Returning::then_flee");
+    fn return_to_flee(self) -> DogState<ReturningToFlee> {
+        log!("Dog Running->ReturningToFlee");
 
         DogState {
             context: self.context.toggle_direction(),
-            _state: Returning { then_flee: true },
+            _state: ReturningToFlee,
         }
     }
 
@@ -70,21 +71,21 @@ impl DogState<Running> {
 
         DogState {
             context: self.context.toggle_direction(),
-            _state: Returning { then_flee: false },
+            _state: Returning,
         }
     }
 }
 
 pub enum FleeingEndState {
     Fleeing(DogState<Fleeing>),
-    Returning(DogState<Returning>),
+    ReturningToFlee(DogState<ReturningToFlee>),
 }
 
 impl From<FleeingEndState> for DogStateMachine {
     fn from(end_state: FleeingEndState) -> Self {
         match end_state {
             FleeingEndState::Fleeing(fleeing) => fleeing.into(),
-            FleeingEndState::Returning(running) => running.into(),
+            FleeingEndState::ReturningToFlee(returning) => returning.into(),
         }
     }
 }
