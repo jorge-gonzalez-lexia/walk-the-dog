@@ -7,7 +7,7 @@ use crate::engine::{
     renderer::Renderer,
     sheet::{Cell, Sheet},
 };
-use state_machine::DogStateMachine;
+use state_machine::{DogStateMachine, Event};
 use states::DogState;
 use web_sys::HtmlImageElement;
 
@@ -24,6 +24,10 @@ impl Dog {
             sprite_sheet,
             state_machine: DogStateMachine::Running(DogState::new()),
         }
+    }
+
+    pub fn flee(&mut self) {
+        self.state_machine = self.state_machine.clone().transition(Event::Flee);
     }
 
     pub fn reset(dog: Self) -> Self {

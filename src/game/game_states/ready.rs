@@ -24,6 +24,7 @@ impl WalkTheDogState<Ready> {
 
     fn run_right(&mut self) {
         self.walk.boy.run_right();
+        self.walk.dog.flee();
     }
 
     fn start_running(mut self) -> WalkTheDogState<Walking> {

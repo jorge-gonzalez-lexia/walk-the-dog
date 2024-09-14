@@ -17,6 +17,7 @@ impl WalkTheDogState<Walking> {
             self.walk.boy.slide();
         }
 
+        self.walk.dog.update();
         self.walk.boy.update();
         let walking_speed = self.walk.velocity();
 
