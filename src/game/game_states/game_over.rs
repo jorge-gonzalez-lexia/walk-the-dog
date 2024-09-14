@@ -17,6 +17,7 @@ impl WalkTheDogState<GameOver> {
         if self._state.new_game_pressed() {
             GameOverEndState::Complete(self.new_game())
         } else {
+            self.walk.dog.update();
             GameOverEndState::Continue(self)
         }
     }

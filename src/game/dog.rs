@@ -34,6 +34,10 @@ impl Dog {
         Dog::new(dog.sprite_sheet, dog.image)
     }
 
+    pub fn worry(&mut self) {
+        self.state_machine = self.state_machine.clone().transition(Event::Worry);
+    }
+
     // TODO likely not needed and can just use destination box since dog will never hit an obstacle
     pub fn bounding_box(&self) -> Rect {
         self.destination_box()

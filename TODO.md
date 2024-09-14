@@ -12,3 +12,7 @@ Game Walking
 - [x] Returning, Flee -> if off screen, keep returning
 - [x] Returning, Update -> if on screen and in flee mode, Flee
 - [x] Returning, Update -> if off screen, keep returning
+
+Game Over
+
+- [x] Running and Returning

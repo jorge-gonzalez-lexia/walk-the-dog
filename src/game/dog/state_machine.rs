@@ -7,6 +7,7 @@ use super::{
 pub enum Event {
     Flee,
     Update,
+    Worry,
 }
 
 #[derive(Clone)]
@@ -32,6 +33,7 @@ impl DogStateMachine {
 
         match (self.clone(), event) {
             (DogStateMachine::Fleeing(state), Event::Update) => state.update().into(),
+            (DogStateMachine::Fleeing(state), Event::Worry) => state.worry().into(),
 
             (DogStateMachine::Returning(state), Event::Flee) => state.flee().into(),
             (DogStateMachine::Returning(state), Event::Update) => state.update().into(),

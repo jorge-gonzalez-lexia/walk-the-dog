@@ -45,6 +45,7 @@ impl WalkTheDogState<Walking> {
         }
 
         if self.walk.knocked_out() {
+            self.walk.dog.worry();
             WalkingEndState::Complete(self.end_game())
         } else {
             WalkingEndState::Continue(self)
