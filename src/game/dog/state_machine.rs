@@ -2,7 +2,7 @@ use super::{
     context::DogContext,
     states::{
         fleeing::Fleeing, returning::Returning, returning_to_flee::ReturningToFlee,
-        running::Running, DogState,
+        returning_worried::ReturningWorried, running::Running, DogState,
     },
 };
 
@@ -18,6 +18,7 @@ pub enum DogStateMachine {
     Fleeing(DogState<Fleeing>),
     Returning(DogState<Returning>),
     ReturningToFlee(DogState<ReturningToFlee>),
+    ReturningWorried(DogState<ReturningWorried>),
     Running(DogState<Running>),
 }
 
@@ -27,6 +28,7 @@ impl DogStateMachine {
             DogStateMachine::Fleeing(state) => state.context(),
             DogStateMachine::Returning(state) => state.context(),
             DogStateMachine::ReturningToFlee(state) => state.context(),
+            DogStateMachine::ReturningWorried(state) => state.context(),
             DogStateMachine::Running(state) => state.context(),
         }
     }
@@ -44,6 +46,7 @@ impl DogStateMachine {
             (DogStateMachine::Returning(state), Event::Update) => state.update().into(),
 
             (DogStateMachine::ReturningToFlee(state), Event::Update) => state.update().into(),
+            (DogStateMachine::ReturningToFlee(state), Event::Worry) => state.worry().into(),
 
             (DogStateMachine::Running(state), Event::Flee) => state.flee().into(),
             (DogStateMachine::Running(state), Event::Update) => state.update().into(),
@@ -72,6 +75,12 @@ impl From<DogState<Returning>> for DogStateMachine {
 impl From<DogState<ReturningToFlee>> for DogStateMachine {
     fn from(state: DogState<ReturningToFlee>) -> Self {
         DogStateMachine::ReturningToFlee(state)
+    }
+}
+
+impl From<DogState<ReturningWorried>> for DogStateMachine {
+    fn from(state: DogState<ReturningWorried>) -> Self {
+        DogStateMachine::ReturningWorried(state)
     }
 }
 

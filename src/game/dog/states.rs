@@ -1,6 +1,7 @@
 pub mod fleeing;
 pub mod returning;
 pub mod returning_to_flee;
+pub mod returning_worried;
 pub mod running;
 
 use super::context::DogContext;

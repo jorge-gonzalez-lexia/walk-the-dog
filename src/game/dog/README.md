@@ -35,6 +35,7 @@ Game Event: On arrow right, `WalkTheDogState(Ready)` calls:
 ### DogState(ReturningToFlee)
 
 - On `Dog Event::Update` and dog has approached too close to boy => Transition to `DogState(Fleeing)`
+- On `Dog Event::Worry` => Transition to `DogState(ReturningWorried)`
 
 ### DogState(Fleeing)
 
@@ -45,4 +46,4 @@ Game Event: On arrow right, `WalkTheDogState(Ready)` calls:
 ## GameState(GameOver)
 
 - `BoyState(KnockedOut)`
-- `DogState(Running | Returning)`. Dog loops between running away and returning
+- `DogState(Running | ReturningWorried)`. Dog loops between running away and returning

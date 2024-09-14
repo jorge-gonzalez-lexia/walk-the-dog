@@ -1,4 +1,4 @@
-use super::{fleeing::Fleeing, DogState};
+use super::{fleeing::Fleeing, returning_worried::ReturningWorried, DogState};
 use crate::game::dog::{context::RUNNING_FRAMES, state_machine::DogStateMachine};
 
 #[derive(Clone)]
@@ -15,7 +15,16 @@ impl DogState<ReturningToFlee> {
         }
     }
 
-    pub fn flee(mut self) -> DogState<Fleeing> {
+    pub fn worry(self) -> DogState<ReturningWorried> {
+        log!("Dog ReturningToFlee->ReturningWorried");
+
+        DogState {
+            context: self.context,
+            _state: ReturningWorried,
+        }
+    }
+
+    fn flee(mut self) -> DogState<Fleeing> {
         log!("Dog ReturningToFlee->Fleeing {}", self.context.position.x);
         self.context.velocity.x = 0;
 
