@@ -1,6 +1,5 @@
+use super::{running_worried::RunningWorried, DogState};
 use crate::game::dog::context::RUNNING_FRAMES;
-
-use super::{running::Running, DogState};
 
 #[derive(Clone)]
 pub struct Fleeing;
@@ -12,12 +11,14 @@ impl DogState<Fleeing> {
         self
     }
 
-    pub fn worry(mut self) -> DogState<Running> {
+    pub fn worry(mut self) -> DogState<RunningWorried> {
+        log!("Dog Fleeing->RunningWorried");
+
         self.context.velocity.x = 4;
 
         DogState {
             context: self.context,
-            _state: Running,
+            _state: RunningWorried,
         }
     }
 }

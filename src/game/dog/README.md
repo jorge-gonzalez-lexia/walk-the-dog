@@ -41,9 +41,21 @@ Game Event: On arrow right, `WalkTheDogState(Ready)` calls:
 
 - Dog is fleeing from boy at the same speed as boy and so always on screen
 
-- On `Dog Event::Worry` => Transition to `DogState(Running)`
+- On `Dog Event::Worry` => Transition to `DogState(RunningWorried)`
 
 ## GameState(GameOver)
 
 - `BoyState(KnockedOut)`
-- `DogState(Running | ReturningWorried)`. Dog loops between running away and returning
+- `DogState(RunningWorried | ReturningWorried)`. Dog loops between running away and returning
+
+### DogState(ReturningWorried)
+
+- Dog returns to boy
+
+- On `Dog Event::Update` and dog has approached too close to boy => Transition to `DogState(RunningWorried)`
+
+### DogState(RunningWorried)
+
+- Dog worriedly runs away from boy
+
+- On `Dog Event::Update` and dog has gone too far => Transition to `DogState(ReturningWorried)`
