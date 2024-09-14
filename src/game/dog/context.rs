@@ -1,14 +1,34 @@
 use crate::engine::rect::Point;
 
+pub const RUNNING_FRAMES: u8 = 60;
+
 #[derive(Clone)]
 pub struct DogContext {
     pub frame: u8,
     pub position: Point,
+    pub velocity: Point,
 }
 
 impl DogContext {
-    pub fn new(frame: u8, position: Point) -> Self {
-        DogContext { frame, position }
+    pub fn new(frame: u8, position: Point, velocity: Point) -> Self {
+        DogContext {
+            frame,
+            position,
+            velocity,
+        }
+    }
+
+    pub fn reset_frame(mut self) -> Self {
+        self.frame = 0;
+
+        self
+    }
+
+    pub fn toggle_direction(mut self) -> Self {
+        self.velocity.x *= -1;
+        log!("Dog velocity {}", self.velocity.x);
+
+        self
     }
 
     pub fn update(mut self, frame_count: u8) -> Self {
@@ -18,9 +38,7 @@ impl DogContext {
             self.frame = 0
         }
 
-        if self.position.x < 1000 {
-            self.position.x += 4; // TODO velocity
-        }
+        self.position.x += self.velocity.x;
 
         self
     }
