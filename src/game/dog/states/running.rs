@@ -34,7 +34,7 @@ impl DogState<Running> {
         if self.context.position.x > 550 {
             self.context.velocity.x *= 2; // screen starts scrolling left
 
-            FleeingEndState::Returning(self.return_to_boy())
+            FleeingEndState::Returning(self.return_then_flee())
         } else {
             log!("Dog Running->Fleeing");
             self.context.velocity.x = 0; // screen starts scrolling left
@@ -56,12 +56,21 @@ impl DogState<Running> {
         }
     }
 
+    fn return_then_flee(self) -> DogState<Returning> {
+        log!("Dog Running->Returning::then_flee");
+
+        DogState {
+            context: self.context.toggle_direction(),
+            _state: Returning { then_flee: true },
+        }
+    }
+
     fn return_to_boy(self) -> DogState<Returning> {
         log!("Dog Running->Returning");
 
         DogState {
             context: self.context.toggle_direction(),
-            _state: Returning,
+            _state: Returning { then_flee: false },
         }
     }
 }

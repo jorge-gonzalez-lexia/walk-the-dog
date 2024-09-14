@@ -33,6 +33,7 @@ impl DogStateMachine {
         match (self.clone(), event) {
             (DogStateMachine::Fleeing(state), Event::Update) => state.update().into(),
 
+            (DogStateMachine::Returning(state), Event::Flee) => state.flee().into(),
             (DogStateMachine::Returning(state), Event::Update) => state.update().into(),
 
             (DogStateMachine::Running(state), Event::Flee) => state.flee().into(),
