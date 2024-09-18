@@ -1,5 +1,38 @@
 # Dog
 
+```mermaid
+stateDiagram-v2
+  [*] --> Running
+  state running_update <<choice>>
+  Running --> running_update: Update
+  running_update --> Running: too close
+  running_update --> Returning: too far
+  state returning_update <<choice>>
+  Returning --> returning_update: Update
+  returning_update --> Returning: too far
+  returning_update --> Running: too close
+  state running_flee <<choice>>
+  Running --> running_flee: Flee
+  running_flee --> ReturningToFlee: too far
+  Returning --> Fleeing: Flee
+  state returning_to_flee_update <<choice>>
+  ReturningToFlee --> returning_to_flee_update: Update
+  returning_to_flee_update --> ReturningToFlee: too far
+  returning_to_flee_update --> Fleeing: close
+  ReturningToFlee --> ReturningWorried: Worry
+  running_flee --> Fleeing: close
+  Fleeing --> ReturningWorried: Worry
+  state returning_worried_update <<choice>>
+  ReturningWorried --> returning_worried_update: Update
+  returning_worried_update --> ReturningWorried: far
+  returning_worried_update --> RunningWorried: too close
+  state running_worried_update <<choice>>
+  RunningWorried --> running_worried_update: Update
+  running_worried_update --> RunningWorried: close
+  running_worried_update --> ReturningWorried: too far
+
+```
+
 ## GameState(Ready)
 
 - Game listens for right arrow key
