@@ -14,11 +14,11 @@ stateDiagram-v2
   returning_update --> Returning: too far
 
   Running --> Jumping: Jump
+  Jumping --> Running: Land
   state jumping_update <<choice>>
   Jumping --> jumping_update: Update
   jumping_update --> Jumping: above floor
   jumping_update --> Running: on floor
-  Jumping --> Running: Land
 
   Returning --> JumpingReturn: Jump
   state jumping_return_update <<choice>>
@@ -35,6 +35,14 @@ stateDiagram-v2
   ReturningToFlee --> returning_to_flee_update: Update
   returning_to_flee_update --> ReturningToFlee: too far
   returning_to_flee_update --> Fleeing: close
+
+  Fleeing --> JumpingFlee: Jump
+  JumpingFlee --> Fleeing: Land
+  state jumping_flee_update <<choice>>
+  JumpingFlee --> jumping_flee_update: Update
+  jumping_flee_update --> JumpingFlee: above floor
+  jumping_flee_update --> Fleeing: on floor
+
   ReturningToFlee --> ReturningWorried: Worry
   running_flee --> Fleeing: close
   Fleeing --> ReturningWorried: Worry

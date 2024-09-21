@@ -1,7 +1,10 @@
 use super::{returning::Returning, DogState};
 use crate::game::{
     self,
-    dog::{context::DOG_FLOOR, state_machine::DogStateMachine},
+    dog::{
+        context::{DOG_FLOOR, JUMPING_FRAMES},
+        state_machine::DogStateMachine,
+    },
 };
 
 #[derive(Clone)]
@@ -18,7 +21,7 @@ impl DogState<JumpingReturn> {
     }
 
     pub fn update(mut self) -> JumpingEndState {
-        self.context = self.context.update(5); // TODO jumping frames
+        self.context = self.context.update(JUMPING_FRAMES);
 
         if self.context.position.y >= DOG_FLOOR {
             JumpingEndState::Landing(self.land_on(game::HEIGHT))
