@@ -1,10 +1,29 @@
-use super::{returning_worried::ReturningWorried, DogState};
-use crate::game::dog::{context::RUNNING_FRAMES, state_machine::DogStateMachine};
+use super::{jumping_worried::JumpingWorried, returning_worried::ReturningWorried, DogState};
+use crate::game::dog::{
+    context::{JUMP_SPEED, RUNNING_FRAMES},
+    state_machine::DogStateMachine,
+};
 
 #[derive(Clone)]
 pub struct RunningWorried;
 
 impl DogState<RunningWorried> {
+    pub fn jump(mut self) -> DogState<JumpingWorried> {
+        log!("Dog RunningWorried->JumpingWorried");
+        self.context.velocity.y = JUMP_SPEED;
+
+        DogState {
+            context: self.context,
+            _state: JumpingWorried,
+        }
+    }
+
+    pub fn land_on(self, position: i16) -> DogState<RunningWorried> {
+        DogState {
+            context: self.context.set_on(position),
+            _state: RunningWorried,
+        }
+    }
     pub fn update(mut self) -> RunningEndState {
         self.context = self.context.update(RUNNING_FRAMES);
 

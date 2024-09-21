@@ -129,12 +129,12 @@ stateDiagram-v2
   running_worried_update --> RunningWorried: close
   running_worried_update --> ReturningWorried: too far
 
-  RunningWorried --> JumpingWorried: Jump*
-  JumpingWorried --> RunningWorried: Land*
+  RunningWorried --> JumpingWorried: Jump
+  JumpingWorried --> RunningWorried: Land
   state jumping_worried_update <<choice>>
-  JumpingWorried --> jumping_worried_update: Update*
-  jumping_worried_update --> JumpingWorried: above floor*
-  jumping_worried_update --> RunningWorried: on floor*
+  JumpingWorried --> jumping_worried_update: Update
+  jumping_worried_update --> JumpingWorried: above floor
+  jumping_worried_update --> RunningWorried: on floor
 ```
 
 - `BoyState(KnockedOut)`
