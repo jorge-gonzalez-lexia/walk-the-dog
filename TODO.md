@@ -1,5 +1,6 @@
 Dog states
 
+- [] Flee event when jumping or jumping return
 - [] dog should deal w/ obstacles in all states
 - [] returning state should draw dog running left
 - [] How would it work to make it more redux where all transitions were triggered by an Event. Is there a single master event list. Or a master event handler that dispatches to game object handlers with object specific events (transformed). Or?

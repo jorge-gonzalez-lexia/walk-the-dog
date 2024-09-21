@@ -70,6 +70,7 @@ stateDiagram-v2
 
   Fleeing --> JumpingFlee: Jump
   JumpingFlee --> Fleeing: Land
+  JumpingFlee --> Worried: Worry*
   state jumping_flee_update <<choice>>
   JumpingFlee --> jumping_flee_update: Update
   jumping_flee_update --> JumpingFlee: above floor
@@ -82,6 +83,7 @@ stateDiagram-v2
 
   ReturningToFlee --> JumpingFleeReturn: Jump
   JumpingFleeReturn --> ReturningToFlee: Land
+  JumpingFleeReturn --> Worried: Worry*
   state jumping_flee_return_update <<choice>>
   JumpingFleeReturn --> jumping_flee_return_update: Update
   jumping_flee_return_update --> JumpingFleeReturn: above floor
@@ -115,10 +117,24 @@ stateDiagram-v2
   returning_worried_update --> ReturningWorried: far
   returning_worried_update --> RunningWorried: too close
 
+  ReturningWorried --> JumpingWorriedReturn: Jump
+  JumpingWorriedReturn --> ReturningWorried: Land
+  state jumping_worried_return_update <<choice>>
+  JumpingWorriedReturn --> jumping_worried_return_update: Update
+  jumping_worried_return_update --> JumpingWorriedReturn: above floor
+  jumping_worried_return_update --> ReturningWorried: on floor
+
   state running_worried_update <<choice>>
   RunningWorried --> running_worried_update: Update
   running_worried_update --> RunningWorried: close
   running_worried_update --> ReturningWorried: too far
+
+  RunningWorried --> JumpingWorried: Jump*
+  JumpingWorried --> RunningWorried: Land*
+  state jumping_worried_update <<choice>>
+  JumpingWorried --> jumping_worried_update: Update*
+  jumping_worried_update --> JumpingWorried: above floor*
+  jumping_worried_update --> RunningWorried: on floor*
 ```
 
 - `BoyState(KnockedOut)`
