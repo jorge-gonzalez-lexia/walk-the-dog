@@ -4,6 +4,8 @@ pub const RUNNING_FRAMES: u8 = 60;
 pub const DOG_FLOOR: i16 = game::HEIGHT - DOG_HEIGHT;
 const DOG_HEIGHT: i16 = 89;
 
+pub const JUMP_SPEED: i16 = -25;
+
 #[derive(Clone)]
 pub struct DogContext {
     pub frame: u8,

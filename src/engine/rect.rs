@@ -1,10 +1,10 @@
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Point {
     pub x: i16,
     pub y: i16,
 }
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct Rect {
     pub position: Point,
     pub width: i16,

@@ -5,12 +5,28 @@ stateDiagram-v2
   [*] --> Running
   state running_update <<choice>>
   Running --> running_update: Update
-  running_update --> Running: too close
   running_update --> Returning: too far
+  running_update --> Running: too close
+
   state returning_update <<choice>>
   Returning --> returning_update: Update
-  returning_update --> Returning: too far
   returning_update --> Running: too close
+  returning_update --> Returning: too far
+
+  Running --> Jumping: Jump
+  state jumping_update <<choice>>
+  Jumping --> jumping_update: Update
+  jumping_update --> Jumping: above floor
+  jumping_update --> Running: on floor
+  Jumping --> Running: Land
+
+  Returning --> JumpingReturn: Jump
+  state jumping_return_update <<choice>>
+  JumpingReturn --> jumping_return_update: Update
+  jumping_return_update --> JumpingReturn: above floor
+  jumping_return_update --> Returning: on floor
+  JumpingReturn --> Returning: Land
+
   state running_flee <<choice>>
   Running --> running_flee: Flee
   running_flee --> ReturningToFlee: too far

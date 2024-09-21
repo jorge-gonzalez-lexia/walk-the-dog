@@ -34,7 +34,13 @@ impl Dog {
     pub fn info(&self) -> String {
         let ctx = self.state_machine.context();
         let bb = self.bounding_box();
-        format!("t={} b={} vy={}", bb.top(), bb.bottom(), ctx.velocity.y)
+        format!(
+            "t={} b={} x={} vy={}",
+            bb.top(),
+            bb.bottom(),
+            bb.left(),
+            ctx.velocity.y
+        )
     }
 
     pub fn land_on(&mut self, position: i16) {
@@ -49,10 +55,25 @@ impl Dog {
                 log!("nav to land {} {}", self.bounding_box().bottom(), position);
                 self.land_on(position);
             }
+        } else if matches!(self.state_machine, DogStateMachine::JumpingReturn(_)) {
+            if self.state_machine.context().velocity.y > 0
+                && self.bounding_box().bottom() > position
+            {
+                log!(
+                    "nav to land jump return {} {}",
+                    self.bounding_box().bottom(),
+                    position
+                );
+                self.land_on(position);
+            }
         } else if self.bounding_box().top() == DOG_FLOOR {
             self.state_machine = self.state_machine.clone().transition(Event::Jump);
         } else {
-            log!("run on platform {} platform={}", self.info(), position);
+            log!(
+                "run/return on platform {} platform={}",
+                self.info(),
+                position
+            );
             self.land_on(position);
         }
     }

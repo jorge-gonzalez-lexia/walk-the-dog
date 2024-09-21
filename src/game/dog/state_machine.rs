@@ -1,7 +1,7 @@
 use super::{
     context::DogContext,
     states::{
-        fleeing::Fleeing, jumping::Jumping, returning::Returning,
+        fleeing::Fleeing, jumping::Jumping, jumping_return::JumpingReturn, returning::Returning,
         returning_to_flee::ReturningToFlee, returning_worried::ReturningWorried, running::Running,
         running_worried::RunningWorried, DogState,
     },
@@ -20,6 +20,7 @@ pub enum Event {
 pub enum DogStateMachine {
     Fleeing(DogState<Fleeing>),
     Jumping(DogState<Jumping>),
+    JumpingReturn(DogState<JumpingReturn>),
     Returning(DogState<Returning>),
     ReturningToFlee(DogState<ReturningToFlee>),
     ReturningWorried(DogState<ReturningWorried>),
@@ -32,6 +33,7 @@ impl DogStateMachine {
         match self {
             DogStateMachine::Fleeing(state) => state.context(),
             DogStateMachine::Jumping(state) => state.context(),
+            DogStateMachine::JumpingReturn(state) => state.context(),
             DogStateMachine::Returning(state) => state.context(),
             DogStateMachine::ReturningToFlee(state) => state.context(),
             DogStateMachine::ReturningWorried(state) => state.context(),
@@ -54,7 +56,16 @@ impl DogStateMachine {
             }
             (DogStateMachine::Jumping(state), Event::Update) => state.update().into(),
 
+            (DogStateMachine::JumpingReturn(state), Event::Land(position)) => {
+                state.land_on(position).into()
+            }
+            (DogStateMachine::JumpingReturn(state), Event::Update) => state.update().into(),
+
             (DogStateMachine::Returning(state), Event::Flee) => state.flee().into(),
+            (DogStateMachine::Returning(state), Event::Jump) => state.jump().into(),
+            (DogStateMachine::Returning(state), Event::Land(position)) => {
+                state.land_on(position).into()
+            }
             (DogStateMachine::Returning(state), Event::Update) => state.update().into(),
 
             (DogStateMachine::ReturningToFlee(state), Event::Update) => state.update().into(),
@@ -89,6 +100,12 @@ impl From<DogState<Fleeing>> for DogStateMachine {
 impl From<DogState<Jumping>> for DogStateMachine {
     fn from(state: DogState<Jumping>) -> Self {
         DogStateMachine::Jumping(state)
+    }
+}
+
+impl From<DogState<JumpingReturn>> for DogStateMachine {
+    fn from(state: DogState<JumpingReturn>) -> Self {
+        DogStateMachine::JumpingReturn(state)
     }
 }
 

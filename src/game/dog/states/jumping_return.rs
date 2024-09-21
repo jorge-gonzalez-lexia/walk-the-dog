@@ -1,19 +1,19 @@
-use super::{running::Running, DogState};
+use super::{returning::Returning, DogState};
 use crate::game::{
     self,
     dog::{context::DOG_FLOOR, state_machine::DogStateMachine},
 };
 
 #[derive(Clone)]
-pub struct Jumping;
+pub struct JumpingReturn;
 
-impl DogState<Jumping> {
-    pub fn land_on(self, position: i16) -> DogState<Running> {
-        log!("Dog Jumping->Running (lands)");
+impl DogState<JumpingReturn> {
+    pub fn land_on(self, position: i16) -> DogState<Returning> {
+        log!("Dog JumpingReturn->Returning (lands)");
 
         DogState {
             context: self.context.reset_frame().set_on(position),
-            _state: Running,
+            _state: Returning,
         }
     }
 
@@ -29,15 +29,15 @@ impl DogState<Jumping> {
 }
 
 pub enum JumpingEndState {
-    Jumping(DogState<Jumping>),
-    Landing(DogState<Running>),
+    Jumping(DogState<JumpingReturn>),
+    Landing(DogState<Returning>),
 }
 
 impl From<JumpingEndState> for DogStateMachine {
     fn from(end_state: JumpingEndState) -> Self {
         match end_state {
             JumpingEndState::Jumping(jumping) => jumping.into(),
-            JumpingEndState::Landing(running) => running.into(),
+            JumpingEndState::Landing(returning) => returning.into(),
         }
     }
 }

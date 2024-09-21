@@ -2,7 +2,7 @@ use super::{fleeing::Fleeing, jumping::Jumping, returning::Returning, DogState};
 use crate::{
     engine::rect::Point,
     game::dog::{
-        context::{DogContext, DOG_FLOOR, RUNNING_FRAMES},
+        context::{DogContext, DOG_FLOOR, JUMP_SPEED, RUNNING_FRAMES},
         state_machine::DogStateMachine,
         states::returning_to_flee::ReturningToFlee,
     },
@@ -10,8 +10,6 @@ use crate::{
 
 #[derive(Clone)]
 pub struct Running;
-
-const JUMP_SPEED: i16 = -25;
 
 impl DogState<Running> {
     pub fn new() -> Self {
@@ -83,7 +81,7 @@ impl DogState<Running> {
     }
 
     fn return_to_boy(self) -> DogState<Returning> {
-        log!("Dog Running->Returning");
+        log!("Dog Running->Returning {}", self.context.position.x);
 
         DogState {
             context: self.context.toggle_direction(),

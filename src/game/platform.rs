@@ -94,9 +94,10 @@ impl Obstacle for Platform {
     }
 
     fn navigate(&self, dog: &mut Dog) {
-        let mark = self.position.x - 20;
-        if dog.bounding_box().right() >= mark {
-            log!("{} land={}", dog.info(), self.position.y);
+        let mark = self.position.x - 20; // TODO 20px prior to left bb
+        let r_mark = self.right(); // TODO 20px after width
+        if dog.bounding_box().right() >= mark && dog.bounding_box().left() <= r_mark {
+            log!("{} platform y={}", dog.info(), self.position.y);
             dog.navigate(self.position.y);
         }
     }
