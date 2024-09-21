@@ -27,7 +27,12 @@ impl Obstacle for Barrier {
     }
 
     fn navigate(&self, dog: &mut Dog) {
-        // log!("Navigate dog past Barrier");
+        let mark = self.image.bounding_box().left() - 20;
+        let r_mark = self.right();
+        if dog.bounding_box().right() >= mark && dog.bounding_box().left() <= r_mark {
+            // log!("nav barrier {}", dog.info());
+            dog.navigate(dog.bounding_box().bottom());
+        }
     }
 
     fn right(&self) -> i16 {
