@@ -1,24 +1,28 @@
 # Dog
 
+## GameState(Ready)
+
 ```mermaid
 stateDiagram-v2
   [*] --> Running
   state running_update <<choice>>
   Running --> running_update: Update
-  running_update --> Returning: too far
   running_update --> Running: too close
-
-  state returning_update <<choice>>
-  Returning --> returning_update: Update
-  returning_update --> Running: too close
-  returning_update --> Returning: too far
-
+  running_update --> Returning: too far
   Running --> Jumping: Jump
+  Running --> Fleeing: Flee
+
   Jumping --> Running: Land
   state jumping_update <<choice>>
   Jumping --> jumping_update: Update
   jumping_update --> Jumping: above floor
   jumping_update --> Running: on floor
+
+  state returning_update <<choice>>
+  Returning --> returning_update: Update
+  returning_update --> Running: too close
+  returning_update --> Returning: too far
+  Returning --> Fleeing: Flee
 
   Returning --> JumpingReturn: Jump
   state jumping_return_update <<choice>>
@@ -27,37 +31,8 @@ stateDiagram-v2
   jumping_return_update --> Returning: on floor
   JumpingReturn --> Returning: Land
 
-  state running_flee <<choice>>
-  Running --> running_flee: Flee
-  running_flee --> ReturningToFlee: too far
-  Returning --> Fleeing: Flee
-  state returning_to_flee_update <<choice>>
-  ReturningToFlee --> returning_to_flee_update: Update
-  returning_to_flee_update --> ReturningToFlee: too far
-  returning_to_flee_update --> Fleeing: close
-
-  Fleeing --> JumpingFlee: Jump
-  JumpingFlee --> Fleeing: Land
-  state jumping_flee_update <<choice>>
-  JumpingFlee --> jumping_flee_update: Update
-  jumping_flee_update --> JumpingFlee: above floor
-  jumping_flee_update --> Fleeing: on floor
-
-  ReturningToFlee --> ReturningWorried: Worry
-  running_flee --> Fleeing: close
-  Fleeing --> ReturningWorried: Worry
-  state returning_worried_update <<choice>>
-  ReturningWorried --> returning_worried_update: Update
-  returning_worried_update --> ReturningWorried: far
-  returning_worried_update --> RunningWorried: too close
-  state running_worried_update <<choice>>
-  RunningWorried --> running_worried_update: Update
-  running_worried_update --> RunningWorried: close
-  running_worried_update --> ReturningWorried: too far
 
 ```
-
-## GameState(Ready)
 
 - Game listens for right arrow key
 - `BoyState(Idle)`. Boy is idling at left of screen
@@ -83,6 +58,36 @@ Game Event: On arrow right, `WalkTheDogState(Ready)` calls:
 
 ## GameState(Walking)
 
+```mermaid
+stateDiagram-v2
+  state running_flee <<choice>>
+  [*] --> running_flee: Flee
+  running_flee --> Fleeing: close
+  running_flee --> ReturningToFlee: too far
+
+  Fleeing --> Worried: Worry
+  ReturningToFlee --> Worried: Worry
+
+  Fleeing --> JumpingFlee: Jump
+  JumpingFlee --> Fleeing: Land
+  state jumping_flee_update <<choice>>
+  JumpingFlee --> jumping_flee_update: Update
+  jumping_flee_update --> JumpingFlee: above floor
+  jumping_flee_update --> Fleeing: on floor
+
+  state returning_to_flee_update <<choice>>
+  ReturningToFlee --> returning_to_flee_update: Update
+  returning_to_flee_update --> ReturningToFlee: too far
+  returning_to_flee_update --> Fleeing: close
+
+  ReturningToFlee --> JumpingFleeReturn: Jump
+  JumpingFleeReturn --> ReturningToFlee: Land
+  state jumping_flee_return_update <<choice>>
+  JumpingFleeReturn --> jumping_flee_return_update: Update
+  jumping_flee_return_update --> JumpingFleeReturn: above floor
+  jumping_flee_return_update --> ReturningToFlee: on floor
+```
+
 - `BoyState(Running)`. Boy is chasing Dog. If Dog is initially off screen, it returns on screen and then flees. Otherwise, it flees.
 - if Boy transitions to `BoyState(KnockedOut)`, `GameState(Walking)` detects that and => Transitions to:
   - `GameState(GameOver)`
@@ -101,6 +106,20 @@ Game Event: On arrow right, `WalkTheDogState(Ready)` calls:
 - On `Dog Event::Worry` => Transition to `DogState(RunningWorried)`
 
 ## GameState(GameOver)
+
+```mermaid
+stateDiagram-v2
+  [*] --> ReturningWorried: Worry
+  state returning_worried_update <<choice>>
+  ReturningWorried --> returning_worried_update: Update
+  returning_worried_update --> ReturningWorried: far
+  returning_worried_update --> RunningWorried: too close
+
+  state running_worried_update <<choice>>
+  RunningWorried --> running_worried_update: Update
+  running_worried_update --> RunningWorried: close
+  running_worried_update --> ReturningWorried: too far
+```
 
 - `BoyState(KnockedOut)`
 - `DogState(RunningWorried | ReturningWorried)`. Dog loops between running away and returning

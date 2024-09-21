@@ -2,7 +2,8 @@ use super::{
     context::DogContext,
     states::{
         fleeing::Fleeing, jumping::Jumping, jumping_flee::JumpingFlee,
-        jumping_return::JumpingReturn, returning::Returning, returning_to_flee::ReturningToFlee,
+        jumping_flee_return::JumpingFleeReturn, jumping_return::JumpingReturn,
+        returning::Returning, returning_to_flee::ReturningToFlee,
         returning_worried::ReturningWorried, running::Running, running_worried::RunningWorried,
         DogState,
     },
@@ -22,6 +23,7 @@ pub enum DogStateMachine {
     Fleeing(DogState<Fleeing>),
     Jumping(DogState<Jumping>),
     JumpingFlee(DogState<JumpingFlee>),
+    JumpingFleeReturn(DogState<JumpingFleeReturn>),
     JumpingReturn(DogState<JumpingReturn>),
     Returning(DogState<Returning>),
     ReturningToFlee(DogState<ReturningToFlee>),
@@ -36,6 +38,7 @@ impl DogStateMachine {
             DogStateMachine::Fleeing(state) => state.context(),
             DogStateMachine::Jumping(state) => state.context(),
             DogStateMachine::JumpingFlee(state) => state.context(),
+            DogStateMachine::JumpingFleeReturn(state) => state.context(),
             DogStateMachine::JumpingReturn(state) => state.context(),
             DogStateMachine::Returning(state) => state.context(),
             DogStateMachine::ReturningToFlee(state) => state.context(),
@@ -68,6 +71,11 @@ impl DogStateMachine {
             }
             (DogStateMachine::JumpingFlee(state), Event::Update) => state.update().into(),
 
+            (DogStateMachine::JumpingFleeReturn(state), Event::Land(position)) => {
+                state.land_on(position).into()
+            }
+            (DogStateMachine::JumpingFleeReturn(state), Event::Update) => state.update().into(),
+
             (DogStateMachine::JumpingReturn(state), Event::Land(position)) => {
                 state.land_on(position).into()
             }
@@ -80,6 +88,10 @@ impl DogStateMachine {
             }
             (DogStateMachine::Returning(state), Event::Update) => state.update().into(),
 
+            (DogStateMachine::ReturningToFlee(state), Event::Land(position)) => {
+                state.land_on(position).into()
+            }
+            (DogStateMachine::ReturningToFlee(state), Event::Jump) => state.jump().into(),
             (DogStateMachine::ReturningToFlee(state), Event::Update) => state.update().into(),
             (DogStateMachine::ReturningToFlee(state), Event::Worry) => state.worry().into(),
 
@@ -118,6 +130,12 @@ impl From<DogState<Jumping>> for DogStateMachine {
 impl From<DogState<JumpingFlee>> for DogStateMachine {
     fn from(state: DogState<JumpingFlee>) -> Self {
         DogStateMachine::JumpingFlee(state)
+    }
+}
+
+impl From<DogState<JumpingFleeReturn>> for DogStateMachine {
+    fn from(state: DogState<JumpingFleeReturn>) -> Self {
+        DogStateMachine::JumpingFleeReturn(state)
     }
 }
 
