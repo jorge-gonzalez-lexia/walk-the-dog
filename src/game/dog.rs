@@ -52,39 +52,39 @@ impl Dog {
             if self.state_machine.context().velocity.y > 0
                 && self.bounding_box().bottom() > position
             {
-                log!("nav to land {} {}", self.bounding_box().bottom(), position);
+                // log!("nav to land {} {}", self.bounding_box().bottom(), position);
                 self.land_on(position);
             }
         } else if matches!(self.state_machine, DogStateMachine::JumpingFlee(_)) {
             if self.state_machine.context().velocity.y > 0
                 && self.bounding_box().bottom() > position
             {
-                log!(
-                    "nav to land jump flee {} {}",
-                    self.bounding_box().bottom(),
-                    position
-                );
+                // log!(
+                //     "nav to land jump flee {} {}",
+                //     self.bounding_box().bottom(),
+                //     position
+                // );
                 self.land_on(position);
             }
         } else if matches!(self.state_machine, DogStateMachine::JumpingReturn(_)) {
             if self.state_machine.context().velocity.y > 0
                 && self.bounding_box().bottom() > position
             {
-                log!(
-                    "nav to land jump return {} {}",
-                    self.bounding_box().bottom(),
-                    position
-                );
+                // log!(
+                //     "nav to land jump return {} {}",
+                //     self.bounding_box().bottom(),
+                //     position
+                // );
                 self.land_on(position);
             }
         } else if self.bounding_box().top() == DOG_FLOOR {
             self.state_machine = self.state_machine.clone().transition(Event::Jump);
         } else {
-            log!(
-                "run/return/flee on platform {} platform={}",
-                self.info(),
-                position
-            );
+            // log!(
+            //     "run/return/flee on platform {} platform={}",
+            //     self.info(),
+            //     position
+            // );
             self.land_on(position);
         }
     }
