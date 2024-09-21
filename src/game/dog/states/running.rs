@@ -1,18 +1,17 @@
-use super::{fleeing::Fleeing, returning::Returning, DogState};
+use super::{fleeing::Fleeing, jumping::Jumping, returning::Returning, DogState};
 use crate::{
     engine::rect::Point,
-    game::{
-        self,
-        dog::{
-            context::{DogContext, RUNNING_FRAMES},
-            state_machine::DogStateMachine,
-            states::returning_to_flee::ReturningToFlee,
-        },
+    game::dog::{
+        context::{DogContext, DOG_FLOOR, RUNNING_FRAMES},
+        state_machine::DogStateMachine,
+        states::returning_to_flee::ReturningToFlee,
     },
 };
 
 #[derive(Clone)]
 pub struct Running;
+
+const JUMP_SPEED: i16 = -25;
 
 impl DogState<Running> {
     pub fn new() -> Self {
@@ -23,7 +22,7 @@ impl DogState<Running> {
                 0,
                 Point {
                     x: 10,
-                    y: game::FLOOR + 27,
+                    y: DOG_FLOOR,
                 },
                 Point { x: 4, y: 0 },
             ),
@@ -44,6 +43,23 @@ impl DogState<Running> {
                 context: self.context,
                 _state: Fleeing,
             })
+        }
+    }
+
+    pub fn jump(mut self) -> DogState<Jumping> {
+        log!("Dog Running->Jumping");
+        self.context.velocity.y = JUMP_SPEED;
+
+        DogState {
+            context: self.context,
+            _state: Jumping,
+        }
+    }
+
+    pub fn land_on(self, position: i16) -> DogState<Running> {
+        DogState {
+            context: self.context.set_on(position),
+            _state: Running,
         }
     }
 

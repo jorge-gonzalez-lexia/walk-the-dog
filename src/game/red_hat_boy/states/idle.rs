@@ -1,10 +1,7 @@
 use super::{running::Running, RedHatBoyState};
 use crate::{
     engine::{audio::Audio, rect::Point},
-    game::{
-        self,
-        red_hat_boy::context::{self, RedHatBoyContext},
-    },
+    game::red_hat_boy::context::{self, RedHatBoyContext, FLOOR},
 };
 
 const STARTING_POINT: i16 = -60;
@@ -23,7 +20,7 @@ impl RedHatBoyState<Idle> {
                 0,
                 Point {
                     x: STARTING_POINT,
-                    y: game::FLOOR,
+                    y: FLOOR,
                 },
                 sfx,
                 Point { x: 0, y: 0 },

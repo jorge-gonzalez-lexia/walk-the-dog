@@ -7,6 +7,7 @@ use crate::engine::{
     renderer::Renderer,
     sheet::{Cell, Sheet},
 };
+use context::DOG_FLOOR;
 use state_machine::{DogStateMachine, Event};
 use states::DogState;
 use web_sys::HtmlImageElement;
@@ -28,6 +29,32 @@ impl Dog {
 
     pub fn flee(&mut self) {
         self.state_machine = self.state_machine.clone().transition(Event::Flee);
+    }
+
+    pub fn info(&self) -> String {
+        let ctx = self.state_machine.context();
+        let bb = self.bounding_box();
+        format!("t={} b={} vy={}", bb.top(), bb.bottom(), ctx.velocity.y)
+    }
+
+    pub fn land_on(&mut self, position: i16) {
+        self.state_machine = self.state_machine.clone().transition(Event::Land(position));
+    }
+
+    pub fn navigate(&mut self, position: i16) {
+        if matches!(self.state_machine, DogStateMachine::Jumping(_)) {
+            if self.state_machine.context().velocity.y > 0
+                && self.bounding_box().bottom() > position
+            {
+                log!("nav to land {} {}", self.bounding_box().bottom(), position);
+                self.land_on(position);
+            }
+        } else if self.bounding_box().top() == DOG_FLOOR {
+            self.state_machine = self.state_machine.clone().transition(Event::Jump);
+        } else {
+            log!("run on platform {} platform={}", self.info(), position);
+            self.land_on(position);
+        }
     }
 
     pub fn reset(dog: Self) -> Self {

@@ -1,4 +1,4 @@
-use super::obstacle::Obstacle;
+use super::{dog::Dog, obstacle::Obstacle, red_hat_boy::RedHatBoy};
 use crate::engine::{
     rect::{Point, Rect},
     renderer::Renderer,
@@ -44,7 +44,7 @@ impl Platform {
 }
 
 impl Obstacle for Platform {
-    fn check_intersection(&self, boy: &mut super::red_hat_boy::RedHatBoy) {
+    fn check_intersection(&self, boy: &mut RedHatBoy) {
         if let Some(box_to_land_on) = self
             .bounding_boxes()
             .iter()
@@ -91,6 +91,14 @@ impl Obstacle for Platform {
         self.bounding_boxes
             .iter_mut()
             .for_each(|b| b.set_x(b.position.x + x));
+    }
+
+    fn navigate(&self, dog: &mut Dog) {
+        let mark = self.position.x - 20;
+        if dog.bounding_box().right() >= mark {
+            log!("{} land={}", dog.info(), self.position.y);
+            dog.navigate(self.position.y);
+        }
     }
 
     fn right(&self) -> i16 {

@@ -1,4 +1,5 @@
 pub mod fleeing;
+pub mod jumping;
 pub mod returning;
 pub mod returning_to_flee;
 pub mod returning_worried;

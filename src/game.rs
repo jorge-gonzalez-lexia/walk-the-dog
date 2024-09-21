@@ -26,7 +26,8 @@ use segments::stone_and_platform;
 use std::rc::Rc;
 use walk::{rightmost, Walk};
 
-pub const FLOOR: i16 = 479;
+const GRAVITY: i16 = 1;
+const TERMINAL_VELOCITY: i16 = 20;
 
 const HEIGHT: i16 = 600;
 
