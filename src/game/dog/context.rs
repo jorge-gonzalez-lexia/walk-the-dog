@@ -1,6 +1,6 @@
 use crate::{
     engine::rect::{Point, Rect},
-    game::{self, TERMINAL_VELOCITY},
+    game::{self},
 };
 
 pub const RUNNING_FRAMES: u8 = 60;
@@ -85,13 +85,7 @@ impl DogContext {
     }
 
     fn should_remove_platform(&self) -> bool {
-        if let Some(platform) = self.platform {
-            self.position.x >= platform.right()
-                && self.velocity.y > 0
-                && self.position.y > self.floor()
-        } else {
-            return false;
-        }
+        self.moved_off_platform() && self.velocity.y > 0 && self.position.y > self.floor()
     }
 
     pub fn floor(&self) -> i16 {
@@ -107,5 +101,17 @@ impl DogContext {
             "pos={:?} v={:?} platform={:?}",
             self.position, self.velocity, self.platform
         )
+    }
+
+    fn moved_off_platform(&self) -> bool {
+        if let Some(platform) = self.platform {
+            let vx = self.velocity.x;
+            let x = self.position.x;
+            let right = self.position.x + 100;
+
+            vx >= 0 && x >= platform.right() || vx < 0 && right < platform.left()
+        } else {
+            false
+        }
     }
 }

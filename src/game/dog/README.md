@@ -12,7 +12,6 @@ stateDiagram-v2
   Running --> Jumping: Jump
   Running --> Fleeing: Flee
 
-  Jumping --> Running: Land
   state jumping_update <<choice>>
   Jumping --> jumping_update: Update
   jumping_update --> Jumping: above floor
@@ -29,7 +28,6 @@ stateDiagram-v2
   JumpingReturn --> jumping_return_update: Update
   jumping_return_update --> JumpingReturn: above floor
   jumping_return_update --> Returning: on floor
-  JumpingReturn --> Returning: Land
 
 
 ```

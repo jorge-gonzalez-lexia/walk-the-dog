@@ -56,6 +56,23 @@ impl DogStateMachine {
         }
     }
 
+    pub fn state_name(&self) -> &'static str {
+        match self {
+            DogStateMachine::Fleeing(_) => "Fleeing",
+            DogStateMachine::Jumping(_) => "Jumping",
+            DogStateMachine::JumpingFlee(_) => "JumpingFlee",
+            DogStateMachine::JumpingFleeReturn(_) => "JumpingFleeReturn",
+            DogStateMachine::JumpingReturn(_) => "JumpingReturn",
+            DogStateMachine::JumpingWorried(_) => "JumpingWorried",
+            DogStateMachine::JumpingWorriedReturn(_) => "JumpingWorriedReturn",
+            DogStateMachine::Returning(_) => "Returning",
+            DogStateMachine::ReturningToFlee(_) => "ReturningToFlee",
+            DogStateMachine::ReturningWorried(_) => "ReturningWorried",
+            DogStateMachine::Running(_) => "Running",
+            DogStateMachine::RunningWorried(_) => "RunningWorried",
+        }
+    }
+
     pub fn transition(self, event: Event) -> Self {
         if event != Event::Update {
             log!("Dog Event {event:?}");
@@ -69,9 +86,7 @@ impl DogStateMachine {
             (DogStateMachine::Fleeing(state), Event::Update) => state.update().into(),
             (DogStateMachine::Fleeing(state), Event::Worry) => state.worry().into(),
 
-            (DogStateMachine::Jumping(state), Event::Land(position)) => {
-                state.land_on(position).into()
-            }
+            // (DogStateMachine::Jumping(state), Event::Land(position)) => state.land(position).into(),
             (DogStateMachine::Jumping(state), Event::Update) => state.update().into(),
 
             (DogStateMachine::JumpingFlee(state), Event::Land(position)) => {
@@ -100,7 +115,10 @@ impl DogStateMachine {
             (DogStateMachine::JumpingWorriedReturn(state), Event::Update) => state.update().into(),
 
             (DogStateMachine::Returning(state), Event::Flee) => state.flee().into(),
-            (DogStateMachine::Returning(state), Event::Jump) => state.jump().into(),
+            // (DogStateMachine::Returning(state), Event::Jump) => state.jump().into(),
+            (DogStateMachine::Returning(state), Event::JumpTo(platform)) => {
+                state.jump_to(platform).into()
+            }
             (DogStateMachine::Returning(state), Event::Land(position)) => {
                 state.land_on(position).into()
             }
@@ -135,7 +153,10 @@ impl DogStateMachine {
             }
             (DogStateMachine::RunningWorried(state), Event::Update) => state.update().into(),
 
-            _ => self,
+            (s, event) => {
+                error!("Dog event unhandled: {} {:?}", s.state_name(), event);
+                self
+            }
         }
     }
 
