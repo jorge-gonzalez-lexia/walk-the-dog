@@ -1,4 +1,4 @@
-use super::{dog::Dog, obstacle::Obstacle, red_hat_boy::RedHatBoy};
+use super::{dog::Dog, obstacle::Obstacle, red_hat_boy::RedHatBoy, HEIGHT};
 use crate::engine::{
     rect::{Point, Rect},
     renderer::Renderer,
@@ -7,9 +7,13 @@ use crate::engine::{
 };
 use std::rc::Rc;
 
+const MARK_OFFSET: i16 = 80;
+
 pub struct Platform {
     pub position: Point,
     bounding_boxes: Vec<Rect>,
+    has_mark_left: bool,
+    has_mark_right: bool,
     sheet: Rc<SpriteSheet>,
     sprites: Vec<Cell>,
 }
@@ -32,6 +36,8 @@ impl Platform {
 
         Platform {
             bounding_boxes,
+            has_mark_left: false,
+            has_mark_right: false,
             position,
             sheet,
             sprites,
@@ -40,6 +46,76 @@ impl Platform {
 
     pub fn bounding_boxes(&self) -> &Vec<Rect> {
         &self.bounding_boxes
+    }
+
+    pub fn with_left_mark(self) -> Self {
+        Platform {
+            bounding_boxes: self.bounding_boxes,
+            has_mark_left: true,
+            has_mark_right: self.has_mark_right,
+            position: self.position,
+            sheet: self.sheet,
+            sprites: self.sprites,
+        }
+    }
+
+    pub fn with_right_mark(self) -> Self {
+        Platform {
+            bounding_boxes: self.bounding_boxes,
+            has_mark_left: self.has_mark_left,
+            has_mark_right: true,
+            position: self.position,
+            sheet: self.sheet,
+            sprites: self.sprites,
+        }
+    }
+
+    fn draw_marks(&self, renderer: &Renderer) {
+        if self.has_mark_left {
+            renderer.draw_rect_colored(&self.mark_left(), "#000000");
+        }
+
+        if self.has_mark_right {
+            renderer.draw_rect_colored(&self.mark_right(), "#FFFF00");
+        }
+    }
+
+    fn mark_left(&self) -> Rect {
+        Rect::new(
+            Point {
+                x: self.position.x - MARK_OFFSET,
+                y: self.position.y,
+            },
+            1,
+            HEIGHT - self.position.y,
+        )
+    }
+
+    fn mark_right(&self) -> Rect {
+        Rect::new(
+            Point {
+                x: self.right() + MARK_OFFSET,
+                y: self.position.y,
+            },
+            1,
+            HEIGHT - self.position.y,
+        )
+    }
+
+    fn on_left_mark(&self, dog: &Dog) -> bool {
+        if !self.has_mark_left || !dog.moving_right() {
+            return false;
+        }
+
+        dog.bounding_box().intersects(&self.mark_left())
+    }
+
+    fn on_right_mark(&self, dog: &Dog) -> bool {
+        if !self.has_mark_right || !dog.moving_left() {
+            return false;
+        }
+
+        dog.bounding_box().intersects(&self.mark_right())
     }
 }
 
@@ -84,6 +160,7 @@ impl Obstacle for Platform {
         self.bounding_boxes
             .iter()
             .for_each(|b| renderer.draw_rect(b));
+        self.draw_marks(renderer);
     }
 
     fn move_horizontally(&mut self, x: i16) {
@@ -94,11 +171,8 @@ impl Obstacle for Platform {
     }
 
     fn navigate(&self, dog: &mut Dog) {
-        let mark = self.position.x - 20; // TODO 20px prior to left bb
-        let r_mark = self.right() + 40; // TODO 20px after width
-        if dog.bounding_box().right() >= mark && dog.bounding_box().left() <= r_mark {
-            // log!("nav {} platform y={}", dog.info(), self.position.y);
-            dog.navigate(self.position.y);
+        if self.on_left_mark(dog) || self.on_right_mark(dog) {
+            dog.jump();
         }
     }
 

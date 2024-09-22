@@ -44,11 +44,15 @@ impl Renderer {
     }
 
     pub fn draw_rect(&self, bounding_box: &Rect) {
+        self.draw_rect_colored(bounding_box, "#FF0000");
+    }
+
+    pub fn draw_rect_colored(&self, bounding_box: &Rect, color: &str) {
         if !SHOW_BOUNDING_BOXES {
             return;
         }
 
-        self.context.set_stroke_style(&JsValue::from_str("#FF0000"));
+        self.context.set_stroke_style(&JsValue::from_str(color));
         self.context.begin_path();
         self.context.rect(
             bounding_box.x().into(),

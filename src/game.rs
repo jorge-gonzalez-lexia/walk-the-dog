@@ -22,7 +22,7 @@ use async_trait::async_trait;
 use dog::Dog;
 use game_states::WalkTheDogStateMachine;
 use red_hat_boy::{context::Sfx, RedHatBoy};
-use segments::stone_and_platform;
+use segments::SegmentFactory;
 use std::rc::Rc;
 use walk::{rightmost, Walk};
 
@@ -80,7 +80,9 @@ impl Game for WalkTheDog {
                     load_image("tiles.png").await?,
                 ));
 
-                let starting_obstacles = stone_and_platform(stone.clone(), sprite_sheet.clone(), 0);
+                let segment_factory = SegmentFactory::new(sprite_sheet.clone(), stone.clone());
+
+                let starting_obstacles = segment_factory.first();
                 let timeline = rightmost(&starting_obstacles);
 
                 let background_width = background.width() as i16;
@@ -98,8 +100,8 @@ impl Game for WalkTheDog {
                     ],
                     boy,
                     dog,
-                    obstacle_sheet: sprite_sheet,
                     obstacles: starting_obstacles,
+                    segment_factory,
                     stone,
                     timeline,
                 });

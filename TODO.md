@@ -1,6 +1,9 @@
 Dog states
 
-- [] dog should deal w/ obstacles in all states
+- [] add jump l and r markers to obstacles (from segment creation)
+- [] try single landing event on platform. When dog is over platform, it becomes the floor. When not over platform, revert to ground floor.
+- [] when dog no longer on platform, decide whether to jump based on upcoming marker
+- [] refactor dog.navigate. Glitchy when dropping from platforms. Dog needs to be smarter with obstacles ahead. Each segment
 - [] Flee event when jumping or jumping return
 - [] glitches when returning worried and jumping and landing or when platforms are close to each other
 - [] jumping animation

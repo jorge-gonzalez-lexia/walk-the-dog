@@ -31,20 +31,39 @@ impl Dog {
         self.state_machine = self.state_machine.clone().transition(Event::Flee);
     }
 
+    pub fn jump(&mut self) {
+        if self.state_machine.context().velocity.y < 0 {
+            return;
+        }
+
+        // log!("Dog jump to navigate obstacle");
+        self.state_machine = self.state_machine.clone().transition(Event::Jump);
+    }
+
     pub fn info(&self) -> String {
         let ctx = self.state_machine.context();
         let bb = self.bounding_box();
         format!(
-            "t={} b={} x={} vy={}",
-            bb.top(),
-            bb.bottom(),
+            "({},{},{},{}) vy={} vx={}",
             bb.left(),
-            ctx.velocity.y
+            bb.top(),
+            bb.right(),
+            bb.bottom(),
+            ctx.velocity.y,
+            ctx.velocity.x
         )
     }
 
     pub fn land_on(&mut self, position: i16) {
         self.state_machine = self.state_machine.clone().transition(Event::Land(position));
+    }
+
+    pub fn moving_left(&self) -> bool {
+        self.state_machine.context().velocity.x < 0
+    }
+
+    pub fn moving_right(&self) -> bool {
+        self.state_machine.context().velocity.x >= 0
     }
 
     pub fn navigate(&mut self, position: i16) {
@@ -97,9 +116,18 @@ impl Dog {
         self.state_machine = self.state_machine.clone().transition(Event::Worry);
     }
 
-    // TODO likely not needed and can just use destination box since dog will never hit an obstacle
     pub fn bounding_box(&self) -> Rect {
-        self.destination_box()
+        const X_OFFSET: i16 = 35;
+        const Y_OFFSET: i16 = 8;
+        const WIDTH_OFFSET: i16 = 50;
+
+        let mut bounding_box = self.destination_box();
+        bounding_box.set_x(bounding_box.x() + X_OFFSET);
+        bounding_box.width -= WIDTH_OFFSET;
+        bounding_box.position.y += Y_OFFSET;
+        bounding_box.height -= Y_OFFSET;
+
+        bounding_box
     }
 
     pub fn draw(&self, renderer: &Renderer) {
