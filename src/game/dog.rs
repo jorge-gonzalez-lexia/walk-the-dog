@@ -40,17 +40,27 @@ impl Dog {
         self.state_machine = self.state_machine.clone().transition(Event::Jump);
     }
 
+    pub fn jump_to(&mut self, platform: Rect) {
+        if self.state_machine.context().velocity.y < 0 {
+            return;
+        }
+
+        self.state_machine = self
+            .state_machine
+            .clone()
+            .transition(Event::JumpTo(platform));
+    }
+
     pub fn info(&self) -> String {
         let ctx = self.state_machine.context();
         let bb = self.bounding_box();
         format!(
-            "({},{},{},{}) vy={} vx={}",
+            "({},{},{},{}) v={:?}",
             bb.left(),
             bb.top(),
             bb.right(),
             bb.bottom(),
-            ctx.velocity.y,
-            ctx.velocity.x
+            ctx.velocity,
         )
     }
 

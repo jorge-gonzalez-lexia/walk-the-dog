@@ -9,6 +9,7 @@ use std::rc::Rc;
 
 const MARK_OFFSET: i16 = 80;
 
+#[derive(Debug)]
 pub struct Platform {
     pub position: Point,
     bounding_boxes: Vec<Rect>,
@@ -48,26 +49,16 @@ impl Platform {
         &self.bounding_boxes
     }
 
-    pub fn with_left_mark(self) -> Self {
-        Platform {
-            bounding_boxes: self.bounding_boxes,
-            has_mark_left: true,
-            has_mark_right: self.has_mark_right,
-            position: self.position,
-            sheet: self.sheet,
-            sprites: self.sprites,
-        }
+    pub fn with_left_mark(mut self) -> Self {
+        self.has_mark_left = true;
+
+        self
     }
 
-    pub fn with_right_mark(self) -> Self {
-        Platform {
-            bounding_boxes: self.bounding_boxes,
-            has_mark_left: self.has_mark_left,
-            has_mark_right: true,
-            position: self.position,
-            sheet: self.sheet,
-            sprites: self.sprites,
-        }
+    pub fn with_right_mark(mut self) -> Self {
+        self.has_mark_right = true;
+
+        self
     }
 
     fn draw_marks(&self, renderer: &Renderer) {
@@ -172,7 +163,11 @@ impl Obstacle for Platform {
 
     fn navigate(&self, dog: &mut Dog) {
         if self.on_left_mark(dog) || self.on_right_mark(dog) {
-            dog.jump();
+            dog.jump_to(Rect::new(
+                self.position,
+                self.right() - self.position.x,
+                100,
+            ));
         }
     }
 

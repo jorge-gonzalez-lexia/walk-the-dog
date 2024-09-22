@@ -20,20 +20,16 @@ impl Barrier {
         }
     }
 
-    pub fn with_left_mark(self) -> Self {
-        Barrier {
-            image: self.image,
-            has_mark_left: true,
-            has_mark_right: self.has_mark_right,
-        }
+    pub fn with_left_mark(mut self) -> Self {
+        self.has_mark_left = true;
+
+        self
     }
 
-    pub fn with_right_mark(self) -> Self {
-        Barrier {
-            image: self.image,
-            has_mark_left: self.has_mark_left,
-            has_mark_right: true,
-        }
+    pub fn with_right_mark(mut self) -> Self {
+        self.has_mark_right = true;
+
+        self
     }
 
     fn draw_marks(&self, renderer: &Renderer) {

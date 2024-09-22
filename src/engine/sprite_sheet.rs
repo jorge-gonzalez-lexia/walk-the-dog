@@ -5,6 +5,7 @@ use super::{
 };
 use web_sys::HtmlImageElement;
 
+#[derive(Debug)]
 pub struct SpriteSheet {
     image: HtmlImageElement,
     sheet: Sheet,

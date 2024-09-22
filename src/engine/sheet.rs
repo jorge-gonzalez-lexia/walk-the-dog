@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use crate::browser;
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Sheet {
     pub frames: HashMap<String, Cell>,
 }
@@ -18,14 +18,14 @@ impl Sheet {
     }
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Cell {
     pub frame: SheetRect,
     pub sprite_source_size: SheetRect,
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct SheetRect {
     pub x: i16,
     pub y: i16,

@@ -1,3 +1,5 @@
+use crate::engine::rect::Rect;
+
 use super::{
     context::DogContext,
     states::{
@@ -14,6 +16,7 @@ use super::{
 pub enum Event {
     Flee,
     Jump,
+    JumpTo(Rect),
     Land(i16),
     Update,
     Worry,
@@ -110,18 +113,21 @@ impl DogStateMachine {
             (DogStateMachine::ReturningToFlee(state), Event::Update) => state.update().into(),
             (DogStateMachine::ReturningToFlee(state), Event::Worry) => state.worry().into(),
 
-            (DogStateMachine::Running(state), Event::Flee) => state.flee().into(),
-            (DogStateMachine::Running(state), Event::Jump) => state.jump().into(),
-            (DogStateMachine::Running(state), Event::Land(position)) => {
-                state.land_on(position).into()
-            }
-            (DogStateMachine::Running(state), Event::Update) => state.update().into(),
-
             (DogStateMachine::ReturningWorried(state), Event::Jump) => state.jump().into(),
             (DogStateMachine::ReturningWorried(state), Event::Land(position)) => {
                 state.land_on(position).into()
             }
             (DogStateMachine::ReturningWorried(state), Event::Update) => state.update().into(),
+
+            (DogStateMachine::Running(state), Event::Flee) => state.flee().into(),
+            (DogStateMachine::Running(state), Event::Jump) => state.jump().into(),
+            (DogStateMachine::Running(state), Event::JumpTo(platform)) => {
+                state.jump_to(platform).into()
+            }
+            (DogStateMachine::Running(state), Event::Land(position)) => {
+                state.land_on(position).into()
+            }
+            (DogStateMachine::Running(state), Event::Update) => state.update().into(),
 
             (DogStateMachine::RunningWorried(state), Event::Jump) => state.jump().into(),
             (DogStateMachine::RunningWorried(state), Event::Land(position)) => {

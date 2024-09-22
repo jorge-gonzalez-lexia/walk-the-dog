@@ -1,6 +1,6 @@
 use super::{fleeing::Fleeing, jumping::Jumping, returning::Returning, DogState};
 use crate::{
-    engine::rect::Point,
+    engine::rect::{Point, Rect},
     game::dog::{
         context::{DogContext, DOG_FLOOR, JUMP_SPEED, RUNNING_FRAMES},
         state_machine::DogStateMachine,
@@ -50,6 +50,15 @@ impl DogState<Running> {
 
         DogState {
             context: self.context,
+            _state: Jumping,
+        }
+    }
+
+    pub fn jump_to(self, platform: Rect) -> DogState<Jumping> {
+        log!("Dog Running->JumpingTo {platform:?}");
+
+        DogState {
+            context: self.context.jump_to(platform),
             _state: Jumping,
         }
     }

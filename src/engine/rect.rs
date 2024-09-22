@@ -1,10 +1,10 @@
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Point {
     pub x: i16,
     pub y: i16,
 }
 
-#[derive(Debug, Default)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Rect {
     pub position: Point,
     pub width: i16,
