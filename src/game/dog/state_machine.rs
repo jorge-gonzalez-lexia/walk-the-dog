@@ -2,11 +2,10 @@ use super::{
     context::DogContext,
     states::{
         fleeing::Fleeing, jumping::Jumping, jumping_flee::JumpingFlee,
-        jumping_flee_return::JumpingFleeReturn, jumping_return::JumpingReturn,
-        jumping_worried::JumpingWorried, jumping_worried_return::JumpingWorriedReturn,
-        returning::Returning, returning_to_flee::ReturningToFlee,
-        returning_worried::ReturningWorried, running::Running, running_worried::RunningWorried,
-        DogState,
+        jumping_flee_return::JumpingFleeReturn, jumping_worried::JumpingWorried,
+        jumping_worried_return::JumpingWorriedReturn, returning::Returning,
+        returning_to_flee::ReturningToFlee, returning_worried::ReturningWorried, running::Running,
+        running_worried::RunningWorried, DogState,
     },
 };
 
@@ -26,7 +25,6 @@ pub enum DogStateMachine {
     Jumping(DogState<Jumping>),
     JumpingFlee(DogState<JumpingFlee>),
     JumpingFleeReturn(DogState<JumpingFleeReturn>),
-    JumpingReturn(DogState<JumpingReturn>),
     JumpingWorried(DogState<JumpingWorried>),
     JumpingWorriedReturn(DogState<JumpingWorriedReturn>),
     Returning(DogState<Returning>),
@@ -43,7 +41,6 @@ impl DogStateMachine {
             DogStateMachine::Jumping(state) => state.context(),
             DogStateMachine::JumpingFlee(state) => state.context(),
             DogStateMachine::JumpingFleeReturn(state) => state.context(),
-            DogStateMachine::JumpingReturn(state) => state.context(),
             DogStateMachine::JumpingWorried(state) => state.context(),
             DogStateMachine::JumpingWorriedReturn(state) => state.context(),
             DogStateMachine::Returning(state) => state.context(),
@@ -60,7 +57,6 @@ impl DogStateMachine {
             DogStateMachine::Jumping(_) => "Jumping",
             DogStateMachine::JumpingFlee(_) => "JumpingFlee",
             DogStateMachine::JumpingFleeReturn(_) => "JumpingFleeReturn",
-            DogStateMachine::JumpingReturn(_) => "JumpingReturn",
             DogStateMachine::JumpingWorried(_) => "JumpingWorried",
             DogStateMachine::JumpingWorriedReturn(_) => "JumpingWorriedReturn",
             DogStateMachine::Returning(_) => "Returning",
@@ -94,11 +90,6 @@ impl DogStateMachine {
                 state.land_on(position).into()
             }
             (DogStateMachine::JumpingFleeReturn(state), Event::Update) => state.update().into(),
-
-            (DogStateMachine::JumpingReturn(state), Event::Land(position)) => {
-                state.land_on(position).into()
-            }
-            (DogStateMachine::JumpingReturn(state), Event::Update) => state.update().into(),
 
             (DogStateMachine::JumpingWorried(state), Event::Land(position)) => {
                 state.land_on(position).into()
@@ -174,12 +165,6 @@ impl From<DogState<JumpingFlee>> for DogStateMachine {
 impl From<DogState<JumpingFleeReturn>> for DogStateMachine {
     fn from(state: DogState<JumpingFleeReturn>) -> Self {
         DogStateMachine::JumpingFleeReturn(state)
-    }
-}
-
-impl From<DogState<JumpingReturn>> for DogStateMachine {
-    fn from(state: DogState<JumpingReturn>) -> Self {
-        DogStateMachine::JumpingReturn(state)
     }
 }
 

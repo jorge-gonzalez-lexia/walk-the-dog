@@ -1,4 +1,4 @@
-use super::{fleeing::Fleeing, jumping_return::JumpingReturn, running::Running, DogState};
+use super::{fleeing::Fleeing, jumping::Jumping, running::Running, DogState};
 use crate::game::dog::{
     context::{JUMP_SPEED, RUNNING_FRAMES},
     state_machine::DogStateMachine,
@@ -18,13 +18,13 @@ impl DogState<Returning> {
         }
     }
 
-    pub fn jump(mut self) -> DogState<JumpingReturn> {
-        log!("Dog Returning->JumpingReturn");
+    pub fn jump(mut self) -> DogState<Jumping> {
+        log!("Dog Returning->Jumping");
         self.context.velocity.y = JUMP_SPEED;
 
         DogState {
             context: self.context,
-            _state: JumpingReturn,
+            _state: Jumping,
         }
     }
 
