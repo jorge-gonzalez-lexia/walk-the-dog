@@ -47,7 +47,14 @@ impl DogContext {
 
     pub fn set_floor(mut self, bottom: i16) -> Self {
         self.floor = bottom - DOG_HEIGHT;
-        log!("set floor {}", self.floor);
+        log!(
+            "DogContext: set floor to {}",
+            if self.floor == DOG_FLOOR {
+                "Ground"
+            } else {
+                "Platform"
+            }
+        );
 
         self
     }

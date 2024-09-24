@@ -170,6 +170,12 @@ impl Obstacle for Platform {
             .for_each(|b| b.set_x(b.position.x + x));
     }
 
+    /// Navigate the platform based on hitting the mark (when moving right or
+    /// left), at which point jump. Otherwise, if you hit the platform, assume
+    /// it is on the way down from a jump, at which point the dog lands on the
+    /// platform and we set the `has_dog` flag. Otherwise, if the dog was last
+    /// on the platform, it must have run off so unset `has_dog` and notify
+    /// dog its floor has changed.
     fn navigate(&mut self, dog: &mut Dog) {
         if self.on_left_mark(dog) || self.on_right_mark(dog) {
             dog.jump();
@@ -178,7 +184,7 @@ impl Obstacle for Platform {
             dog.on_platform(self.position.y);
         } else if self.has_dog {
             self.has_dog = false;
-            dog.off_platform(self.position.y);
+            dog.off_platform();
         }
     }
 

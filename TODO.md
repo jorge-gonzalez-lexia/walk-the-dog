@@ -1,6 +1,5 @@
 Dog states
 
-- review the dog jumping on and off platform flow. do we need the update in jumping states, for example?
 - compare analogous states. Can we consolidate?
 
 Other

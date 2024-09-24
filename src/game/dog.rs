@@ -60,15 +60,8 @@ impl Dog {
         self.state_machine.context().velocity.x >= 0
     }
 
-    pub fn off_platform(&mut self, top: i16) {
-        // log!(
-        //     "off_platform {:?} top={top} platform_floor={}",
-        //     self.state_machine.context().info(),
-        //     top - DOG_HEIGHT
-        // );
-        if self.state_machine.context().floor == top - DOG_HEIGHT {
-            self.state_machine = self.state_machine.clone().transition(Event::OffPlatform);
-        }
+    pub fn off_platform(&mut self) {
+        self.state_machine = self.state_machine.clone().transition(Event::OffPlatform);
     }
 
     pub fn on_platform(&mut self, top: i16) {

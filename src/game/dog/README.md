@@ -2,15 +2,20 @@
 
 ## GameState(Ready)
 
+Before the game starts, the Dog is running away from the Boy, but returning if
+it goes too far. It jumps over any obstacles. When the game starts, the Dog
+transitions to Fleeing and the game is in Walking state (see below).
+
 ```mermaid
 stateDiagram-v2
   [*] --> Running
+  Running --> Fleeing: Flee
+  Running --> Jumping: Jump
+  Running --> Running: OffPlatform
   state running_update <<choice>>
   Running --> running_update: Update
   running_update --> Running: too close
   running_update --> Returning: too far
-  Running --> Jumping: Jump
-  Running --> Fleeing: Flee
 
   state jumping_update <<choice>>
   Jumping --> jumping_update: Update
@@ -28,23 +33,14 @@ stateDiagram-v2
   JumpingReturn --> jumping_return_update: Update
   jumping_return_update --> JumpingReturn: above floor
   jumping_return_update --> Returning: on floor
-
-
 ```
-
-- Game listens for right arrow key
-- `BoyState(Idle)`. Boy is idling at left of screen
-- `DogState(Running)`. Dog is running away from boy
-
-Game Event: On arrow right, `WalkTheDogState(Ready)` calls:
-
-- boy::run_right() => `Boy Event::Run` => `Boy(Running)`
-- dog::flee() => `Dog Event::Flee`
 
 ### DogState(Running):
 
+- `Dog Event::Flee` happens when the game starts.
+- `Dog Event::Jump` happens when Dog hits an obstacle "left" mark.
+- `Dog Event::OffPlatform` happens when dog is runs off a platform. See [Platform Navigation](#platform-navigation)
 - On `Dog Event::Update` and dog has run too far off screen => Transitions to `Dog(Returning)`
-- On `Dog Event::Flee`:
 
   - if dog is off screen => Transition to `DogState(ReturningToFlee)`
   - if dog is on screen => Transition to `DogState(Fleeing)`
@@ -149,3 +145,18 @@ stateDiagram-v2
 - Dog worriedly runs away from boy
 
 - On `Dog Event::Update` and dog has gone too far => Transition to `DogState(ReturningWorried)`
+
+## Platform Navigation
+
+A segment with a platform onto which a Dog must jump has a mark set on either side of the platform. The mark may be on the Platform object itself (or, if a Barrier immediately precedes a Platform, on a Barrier). The mark (left or right) is an indicator that the Dog should Jump. Hence, both a Barrier and Platform Obstacle has logic that fires the Dog Event::Jump when the Dog hits a mark.
+
+The Platform Obstacle also checks if the Dog hits the platform itself, which we assume must mean the Dog was on the descending cycle of a jump and has landed on the platform (since a Dog should never otherwise hit the platform). The Platform then:
+
+- sets its `has_dog` flag
+- notifies the Dog via `dog.on_platform`
+- which in turn fires `Dog Event::Land`
+- which calls `state.land_on`
+  - which calls `context.set_floor`
+    - which stores the floor value
+      At this point, every context update will check to ensure the Dog does not drop below the Platform floor.
+  - and returns `DogState(Running)` (or similar)
