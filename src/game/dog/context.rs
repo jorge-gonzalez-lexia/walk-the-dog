@@ -5,13 +5,14 @@ use crate::{
 
 pub const RUNNING_FRAMES: u8 = 60;
 pub const DOG_FLOOR: i16 = game::HEIGHT - DOG_HEIGHT;
-const DOG_HEIGHT: i16 = 89;
+pub const DOG_HEIGHT: i16 = 89;
 
 pub const JUMPING_FRAMES: u8 = 60;
 pub const JUMP_SPEED: i16 = -25;
 
 #[derive(Clone)]
 pub struct DogContext {
+    pub floor: i16,
     pub frame: u8,
     platform: Option<Rect>,
     pub position: Point,
@@ -21,6 +22,7 @@ pub struct DogContext {
 impl DogContext {
     pub fn new(frame: u8, position: Point, velocity: Point) -> Self {
         DogContext {
+            floor: DOG_FLOOR,
             frame,
             platform: None,
             position,
@@ -28,25 +30,30 @@ impl DogContext {
         }
     }
 
-    pub fn jump_to(mut self, platform: Rect) -> Self {
-        self.platform = Some(platform);
-        self.velocity.y = JUMP_SPEED;
+    pub fn info(&self) -> String {
+        format!(
+            "pos={:?} v={:?} floor={:?}",
+            self.position, self.velocity, self.floor
+        )
+    }
+
+    pub fn floor(&self) -> i16 {
+        if let Some(platform) = self.platform {
+            platform.top() - DOG_HEIGHT
+        } else {
+            DOG_FLOOR
+        }
+    }
+
+    pub fn set_floor(mut self, bottom: i16) -> Self {
+        self.floor = bottom - DOG_HEIGHT;
+        log!("set floor {}", self.floor);
 
         self
     }
 
     pub fn reset_frame(mut self) -> Self {
         self.frame = 0;
-
-        self
-    }
-
-    pub fn set_on(mut self, position: i16) -> Self {
-        log!("Dog: before set on {:?}", self.info());
-        // let position = position - DOG_HEIGHT;
-        self.position.y = position;
-        self.velocity.y = game::GRAVITY;
-        log!("Dog: set_on {:?}", self.info());
 
         self
     }
@@ -72,46 +79,10 @@ impl DogContext {
         self.position.x += self.velocity.x;
         self.position.y += self.velocity.y;
 
-        if self.should_remove_platform() {
-            log!("Dog: drop from platform {:?}", self.info());
-            self.platform = None;
-        }
-
-        if self.position.y > self.floor() {
-            self.position.y = self.floor();
+        if self.position.y > self.floor {
+            self.position.y = self.floor;
         }
 
         self
-    }
-
-    fn should_remove_platform(&self) -> bool {
-        self.moved_off_platform() && self.velocity.y > 0 && self.position.y > self.floor()
-    }
-
-    pub fn floor(&self) -> i16 {
-        if let Some(platform) = self.platform {
-            platform.top() - DOG_HEIGHT
-        } else {
-            DOG_FLOOR
-        }
-    }
-
-    pub fn info(&self) -> String {
-        format!(
-            "pos={:?} v={:?} platform={:?}",
-            self.position, self.velocity, self.platform
-        )
-    }
-
-    fn moved_off_platform(&self) -> bool {
-        if let Some(platform) = self.platform {
-            let vx = self.velocity.x;
-            let x = self.position.x;
-            let right = self.position.x + 100;
-
-            vx >= 0 && x >= platform.right() || vx < 0 && right < platform.left()
-        } else {
-            false
-        }
     }
 }

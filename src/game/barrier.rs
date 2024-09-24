@@ -97,14 +97,7 @@ impl Obstacle for Barrier {
         self.image.move_horizontally(x);
     }
 
-    fn navigate(&self, dog: &mut Dog) {
-        // log!(
-        //     "Stone mark left={} x={} right={} {}",
-        //     self.on_left_mark(dog),
-        //     self.mark_left().left(),
-        //     self.on_right_mark(dog),
-        //     dog.info()
-        // );
+    fn navigate(&mut self, dog: &mut Dog) {
         if self.on_left_mark(dog) || self.on_right_mark(dog) {
             dog.jump();
         }

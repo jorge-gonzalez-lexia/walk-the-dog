@@ -13,6 +13,8 @@ const MARK_OFFSET: i16 = 80;
 pub struct Platform {
     pub position: Point,
     bounding_boxes: Vec<Rect>,
+    /// True when dog is running on platform
+    has_dog: bool,
     has_mark_left: bool,
     has_mark_right: bool,
     sheet: Rc<SpriteSheet>,
@@ -37,6 +39,7 @@ impl Platform {
 
         Platform {
             bounding_boxes,
+            has_dog: false,
             has_mark_left: false,
             has_mark_right: false,
             position,
@@ -69,6 +72,12 @@ impl Platform {
         if self.has_mark_right {
             renderer.draw_rect_colored(&self.mark_right(), "#FFFF00");
         }
+    }
+
+    fn on_platform(&self, dog: &Dog) -> bool {
+        self.bounding_boxes()
+            .iter()
+            .any(|b| dog.bounding_box().intersects(b))
     }
 
     fn mark_left(&self) -> Rect {
@@ -161,13 +170,15 @@ impl Obstacle for Platform {
             .for_each(|b| b.set_x(b.position.x + x));
     }
 
-    fn navigate(&self, dog: &mut Dog) {
+    fn navigate(&mut self, dog: &mut Dog) {
         if self.on_left_mark(dog) || self.on_right_mark(dog) {
-            dog.jump_to(Rect::new(
-                self.position,
-                self.right() - self.position.x,
-                100,
-            ));
+            dog.jump();
+        } else if self.on_platform(dog) {
+            self.has_dog = true;
+            dog.on_platform(self.position.y);
+        } else if self.has_dog {
+            self.has_dog = false;
+            dog.off_platform(self.position.y);
         }
     }
 

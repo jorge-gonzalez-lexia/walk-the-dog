@@ -7,7 +7,7 @@ use crate::engine::{
     renderer::Renderer,
     sheet::{Cell, Sheet},
 };
-use context::DOG_FLOOR;
+use context::{DOG_FLOOR, DOG_HEIGHT};
 use state_machine::{DogStateMachine, Event};
 use states::DogState;
 use web_sys::HtmlImageElement;
@@ -36,19 +36,7 @@ impl Dog {
             return;
         }
 
-        // log!("Dog jump to navigate obstacle");
         self.state_machine = self.state_machine.clone().transition(Event::Jump);
-    }
-
-    pub fn jump_to(&mut self, platform: Rect) {
-        if self.state_machine.context().velocity.y < 0 {
-            return;
-        }
-
-        self.state_machine = self
-            .state_machine
-            .clone()
-            .transition(Event::JumpTo(platform));
     }
 
     pub fn info(&self) -> String {
@@ -64,10 +52,6 @@ impl Dog {
         )
     }
 
-    pub fn land_on(&mut self, position: i16) {
-        self.state_machine = self.state_machine.clone().transition(Event::Land(position));
-    }
-
     pub fn moving_left(&self) -> bool {
         self.state_machine.context().velocity.x < 0
     }
@@ -76,45 +60,20 @@ impl Dog {
         self.state_machine.context().velocity.x >= 0
     }
 
-    pub fn navigate(&mut self, position: i16) {
-        if matches!(self.state_machine, DogStateMachine::Jumping(_)) {
-            if self.state_machine.context().velocity.y > 0
-                && self.bounding_box().bottom() > position
-            {
-                // log!("nav to land {} {}", self.bounding_box().bottom(), position);
-                self.land_on(position);
-            }
-        } else if matches!(self.state_machine, DogStateMachine::JumpingFlee(_)) {
-            if self.state_machine.context().velocity.y > 0
-                && self.bounding_box().bottom() > position
-            {
-                // log!(
-                //     "nav to land jump flee {} {}",
-                //     self.bounding_box().bottom(),
-                //     position
-                // );
-                self.land_on(position);
-            }
-        } else if matches!(self.state_machine, DogStateMachine::JumpingReturn(_)) {
-            if self.state_machine.context().velocity.y > 0
-                && self.bounding_box().bottom() > position
-            {
-                // log!(
-                //     "nav to land jump return {} {}",
-                //     self.bounding_box().bottom(),
-                //     position
-                // );
-                self.land_on(position);
-            }
-        } else if self.bounding_box().top() == DOG_FLOOR {
-            self.state_machine = self.state_machine.clone().transition(Event::Jump);
-        } else {
-            // log!(
-            //     "run/return/flee on platform {} platform={}",
-            //     self.info(),
-            //     position
-            // );
-            self.land_on(position);
+    pub fn off_platform(&mut self, top: i16) {
+        // log!(
+        //     "off_platform {:?} top={top} platform_floor={}",
+        //     self.state_machine.context().info(),
+        //     top - DOG_HEIGHT
+        // );
+        if self.state_machine.context().floor == top - DOG_HEIGHT {
+            self.state_machine = self.state_machine.clone().transition(Event::OffPlatform);
+        }
+    }
+
+    pub fn on_platform(&mut self, top: i16) {
+        if self.state_machine.context().floor == DOG_FLOOR {
+            self.state_machine = self.state_machine.clone().transition(Event::Land(top))
         }
     }
 

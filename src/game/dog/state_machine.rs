@@ -1,5 +1,3 @@
-use crate::engine::rect::Rect;
-
 use super::{
     context::DogContext,
     states::{
@@ -16,8 +14,8 @@ use super::{
 pub enum Event {
     Flee,
     Jump,
-    JumpTo(Rect),
     Land(i16),
+    OffPlatform,
     Update,
     Worry,
 }
@@ -75,23 +73,21 @@ impl DogStateMachine {
 
     pub fn transition(self, event: Event) -> Self {
         if event != Event::Update {
-            log!("Dog Event {event:?}");
+            log!("Dog Event '{event:?}' in state '{}'", self.state_name());
         }
 
         match (self.clone(), event) {
             (DogStateMachine::Fleeing(state), Event::Jump) => state.jump().into(),
-            (DogStateMachine::Fleeing(state), Event::Land(position)) => {
-                state.land_on(position).into()
+            (DogStateMachine::Fleeing(state), Event::OffPlatform) => {
+                state.drop_from_platform().into()
             }
             (DogStateMachine::Fleeing(state), Event::Update) => state.update().into(),
             (DogStateMachine::Fleeing(state), Event::Worry) => state.worry().into(),
 
-            // (DogStateMachine::Jumping(state), Event::Land(position)) => state.land(position).into(),
+            (DogStateMachine::Jumping(state), Event::Land(p)) => state.land_on(p).into(),
             (DogStateMachine::Jumping(state), Event::Update) => state.update().into(),
 
-            (DogStateMachine::JumpingFlee(state), Event::Land(position)) => {
-                state.land_on(position).into()
-            }
+            (DogStateMachine::JumpingFlee(state), Event::Land(p)) => state.land_on(p).into(),
             (DogStateMachine::JumpingFlee(state), Event::Update) => state.update().into(),
 
             (DogStateMachine::JumpingFleeReturn(state), Event::Land(position)) => {
@@ -115,13 +111,7 @@ impl DogStateMachine {
             (DogStateMachine::JumpingWorriedReturn(state), Event::Update) => state.update().into(),
 
             (DogStateMachine::Returning(state), Event::Flee) => state.flee().into(),
-            // (DogStateMachine::Returning(state), Event::Jump) => state.jump().into(),
-            (DogStateMachine::Returning(state), Event::JumpTo(platform)) => {
-                state.jump_to(platform).into()
-            }
-            (DogStateMachine::Returning(state), Event::Land(position)) => {
-                state.land_on(position).into()
-            }
+            (DogStateMachine::Returning(state), Event::Jump) => state.jump().into(),
             (DogStateMachine::Returning(state), Event::Update) => state.update().into(),
 
             (DogStateMachine::ReturningToFlee(state), Event::Land(position)) => {
@@ -132,29 +122,27 @@ impl DogStateMachine {
             (DogStateMachine::ReturningToFlee(state), Event::Worry) => state.worry().into(),
 
             (DogStateMachine::ReturningWorried(state), Event::Jump) => state.jump().into(),
-            (DogStateMachine::ReturningWorried(state), Event::Land(position)) => {
-                state.land_on(position).into()
-            }
             (DogStateMachine::ReturningWorried(state), Event::Update) => state.update().into(),
 
             (DogStateMachine::Running(state), Event::Flee) => state.flee().into(),
             (DogStateMachine::Running(state), Event::Jump) => state.jump().into(),
-            (DogStateMachine::Running(state), Event::JumpTo(platform)) => {
-                state.jump_to(platform).into()
-            }
-            (DogStateMachine::Running(state), Event::Land(position)) => {
-                state.land_on(position).into()
+            (DogStateMachine::Running(state), Event::OffPlatform) => {
+                state.drop_from_platform().into()
             }
             (DogStateMachine::Running(state), Event::Update) => state.update().into(),
 
             (DogStateMachine::RunningWorried(state), Event::Jump) => state.jump().into(),
-            (DogStateMachine::RunningWorried(state), Event::Land(position)) => {
-                state.land_on(position).into()
+            (DogStateMachine::RunningWorried(state), Event::OffPlatform) => {
+                state.drop_from_platform().into()
             }
             (DogStateMachine::RunningWorried(state), Event::Update) => state.update().into(),
 
             (s, event) => {
-                error!("Dog event unhandled: {} {:?}", s.state_name(), event);
+                error!(
+                    "Dog: unhandled event '{:?}' for state '{}'",
+                    event,
+                    s.state_name()
+                );
                 self
             }
         }

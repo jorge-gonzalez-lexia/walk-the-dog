@@ -1,5 +1,10 @@
 Dog states
 
+- review the dog jumping on and off platform flow. do we need the update in jumping states, for example?
+- compare analogous states. Can we consolidate?
+
+Other
+
 - [] add jump l and r markers to obstacles (from segment creation)
 - [] try single landing event on platform. When dog is over platform, it becomes the floor. When not over platform, revert to ground floor.
 - [] when dog no longer on platform, decide whether to jump based on upcoming marker

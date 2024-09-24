@@ -11,11 +11,11 @@ use crate::game::{
 pub struct JumpingFleeReturn;
 
 impl DogState<JumpingFleeReturn> {
-    pub fn land_on(self, position: i16) -> DogState<ReturningToFlee> {
+    pub fn land_on(self, platform: i16) -> DogState<ReturningToFlee> {
         log!("Dog JumpingFleeReturn->ReturningToFlee (lands)");
 
         DogState {
-            context: self.context.reset_frame().set_on(position),
+            context: self.context.reset_frame().set_floor(platform),
             _state: ReturningToFlee,
         }
     }

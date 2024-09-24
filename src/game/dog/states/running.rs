@@ -1,10 +1,13 @@
 use super::{fleeing::Fleeing, jumping::Jumping, returning::Returning, DogState};
 use crate::{
-    engine::rect::{Point, Rect},
-    game::dog::{
-        context::{DogContext, DOG_FLOOR, JUMP_SPEED, RUNNING_FRAMES},
-        state_machine::DogStateMachine,
-        states::returning_to_flee::ReturningToFlee,
+    engine::rect::Point,
+    game::{
+        dog::{
+            context::{DogContext, DOG_FLOOR, JUMP_SPEED, RUNNING_FRAMES},
+            state_machine::DogStateMachine,
+            states::returning_to_flee::ReturningToFlee,
+        },
+        HEIGHT,
     },
 };
 
@@ -28,13 +31,22 @@ impl DogState<Running> {
         }
     }
 
+    pub fn drop_from_platform(self) -> DogState<Running> {
+        log!("Dog drops from platform");
+
+        DogState {
+            context: self.context.set_floor(HEIGHT),
+            _state: Running,
+        }
+    }
+
     pub fn flee(mut self) -> FleeingEndState {
         if self.context.position.x > 550 {
             self.context.velocity.x *= 2; // screen starts scrolling left
 
             FleeingEndState::ReturningToFlee(self.return_to_flee())
         } else {
-            log!("Dog Running->Fleeing");
+            log!("Dog Running->Fleeing {:?}", self.context.info());
             self.context.velocity.x = 0; // screen starts scrolling left
 
             FleeingEndState::Fleeing(DogState {
@@ -51,22 +63,6 @@ impl DogState<Running> {
         DogState {
             context: self.context,
             _state: Jumping,
-        }
-    }
-
-    pub fn jump_to(self, platform: Rect) -> DogState<Jumping> {
-        log!("Dog Running->JumpingTo {platform:?}");
-
-        DogState {
-            context: self.context.jump_to(platform),
-            _state: Jumping,
-        }
-    }
-
-    pub fn land_on(self, position: i16) -> DogState<Running> {
-        DogState {
-            context: self.context.set_on(position),
-            _state: Running,
         }
     }
 

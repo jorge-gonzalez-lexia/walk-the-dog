@@ -1,21 +1,15 @@
 use super::{returning::Returning, DogState};
-use crate::game::{
-    self,
-    dog::{
-        context::{DOG_FLOOR, JUMPING_FRAMES},
-        state_machine::DogStateMachine,
-    },
-};
+use crate::game::dog::{context::JUMPING_FRAMES, state_machine::DogStateMachine};
 
 #[derive(Clone)]
 pub struct JumpingReturn;
 
 impl DogState<JumpingReturn> {
-    pub fn land_on(self, position: i16) -> DogState<Returning> {
+    pub fn land_on(self, platform: i16) -> DogState<Returning> {
         log!("Dog JumpingReturn->Returning (lands)");
 
         DogState {
-            context: self.context.reset_frame().set_on(position),
+            context: self.context.reset_frame().set_floor(platform),
             _state: Returning,
         }
     }
@@ -23,10 +17,19 @@ impl DogState<JumpingReturn> {
     pub fn update(mut self) -> JumpingEndState {
         self.context = self.context.update(JUMPING_FRAMES);
 
-        if self.context.position.y >= DOG_FLOOR {
-            JumpingEndState::Landing(self.land_on(game::HEIGHT))
+        if self.context.velocity.y > 0 && self.context.position.y == self.context.floor() {
+            JumpingEndState::Landing(self.land())
         } else {
             JumpingEndState::Jumping(self)
+        }
+    }
+
+    fn land(self) -> DogState<Returning> {
+        log!("Dog JumpingReturn->Returning (lands)");
+
+        DogState {
+            context: self.context.reset_frame(),
+            _state: Returning,
         }
     }
 }

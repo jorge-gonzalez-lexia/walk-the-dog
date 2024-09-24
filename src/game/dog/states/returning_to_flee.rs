@@ -19,9 +19,9 @@ impl DogState<ReturningToFlee> {
         }
     }
 
-    pub fn land_on(self, position: i16) -> DogState<ReturningToFlee> {
+    pub fn land_on(self, platform: i16) -> DogState<ReturningToFlee> {
         DogState {
-            context: self.context.set_on(position),
+            context: self.context.set_floor(platform),
             _state: ReturningToFlee,
         }
     }

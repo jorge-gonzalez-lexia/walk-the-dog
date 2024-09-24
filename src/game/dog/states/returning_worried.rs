@@ -20,13 +20,6 @@ impl DogState<ReturningWorried> {
         }
     }
 
-    pub fn land_on(self, position: i16) -> DogState<ReturningWorried> {
-        DogState {
-            context: self.context.set_on(position),
-            _state: ReturningWorried,
-        }
-    }
-
     pub fn update(mut self) -> ReturningEndState {
         self.context = self.context.update(RUNNING_FRAMES);
 

@@ -5,11 +5,11 @@ use crate::game::dog::{context::JUMPING_FRAMES, state_machine::DogStateMachine};
 pub struct Jumping;
 
 impl DogState<Jumping> {
-    pub fn land(self) -> DogState<Running> {
-        log!("Dog Jumping->Running (lands)");
+    pub fn land_on(self, platform: i16) -> DogState<Running> {
+        log!("Dog Jumping->Running (lands on platform)");
 
         DogState {
-            context: self.context.reset_frame(),
+            context: self.context.reset_frame().set_floor(platform),
             _state: Running,
         }
     }
@@ -17,11 +17,19 @@ impl DogState<Jumping> {
     pub fn update(mut self) -> JumpingEndState {
         self.context = self.context.update(JUMPING_FRAMES);
 
-        let floor = self.context.floor();
-        if self.context.velocity.y > 0 && self.context.position.y == floor {
+        if self.context.velocity.y > 0 && self.context.position.y == self.context.floor() {
             JumpingEndState::Landing(self.land())
         } else {
             JumpingEndState::Jumping(self)
+        }
+    }
+
+    fn land(self) -> DogState<Running> {
+        log!("Dog Jumping->Running (lands)");
+
+        DogState {
+            context: self.context.reset_frame(),
+            _state: Running,
         }
     }
 }
