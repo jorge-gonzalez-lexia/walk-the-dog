@@ -1,5 +1,5 @@
 use crate::{
-    engine::rect::{Point, Rect},
+    engine::rect::Point,
     game::{self},
 };
 
@@ -14,7 +14,6 @@ pub const JUMP_SPEED: i16 = -25;
 pub struct DogContext {
     pub floor: i16,
     pub frame: u8,
-    platform: Option<Rect>,
     pub position: Point,
     pub velocity: Point,
 }
@@ -24,7 +23,6 @@ impl DogContext {
         DogContext {
             floor: DOG_FLOOR,
             frame,
-            platform: None,
             position,
             velocity,
         }
@@ -38,11 +36,7 @@ impl DogContext {
     }
 
     pub fn floor(&self) -> i16 {
-        if let Some(platform) = self.platform {
-            platform.top() - DOG_HEIGHT
-        } else {
-            DOG_FLOOR
-        }
+        self.floor
     }
 
     pub fn set_floor(mut self, bottom: i16) -> Self {
