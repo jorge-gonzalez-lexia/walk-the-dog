@@ -12,6 +12,8 @@ pub const JUMP_SPEED: i16 = -25;
 
 #[derive(Clone)]
 pub struct DogContext {
+    distance_max: i16,
+    pub distance_min: i16,
     pub floor: i16,
     pub frame: u8,
     pub position: Point,
@@ -21,6 +23,8 @@ pub struct DogContext {
 impl DogContext {
     pub fn new(frame: u8, position: Point, velocity: Point) -> Self {
         DogContext {
+            distance_max: 1000,
+            distance_min: 300,
             floor: DOG_FLOOR,
             frame,
             position,
@@ -82,6 +86,13 @@ impl DogContext {
 
         if self.position.y > self.floor {
             self.position.y = self.floor;
+        }
+
+        if self.position.x > self.distance_max
+            || (self.position.x < self.distance_min && self.velocity.x < 0)
+        {
+            self.velocity.x *= -1;
+            log!("Dog: toggled direction {:?}", self.info());
         }
 
         self

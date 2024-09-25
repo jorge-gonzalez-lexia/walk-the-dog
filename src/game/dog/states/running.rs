@@ -1,4 +1,4 @@
-use super::{fleeing::Fleeing, jumping::Jumping, returning::Returning, DogState};
+use super::{fleeing::Fleeing, jumping::Jumping, DogState};
 use crate::{
     engine::rect::Point,
     game::{
@@ -66,14 +66,10 @@ impl DogState<Running> {
         }
     }
 
-    pub fn update(mut self) -> RunningEndState {
+    pub fn update(mut self) -> DogState<Running> {
         self.context = self.context.update(RUNNING_FRAMES);
 
-        if self.context.position.x > 1000 {
-            RunningEndState::Returning(self.return_to_boy())
-        } else {
-            RunningEndState::Running(self)
-        }
+        self
     }
 
     fn return_to_flee(self) -> DogState<ReturningToFlee> {
@@ -82,15 +78,6 @@ impl DogState<Running> {
         DogState {
             context: self.context.toggle_direction(),
             _state: ReturningToFlee,
-        }
-    }
-
-    fn return_to_boy(self) -> DogState<Returning> {
-        log!("Dog Running->Returning {}", self.context.position.x);
-
-        DogState {
-            context: self.context.toggle_direction(),
-            _state: Returning,
         }
     }
 }
@@ -105,20 +92,6 @@ impl From<FleeingEndState> for DogStateMachine {
         match end_state {
             FleeingEndState::Fleeing(fleeing) => fleeing.into(),
             FleeingEndState::ReturningToFlee(returning) => returning.into(),
-        }
-    }
-}
-
-pub enum RunningEndState {
-    Returning(DogState<Returning>),
-    Running(DogState<Running>),
-}
-
-impl From<RunningEndState> for DogStateMachine {
-    fn from(end_state: RunningEndState) -> Self {
-        match end_state {
-            RunningEndState::Returning(returning) => returning.into(),
-            RunningEndState::Running(running) => running.into(),
         }
     }
 }

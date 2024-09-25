@@ -1,7 +1,5 @@
 use super::{running::Running, DogState};
-use crate::game::dog::{
-    context::JUMPING_FRAMES, state_machine::DogStateMachine, states::returning::Returning,
-};
+use crate::game::dog::{context::JUMPING_FRAMES, state_machine::DogStateMachine};
 
 #[derive(Clone)]
 pub struct Jumping;
@@ -22,10 +20,8 @@ impl DogState<Jumping> {
     }
 
     fn land(self, platform: Option<i16>) -> JumpingEndState {
-        let is_returning = self.context.velocity.x < 0;
         log!(
-            "Dog Jumping->{} (lands{})",
-            if is_returning { "Returning" } else { "Running" },
+            "Dog Jumping->Running (lands{})",
             if platform.is_some() {
                 " on platform"
             } else {
@@ -38,32 +34,24 @@ impl DogState<Jumping> {
         } else {
             self.context.reset_frame()
         };
-        if is_returning {
-            JumpingEndState::LandAndReturn(DogState {
-                context,
-                _state: Returning,
-            })
-        } else {
-            JumpingEndState::LandAndRun(DogState {
-                context,
-                _state: Running,
-            })
-        }
+
+        JumpingEndState::Lands(DogState {
+            context,
+            _state: Running,
+        })
     }
 }
 
 pub enum JumpingEndState {
     Jumping(DogState<Jumping>),
-    LandAndReturn(DogState<Returning>),
-    LandAndRun(DogState<Running>),
+    Lands(DogState<Running>),
 }
 
 impl From<JumpingEndState> for DogStateMachine {
     fn from(end_state: JumpingEndState) -> Self {
         match end_state {
             JumpingEndState::Jumping(jumping) => jumping.into(),
-            JumpingEndState::LandAndReturn(s) => s.into(),
-            JumpingEndState::LandAndRun(s) => s.into(),
+            JumpingEndState::Lands(s) => s.into(),
         }
     }
 }
