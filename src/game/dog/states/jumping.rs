@@ -5,6 +5,13 @@ use crate::game::dog::{context::JUMPING_FRAMES, state_machine::DogStateMachine};
 pub struct Jumping;
 
 impl DogState<Jumping> {
+    pub fn flee(mut self) -> DogState<Jumping> {
+        self.context.velocity.x = if self.context.position.x > 550 { -1 } else { 0 };
+        log!("Dog starts fleeing mid-jump {}", self.context.info());
+
+        self
+    }
+
     pub fn land_on(self, platform: i16) -> JumpingEndState {
         self.land(Some(platform))
     }
