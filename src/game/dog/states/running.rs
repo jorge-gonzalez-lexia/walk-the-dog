@@ -36,13 +36,6 @@ impl DogState<Running> {
         }
     }
 
-    pub fn flee(mut self) -> DogState<Running> {
-        self.context.velocity.x = if self.context.position.x > 550 { -1 } else { 0 };
-        log!("Dog starts fleeing {}", self.context.info());
-
-        self
-    }
-
     pub fn jump(mut self) -> DogState<Jumping> {
         log!("Dog Running->Jumping");
         self.context.velocity.y = JUMP_SPEED;
@@ -57,17 +50,5 @@ impl DogState<Running> {
         self.context = self.context.update(RUNNING_FRAMES);
 
         self
-    }
-
-    pub fn worry(mut self) -> DogState<Running> {
-        log!("Dog runs worried {}", self.context.info());
-
-        self.context.velocity.x = -4;
-        self.context.distance_min = 50;
-
-        DogState {
-            context: self.context,
-            _state: Running,
-        }
     }
 }

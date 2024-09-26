@@ -1,9 +1,8 @@
 Dog states
 
-- handle Flee while Jumping
-- handle Worry while Jumping
 - handle Land while Running
-- Document states
+- Document states (note interesting effect of velocity 1/-1 when Flee happens while offscreen)
+- Check all segments
 
 Other
 

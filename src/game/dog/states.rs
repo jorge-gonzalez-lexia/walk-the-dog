@@ -13,4 +13,16 @@ impl<S> DogState<S> {
     pub fn context(&self) -> &DogContext {
         &self.context
     }
+
+    pub fn flee(mut self) -> DogState<S> {
+        self.context = self.context.flee();
+
+        self
+    }
+
+    pub fn worry(mut self) -> DogState<S> {
+        self.context = self.context.worry();
+
+        self
+    }
 }

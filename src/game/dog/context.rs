@@ -39,8 +39,21 @@ impl DogContext {
         )
     }
 
+    pub fn flee(mut self) -> Self {
+        self.velocity.x = if self.position.x > 550 { -1 } else { 0 };
+        log!("Dog starts fleeing {}", self.info());
+
+        self
+    }
+
     pub fn floor(&self) -> i16 {
         self.floor
+    }
+
+    pub fn reset_frame(mut self) -> Self {
+        self.frame = 0;
+
+        self
     }
 
     pub fn set_floor(mut self, bottom: i16) -> Self {
@@ -53,12 +66,6 @@ impl DogContext {
                 "Platform"
             }
         );
-
-        self
-    }
-
-    pub fn reset_frame(mut self) -> Self {
-        self.frame = 0;
 
         self
     }
@@ -87,6 +94,15 @@ impl DogContext {
             self.velocity.x *= -1;
             log!("Dog: toggled direction {:?}", self.info());
         }
+
+        self
+    }
+
+    pub fn worry(mut self) -> Self {
+        log!("Dog worries {}", self.info());
+
+        self.velocity.x = -4;
+        self.distance_min = 50;
 
         self
     }
