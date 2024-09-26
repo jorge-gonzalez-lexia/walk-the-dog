@@ -63,13 +63,6 @@ impl DogContext {
         self
     }
 
-    pub fn toggle_direction(mut self) -> Self {
-        self.velocity.x *= -1;
-        log!("Dog: toggled direction {:?}", self.info());
-
-        self
-    }
-
     pub fn update(mut self, frame_count: u8) -> Self {
         if self.velocity.y < game::TERMINAL_VELOCITY {
             self.velocity.y += game::GRAVITY;

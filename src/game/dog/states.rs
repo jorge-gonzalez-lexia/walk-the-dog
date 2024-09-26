@@ -1,9 +1,5 @@
 pub mod jumping;
-pub mod jumping_worried;
-pub mod jumping_worried_return;
-pub mod returning_worried;
 pub mod running;
-pub mod running_worried;
 
 use super::context::DogContext;
 

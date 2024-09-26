@@ -60,9 +60,10 @@ impl DogState<Running> {
     }
 
     pub fn worry(mut self) -> DogState<Running> {
-        log!("Dog returns worried");
+        log!("Dog runs worried {}", self.context.info());
 
         self.context.velocity.x = -4;
+        self.context.distance_min = 50;
 
         DogState {
             context: self.context,

@@ -1,6 +1,9 @@
 Dog states
 
-- compare analogous states. Can we consolidate?
+- handle Flee while Jumping
+- handle Worry while Jumping
+- handle Land while Running
+- Document states
 
 Other
 
