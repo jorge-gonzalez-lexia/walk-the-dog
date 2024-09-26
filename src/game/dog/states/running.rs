@@ -1,12 +1,8 @@
-use super::{fleeing::Fleeing, jumping::Jumping, DogState};
+use super::{jumping::Jumping, DogState};
 use crate::{
     engine::rect::Point,
     game::{
-        dog::{
-            context::{DogContext, DOG_FLOOR, JUMP_SPEED, RUNNING_FRAMES},
-            state_machine::DogStateMachine,
-            states::returning_to_flee::ReturningToFlee,
-        },
+        dog::context::{DogContext, DOG_FLOOR, JUMP_SPEED, RUNNING_FRAMES},
         HEIGHT,
     },
 };
@@ -40,20 +36,11 @@ impl DogState<Running> {
         }
     }
 
-    pub fn flee(mut self) -> FleeingEndState {
-        if self.context.position.x > 550 {
-            self.context.velocity.x *= 2; // screen starts scrolling left
+    pub fn flee(mut self) -> DogState<Running> {
+        self.context.velocity.x = if self.context.position.x > 550 { -1 } else { 0 };
+        log!("Dog starts fleeing {}", self.context.info());
 
-            FleeingEndState::ReturningToFlee(self.return_to_flee())
-        } else {
-            log!("Dog Running->Fleeing {:?}", self.context.info());
-            self.context.velocity.x = 0; // screen starts scrolling left
-
-            FleeingEndState::Fleeing(DogState {
-                context: self.context,
-                _state: Fleeing,
-            })
-        }
+        self
     }
 
     pub fn jump(mut self) -> DogState<Jumping> {
@@ -72,26 +59,14 @@ impl DogState<Running> {
         self
     }
 
-    fn return_to_flee(self) -> DogState<ReturningToFlee> {
-        log!("Dog Running->ReturningToFlee");
+    pub fn worry(mut self) -> DogState<Running> {
+        log!("Dog returns worried");
+
+        self.context.velocity.x = -4;
 
         DogState {
-            context: self.context.toggle_direction(),
-            _state: ReturningToFlee,
-        }
-    }
-}
-
-pub enum FleeingEndState {
-    Fleeing(DogState<Fleeing>),
-    ReturningToFlee(DogState<ReturningToFlee>),
-}
-
-impl From<FleeingEndState> for DogStateMachine {
-    fn from(end_state: FleeingEndState) -> Self {
-        match end_state {
-            FleeingEndState::Fleeing(fleeing) => fleeing.into(),
-            FleeingEndState::ReturningToFlee(returning) => returning.into(),
+            context: self.context,
+            _state: Running,
         }
     }
 }
