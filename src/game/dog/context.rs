@@ -4,7 +4,7 @@ use crate::{
 };
 
 pub const RUNNING_FRAMES: u8 = 60;
-pub const DOG_FLOOR: i16 = game::HEIGHT - DOG_HEIGHT;
+pub const DOG_GROUND: i16 = game::HEIGHT - DOG_HEIGHT;
 pub const DOG_HEIGHT: i16 = 89;
 
 pub const JUMPING_FRAMES: u8 = 60;
@@ -25,7 +25,7 @@ impl DogContext {
         DogContext {
             distance_max: 1000,
             distance_min: 300,
-            floor: DOG_FLOOR,
+            floor: DOG_GROUND,
             frame,
             position,
             velocity,
@@ -60,7 +60,7 @@ impl DogContext {
         self.floor = bottom - DOG_HEIGHT;
         log!(
             "DogContext: set floor to {}",
-            if self.floor == DOG_FLOOR {
+            if self.floor == DOG_GROUND {
                 "Ground"
             } else {
                 "Platform"

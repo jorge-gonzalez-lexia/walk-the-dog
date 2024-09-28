@@ -7,7 +7,7 @@ use crate::engine::{
     renderer::Renderer,
     sheet::{Cell, Sheet},
 };
-use context::DOG_FLOOR;
+use context::DOG_GROUND;
 use state_machine::{DogStateMachine, Event};
 use states::DogState;
 use web_sys::HtmlImageElement;
@@ -68,7 +68,7 @@ impl Dog {
     pub fn on_platform(&mut self, top: i16) {
         assert!(self.state_machine.context().velocity.y > 0);
 
-        if self.state_machine.context().floor == DOG_FLOOR {
+        if self.state_machine.context().floor == DOG_GROUND {
             // log!("Hit platform {} floor={DOG_FLOOR}", self.info());
             self.state_machine = self.state_machine.clone().transition(Event::Land(top))
         }

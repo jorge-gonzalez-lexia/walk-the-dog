@@ -2,7 +2,7 @@ use super::{jumping::Jumping, DogState};
 use crate::{
     engine::rect::Point,
     game::{
-        dog::context::{DogContext, DOG_FLOOR, JUMP_SPEED, RUNNING_FRAMES},
+        dog::context::{DogContext, DOG_GROUND, JUMP_SPEED, RUNNING_FRAMES},
         HEIGHT,
     },
 };
@@ -19,7 +19,7 @@ impl DogState<Running> {
                 0,
                 Point {
                     x: 10,
-                    y: DOG_FLOOR,
+                    y: DOG_GROUND,
                 },
                 Point { x: 4, y: 0 },
             ),

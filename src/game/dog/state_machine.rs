@@ -41,7 +41,7 @@ impl DogStateMachine {
 
         match (self.clone(), event) {
             (DogStateMachine::Jumping(state), Event::Flee) => state.flee().into(),
-            (DogStateMachine::Jumping(state), Event::Jump) => state.into(), // explicitly ignore
+            // (DogStateMachine::Jumping(state), Event::Jump) => state.into(), // explicitly ignore
             (DogStateMachine::Jumping(state), Event::Land(p)) => state.land_on(p).into(),
             (DogStateMachine::Jumping(state), Event::Update) => state.update().into(),
             (DogStateMachine::Jumping(state), Event::Worry) => state.worry().into(),
