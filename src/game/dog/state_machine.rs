@@ -27,6 +27,13 @@ impl DogStateMachine {
         }
     }
 
+    pub fn frame_name(&self) -> String {
+        match self {
+            DogStateMachine::Jumping(s) => s.frame_name(),
+            DogStateMachine::Running(s) => s.frame_name(),
+        }
+    }
+
     pub fn state_name(&self) -> &'static str {
         match self {
             DogStateMachine::Jumping(_) => "Jumping",

@@ -9,6 +9,11 @@ impl DogState<Jumping> {
         self.land(Some(platform))
     }
 
+    pub fn frame_name(&self) -> String {
+        let animation_frame = self.context().frame / 3;
+        format!("l_{animation_frame:03}.png")
+    }
+
     pub fn update(mut self) -> JumpingEndState {
         self.context = self.context.update(JUMPING_FRAMES);
 

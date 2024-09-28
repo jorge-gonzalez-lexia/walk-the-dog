@@ -5,9 +5,9 @@ use crate::{
 
 pub const RUNNING_FRAMES: u8 = 60;
 pub const DOG_GROUND: i16 = game::HEIGHT - DOG_HEIGHT;
-pub const DOG_HEIGHT: i16 = 89;
+pub const DOG_HEIGHT: i16 = 81;
 
-pub const JUMPING_FRAMES: u8 = 60;
+pub const JUMPING_FRAMES: u8 = 17 * 3;
 pub const JUMP_SPEED: i16 = -25;
 
 #[derive(Clone)]

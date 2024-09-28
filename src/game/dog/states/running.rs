@@ -36,12 +36,17 @@ impl DogState<Running> {
         }
     }
 
+    pub fn frame_name(&self) -> String {
+        let animation_frame = self.context().frame / 3;
+        format!("rr_{animation_frame:03}.png")
+    }
+
     pub fn jump(mut self) -> DogState<Jumping> {
         log!("Dog Running->Jumping");
         self.context.velocity.y = JUMP_SPEED;
 
         DogState {
-            context: self.context,
+            context: self.context.reset_frame(),
             _state: Jumping,
         }
     }

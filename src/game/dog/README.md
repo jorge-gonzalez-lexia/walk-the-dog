@@ -138,3 +138,8 @@ The Platform Obstacle also checks if the Dog hits the platform itself, which we 
     - which stores the floor value
       At this point, every context update will check to ensure the Dog does not drop below the Platform floor.
   - and returns `DogState(Running)` (or similar)
+
+## Sprites
+
+- From [bevouliin.com](https://bevouliin.com/dog-game-character-sprites/)
+- Used TexturePacker to generate sprite sheet PNG and JSON. Sprites scaled down to 40%.

@@ -43,13 +43,14 @@ impl Dog {
         let ctx = self.state_machine.context();
         let bb = self.bounding_box();
         format!(
-            "({},{},{},{}) v={:?} state={}",
+            "({},{},{},{}) v={:?} state={} ctx={}",
             bb.left(),
             bb.top(),
             bb.right(),
             bb.bottom(),
             ctx.velocity,
-            self.state_machine.state_name()
+            self.state_machine.state_name(),
+            ctx.info()
         )
     }
 
@@ -113,6 +114,7 @@ impl Dog {
 
     pub fn update(&mut self) {
         self.state_machine = self.state_machine.clone().update();
+        // log!("Dog update {}", self.info());
     }
 
     fn current_sprite(&self) -> &Cell {
@@ -134,7 +136,8 @@ impl Dog {
     }
 
     fn frame_name(&self) -> String {
-        let animation_frame = self.state_machine.context().frame / 3;
-        format!("rr_{animation_frame:03}.png")
+        // let animation_frame = self.state_machine.context().frame / 3;
+        // format!("rr_{animation_frame:03}.png")
+        self.state_machine.frame_name()
     }
 }
