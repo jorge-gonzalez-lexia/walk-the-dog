@@ -186,8 +186,7 @@ pub fn stone_on_platform(
             x: offset_x + 200,
             y: HIGH_PLATFORM,
         },
-    )
-    .with_right_mark();
+    );
 
     vec![Box::new(stone), Box::new(platform)]
 }

@@ -106,7 +106,7 @@ impl DogContext {
 
     fn should_toggle_direction(&self) -> bool {
         let Point { x, y, .. } = self.position;
-        let Point { x: vx, y: vy, .. } = self.velocity;
+        let Point { x: vx, .. } = self.velocity;
         let on_floor = y == self.floor;
 
         let too_far = x > self.distance_max && vx >= 0;
