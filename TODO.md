@@ -1,6 +1,7 @@
 Dog states
 
-- handle Land while Running
+- Issue: Knockout when Dog is on a mark. Scrolling stops when boy starts falling, so dog vx=0 while jumping. While Dog is rising, gets worry so vx set to 4. But it is in the wrong place in the Jump arc so it hits platform from below. It is also glitchy because dog stops moving while Boy is falling. Dog runs in place. Think fix is to notify dog to worry exactly when boy is notified to be knocked down.
+
 - Document states (note interesting effect of velocity 1/-1 when Flee happens while offscreen)
 - Check all segments
 

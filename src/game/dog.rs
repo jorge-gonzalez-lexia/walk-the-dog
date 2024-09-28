@@ -7,7 +7,7 @@ use crate::engine::{
     renderer::Renderer,
     sheet::{Cell, Sheet},
 };
-use context::{DOG_FLOOR, DOG_HEIGHT};
+use context::DOG_FLOOR;
 use state_machine::{DogStateMachine, Event};
 use states::DogState;
 use web_sys::HtmlImageElement;
@@ -43,12 +43,13 @@ impl Dog {
         let ctx = self.state_machine.context();
         let bb = self.bounding_box();
         format!(
-            "({},{},{},{}) v={:?}",
+            "({},{},{},{}) v={:?} state={}",
             bb.left(),
             bb.top(),
             bb.right(),
             bb.bottom(),
             ctx.velocity,
+            self.state_machine.state_name()
         )
     }
 
