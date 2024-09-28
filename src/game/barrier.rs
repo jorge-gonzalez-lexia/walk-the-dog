@@ -82,9 +82,10 @@ impl Barrier {
 }
 
 impl Obstacle for Barrier {
-    fn check_intersection(&self, boy: &mut RedHatBoy) {
+    fn check_intersection(&self, boy: &mut RedHatBoy, dog: &mut Dog) {
         if boy.bounding_box().intersects(self.image.bounding_box()) {
-            boy.knock_out()
+            boy.knock_out();
+            dog.worry();
         }
     }
 

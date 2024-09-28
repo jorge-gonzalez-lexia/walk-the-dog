@@ -36,7 +36,7 @@ impl WalkTheDogState<Walking> {
         self.walk.obstacles.iter_mut().for_each(|obstacle| {
             obstacle.move_horizontally(walking_speed);
             obstacle.navigate(&mut self.walk.dog);
-            obstacle.check_intersection(&mut self.walk.boy)
+            obstacle.check_intersection(&mut self.walk.boy, &mut self.walk.dog);
         });
 
         if self.walk.timeline < TIMELINE_MINIMUM {
@@ -46,7 +46,6 @@ impl WalkTheDogState<Walking> {
         }
 
         if self.walk.knocked_out() {
-            self.walk.dog.worry();
             WalkingEndState::Complete(self.end_game())
         } else {
             WalkingEndState::Continue(self)

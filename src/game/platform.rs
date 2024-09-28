@@ -117,10 +117,25 @@ impl Platform {
 
         dog.bounding_box().intersects(&self.mark_right())
     }
+
+    #[allow(dead_code)]
+    fn hit_info(&self, dog: &Dog) -> String {
+        let bb = self.bounding_boxes().last().unwrap();
+
+        format!(
+            "has_dog={} platform left,top=({},{}) right,bottom({}.{})\nDog {}",
+            self.has_dog,
+            self.position.x,
+            self.position.y,
+            bb.right(),
+            bb.bottom(),
+            dog.info()
+        )
+    }
 }
 
 impl Obstacle for Platform {
-    fn check_intersection(&self, boy: &mut RedHatBoy) {
+    fn check_intersection(&self, boy: &mut RedHatBoy, dog: &mut Dog) {
         if let Some(box_to_land_on) = self
             .bounding_boxes()
             .iter()
@@ -130,6 +145,7 @@ impl Obstacle for Platform {
                 boy.land_on(box_to_land_on.top());
             } else {
                 boy.knock_out();
+                dog.worry();
             }
         }
     }
@@ -178,8 +194,14 @@ impl Obstacle for Platform {
     /// dog its floor has changed.
     fn navigate(&mut self, dog: &mut Dog) {
         if self.on_left_mark(dog) || self.on_right_mark(dog) {
+            // log!(
+            //     "Hit mark left={} right={}",
+            //     self.on_left_mark(dog),
+            //     self.on_right_mark(dog)
+            // );
             dog.jump();
         } else if self.on_platform(dog) {
+            // log!("Hit platform {}", self.hit_info(dog));
             self.has_dog = true;
             dog.on_platform(self.position.y);
         } else if self.has_dog {

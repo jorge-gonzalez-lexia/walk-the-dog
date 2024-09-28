@@ -91,8 +91,6 @@ impl DogContext {
         if self.should_toggle_direction() {
             self.velocity.x *= -1;
             log!("Dog: toggled direction {}", self.info());
-        } else {
-            log!("Dog update {}", self.info());
         }
 
         self
@@ -113,10 +111,6 @@ impl DogContext {
 
         let too_far = x > self.distance_max && vx >= 0;
         let too_close = x < self.distance_min && vx < 0;
-
-        if too_close || too_far {
-            log!("too_close={too_close} too_far={too_far} on_floor={on_floor}");
-        }
 
         on_floor && (too_close || too_far)
     }

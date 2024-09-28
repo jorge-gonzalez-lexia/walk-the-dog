@@ -60,6 +60,7 @@ impl DogStateMachine {
                     event,
                     s.state_name()
                 );
+                panic!("Unhandled event");
                 self
             }
         }
