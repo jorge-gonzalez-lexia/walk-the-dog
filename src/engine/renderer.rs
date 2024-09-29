@@ -28,6 +28,41 @@ impl Renderer {
     /// Copy the given `frame` rectangle from the `image` and draw it on the
     /// canvas at the given `destination`
     pub fn draw_image(&self, image: &HtmlImageElement, frame: &Rect, destination: &Rect) {
+        self.draw_image_ext(
+            image,
+            frame,
+            destination,
+            DrawImageOptions {
+                flip_horizontally: false,
+            },
+        );
+    }
+
+    /// Copy the given `frame` rectangle from the `image` and draw it on the
+    /// canvas at the given `destination`. Use Options to alter behavior.
+    pub fn draw_image_ext(
+        &self,
+        image: &HtmlImageElement,
+        frame: &Rect,
+        destination: &Rect,
+        options: DrawImageOptions,
+    ) {
+        if options.flip_horizontally {
+            self.context.save();
+            let tx = destination.x() + destination.width;
+            // flip horizontally
+            self.context
+                .translate(tx.into(), 0.0)
+                .expect("Error translating Canvas");
+            self.context.scale(-1.0, 1.0).expect("Error scaling Canvas");
+        }
+
+        let dx = if options.flip_horizontally {
+            0
+        } else {
+            destination.x()
+        };
+
         self.context
             .draw_image_with_html_image_element_and_sw_and_sh_and_dx_and_dy_and_dw_and_dh(
                 image,
@@ -35,12 +70,16 @@ impl Renderer {
                 frame.y().into(),
                 frame.width.into(),
                 frame.height.into(),
-                destination.x().into(),
+                dx.into(),
                 destination.y().into(),
                 destination.width.into(),
                 destination.height.into(),
             )
             .expect("Drawing is throwing exceptions! Unrecoverable error.");
+
+        if options.flip_horizontally {
+            self.context.restore();
+        }
     }
 
     pub fn draw_rect(&self, bounding_box: &Rect) {
@@ -71,4 +110,8 @@ impl Renderer {
 
         Ok(())
     }
+}
+
+pub struct DrawImageOptions {
+    pub flip_horizontally: bool,
 }

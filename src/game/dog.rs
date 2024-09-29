@@ -4,7 +4,7 @@ mod states;
 
 use crate::engine::{
     rect::Rect,
-    renderer::Renderer,
+    renderer::{DrawImageOptions, Renderer},
     sheet::{Cell, Sheet},
 };
 use context::DOG_GROUND;
@@ -84,12 +84,12 @@ impl Dog {
     }
 
     pub fn bounding_box(&self) -> Rect {
-        const X_OFFSET: i16 = 35;
         const Y_OFFSET: i16 = 8;
         const WIDTH_OFFSET: i16 = 50;
+        let x_offset: i16 = if self.moving_left() { 20 } else { 35 };
 
         let mut bounding_box = self.destination_box();
-        bounding_box.set_x(bounding_box.x() + X_OFFSET);
+        bounding_box.set_x(bounding_box.x() + x_offset);
         bounding_box.width -= WIDTH_OFFSET;
         bounding_box.position.y += Y_OFFSET;
         bounding_box.height -= Y_OFFSET;
@@ -99,7 +99,8 @@ impl Dog {
 
     pub fn draw(&self, renderer: &Renderer) {
         let sprite = self.current_sprite();
-        renderer.draw_image(
+
+        renderer.draw_image_ext(
             &self.image,
             &Rect::new_from_x_y(
                 sprite.frame.x,
@@ -108,7 +109,11 @@ impl Dog {
                 sprite.frame.h,
             ),
             &self.destination_box(),
+            DrawImageOptions {
+                flip_horizontally: self.moving_left(),
+            },
         );
+
         renderer.draw_rect(&self.bounding_box());
     }
 
@@ -118,7 +123,7 @@ impl Dog {
     }
 
     fn current_sprite(&self) -> &Cell {
-        let frame_name = self.frame_name();
+        let frame_name = self.state_machine.frame_name();
         self.sprite_sheet
             .frames
             .get(&frame_name)
@@ -127,17 +132,12 @@ impl Dog {
 
     fn destination_box(&self) -> Rect {
         let sprite = self.current_sprite();
+
         Rect::new_from_x_y(
             self.state_machine.context().position.x + sprite.sprite_source_size.x,
             self.state_machine.context().position.y + sprite.sprite_source_size.y,
             sprite.frame.w,
             sprite.frame.h,
         )
-    }
-
-    fn frame_name(&self) -> String {
-        // let animation_frame = self.state_machine.context().frame / 3;
-        // format!("rr_{animation_frame:03}.png")
-        self.state_machine.frame_name()
     }
 }

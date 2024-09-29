@@ -143,3 +143,5 @@ The Platform Obstacle also checks if the Dog hits the platform itself, which we 
 
 - From [bevouliin.com](https://bevouliin.com/dog-game-character-sprites/)
 - Used TexturePacker to generate sprite sheet PNG and JSON. Sprites scaled down to 40%.
+
+Note that the sprites for `Jumping` and `Running` all face towards the right, so we flip them horizontally when the Dog is moving left.
