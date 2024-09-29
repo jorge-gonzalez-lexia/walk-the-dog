@@ -12,6 +12,8 @@ impl WalkTheDogState<Ready> {
     }
 
     pub fn update(mut self, keystate: &KeyState) -> ReadyEndState {
+        self.walk.process_events();
+
         self.walk.boy.update();
         self.walk.dog.update();
 

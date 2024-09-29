@@ -1,4 +1,10 @@
-use super::{dog::Dog, obstacle::Obstacle, red_hat_boy::RedHatBoy, segments::SegmentFactory};
+use super::{
+    dog::Dog,
+    event_queue::{EventPublisher, EventQueue},
+    obstacle::Obstacle,
+    red_hat_boy::RedHatBoy,
+    segments::SegmentFactory,
+};
 use crate::engine::{image::Image, renderer::Renderer};
 use web_sys::HtmlImageElement;
 
@@ -8,6 +14,8 @@ pub struct Walk {
     pub backgrounds: [Image; 2],
     pub boy: RedHatBoy,
     pub dog: Dog,
+    pub events: EventQueue,
+    pub event_publisher: EventPublisher,
     pub obstacles: Vec<Box<dyn Obstacle>>,
     pub segment_factory: SegmentFactory,
     pub stone: HtmlImageElement,
@@ -24,6 +32,8 @@ impl Walk {
             backgrounds: walk.backgrounds,
             boy: RedHatBoy::reset(walk.boy),
             dog: Dog::reset(walk.dog),
+            events: walk.events,
+            event_publisher: walk.event_publisher,
             obstacles: starting_obstacles,
             segment_factory,
             stone: walk.stone,
@@ -48,6 +58,12 @@ impl Walk {
 
     pub fn knocked_out(&self) -> bool {
         self.boy.knocked_out()
+    }
+
+    pub fn process_events(&mut self) {
+        while let Some(event) = self.events.borrow_mut().pop_front() {
+            self.dog.process_event(&event);
+        }
     }
 
     pub fn velocity(&self) -> i16 {

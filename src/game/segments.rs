@@ -18,6 +18,7 @@ const LOW_PLATFORM: i16 = 420;
 const STONE_ON_GROUND: i16 = 546;
 const STONE_ON_PLATFORM: i16 = 322;
 
+// -1 means random segments. Set to 0, 3, 4, 5 for testing specific segments
 const REPEAT: i32 = -1;
 
 const STONE_AND_PLATFORM_SEGMENT_ID: i32 = 4;

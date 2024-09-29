@@ -2,6 +2,7 @@ mod context;
 mod state_machine;
 mod states;
 
+use super::event_queue::{self, GameEvent};
 use crate::engine::{
     rect::Rect,
     renderer::{DrawImageOptions, Renderer},
@@ -19,24 +20,20 @@ pub struct Dog {
 }
 
 impl Dog {
-    pub fn new(sprite_sheet: Sheet, image: HtmlImageElement) -> Self {
+    pub fn new(
+        sprite_sheet: Sheet,
+        image: HtmlImageElement,
+        event_publisher: event_queue::EventPublisher,
+    ) -> Self {
         Dog {
             image,
             sprite_sheet,
-            state_machine: DogStateMachine::Running(DogState::new()),
+            state_machine: DogStateMachine::Running(DogState::new(event_publisher)),
         }
     }
 
     pub fn flee(&mut self) {
         self.state_machine = self.state_machine.clone().transition(Event::Flee);
-    }
-
-    pub fn jump(&mut self) {
-        if self.state_machine.context().velocity.y < 0 {
-            return;
-        }
-
-        self.state_machine = self.state_machine.clone().transition(Event::Jump);
     }
 
     pub fn info(&self) -> String {
@@ -52,6 +49,14 @@ impl Dog {
             self.state_machine.state_name(),
             ctx.info()
         )
+    }
+
+    pub fn jump(&mut self) {
+        if self.state_machine.context().velocity.y < 0 {
+            return;
+        }
+
+        self.state_machine = self.state_machine.clone().transition(Event::Jump);
     }
 
     pub fn moving_left(&self) -> bool {
@@ -75,8 +80,20 @@ impl Dog {
         }
     }
 
+    pub fn process_event(&mut self, event: &GameEvent) {
+        log!("Dog: process game event {event:?}");
+        self.state_machine = match event {
+            GameEvent::DogTooClose => self.state_machine.clone().transition(Event::TurnAround),
+            GameEvent::DogTooFar => self.state_machine.clone().transition(Event::TurnAround),
+        }
+    }
+
     pub fn reset(dog: Self) -> Self {
-        Dog::new(dog.sprite_sheet, dog.image)
+        Dog::new(
+            dog.sprite_sheet,
+            dog.image,
+            dog.state_machine.context().event_publisher.clone(),
+        )
     }
 
     pub fn worry(&mut self) {

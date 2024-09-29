@@ -9,6 +9,7 @@ pub enum Event {
     Jump,
     Land(i16),
     OffPlatform,
+    TurnAround,
     Update,
     Worry,
 }
@@ -58,6 +59,7 @@ impl DogStateMachine {
             (DogStateMachine::Running(state), Event::OffPlatform) => {
                 state.drop_from_platform().into()
             }
+            (DogStateMachine::Running(state), Event::TurnAround) => state.turn_around().into(),
             (DogStateMachine::Running(state), Event::Update) => state.update().into(),
             (DogStateMachine::Running(state), Event::Worry) => state.worry().into(),
 

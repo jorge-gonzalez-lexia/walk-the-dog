@@ -1,6 +1,6 @@
 use crate::{
     engine::rect::Point,
-    game::{self},
+    game::{self, event_queue::GameEvent},
 };
 
 pub const RUNNING_FRAMES: u8 = 60;
@@ -14,6 +14,7 @@ pub const JUMP_SPEED: i16 = -25;
 pub struct DogContext {
     distance_max: i16,
     pub distance_min: i16,
+    pub event_publisher: game::event_queue::EventPublisher,
     pub floor: i16,
     pub frame: u8,
     pub position: Point,
@@ -21,12 +22,17 @@ pub struct DogContext {
 }
 
 impl DogContext {
-    pub fn new(frame: u8, position: Point, velocity: Point) -> Self {
+    pub fn new(event_publisher: game::event_queue::EventPublisher) -> Self {
+        let floor = DOG_GROUND;
+        let position = Point { x: 10, y: floor };
+        let velocity = Point { x: 4, y: 0 };
+
         DogContext {
             distance_max: 1000,
             distance_min: 300,
-            floor: DOG_GROUND,
-            frame,
+            event_publisher,
+            floor,
+            frame: 0,
             position,
             velocity,
         }
@@ -70,6 +76,13 @@ impl DogContext {
         self
     }
 
+    pub fn turn_around(mut self) -> Self {
+        self.velocity.x *= -1;
+        log!("Dog: turned around {}", self.info());
+
+        self
+    }
+
     pub fn update(mut self, frame_count: u8) -> Self {
         if self.velocity.y < game::TERMINAL_VELOCITY {
             self.velocity.y += game::GRAVITY;
@@ -88,9 +101,10 @@ impl DogContext {
             self.position.y = self.floor;
         }
 
-        if self.should_toggle_direction() {
-            self.velocity.x *= -1;
-            log!("Dog: toggled direction {}", self.info());
+        if self.too_close() {
+            self.event_publisher.publish(GameEvent::DogTooClose);
+        } else if self.too_far() {
+            self.event_publisher.publish(GameEvent::DogTooFar);
         }
 
         self
@@ -104,14 +118,15 @@ impl DogContext {
         self
     }
 
-    fn should_toggle_direction(&self) -> bool {
-        let Point { x, y, .. } = self.position;
-        let Point { x: vx, .. } = self.velocity;
-        let on_floor = y == self.floor;
+    fn on_floor(&self) -> bool {
+        self.position.y == self.floor
+    }
 
-        let too_far = x > self.distance_max && vx >= 0;
-        let too_close = x < self.distance_min && vx < 0;
+    fn too_close(&self) -> bool {
+        self.on_floor() && self.position.x < self.distance_min && self.velocity.x < 0
+    }
 
-        on_floor && (too_close || too_far)
+    fn too_far(&self) -> bool {
+        self.on_floor() && self.position.x > self.distance_max && self.velocity.x >= 0
     }
 }

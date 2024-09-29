@@ -1,28 +1,19 @@
 use super::{jumping::Jumping, DogState};
-use crate::{
-    engine::rect::Point,
-    game::{
-        dog::context::{DogContext, DOG_GROUND, JUMP_SPEED, RUNNING_FRAMES},
-        HEIGHT,
-    },
+use crate::game::{
+    self,
+    dog::context::{DogContext, JUMP_SPEED, RUNNING_FRAMES},
+    HEIGHT,
 };
 
 #[derive(Clone)]
 pub struct Running;
 
 impl DogState<Running> {
-    pub fn new() -> Self {
+    pub fn new(event_publisher: game::event_queue::EventPublisher) -> Self {
         log!("->Dog::Running");
 
         DogState {
-            context: DogContext::new(
-                0,
-                Point {
-                    x: 10,
-                    y: DOG_GROUND,
-                },
-                Point { x: 4, y: 0 },
-            ),
+            context: DogContext::new(event_publisher),
             _state: Running,
         }
     }

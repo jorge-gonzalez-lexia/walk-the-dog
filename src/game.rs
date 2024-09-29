@@ -1,5 +1,6 @@
 mod barrier;
 mod dog;
+mod event_queue;
 pub mod game_states;
 mod obstacle;
 mod platform;
@@ -20,10 +21,11 @@ use crate::engine::{
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use dog::Dog;
+use event_queue::EventPublisher;
 use game_states::WalkTheDogStateMachine;
 use red_hat_boy::{context::Sfx, RedHatBoy};
 use segments::SegmentFactory;
-use std::rc::Rc;
+use std::{cell::RefCell, collections::VecDeque, rc::Rc};
 use walk::{rightmost, Walk};
 
 const GRAVITY: i16 = 1;
@@ -62,7 +64,10 @@ impl Game for WalkTheDog {
                 );
                 let background_music = audio.load_sound("background_song.mp3").await?;
 
-                audio.play_looping_sound(&background_music)?;
+                // audio.play_looping_sound(&background_music)?;
+
+                let events = Rc::new(RefCell::new(VecDeque::new()));
+                let event_publisher = EventPublisher::new(events.clone());
 
                 let boy = RedHatBoy::new(
                     audio,
@@ -70,7 +75,11 @@ impl Game for WalkTheDog {
                     Sheet::load("rhb.json").await?,
                     load_image("rhb.png").await?,
                 );
-                let dog = Dog::new(Sheet::load("dog.json").await?, load_image("dog.png").await?);
+                let dog = Dog::new(
+                    Sheet::load("dog.json").await?,
+                    load_image("dog.png").await?,
+                    event_publisher.clone(),
+                );
 
                 let background = load_image("BG.png").await?;
                 let stone = load_image("Stone.png").await?;
@@ -100,6 +109,8 @@ impl Game for WalkTheDog {
                     ],
                     boy,
                     dog,
+                    events,
+                    event_publisher,
                     obstacles: starting_obstacles,
                     segment_factory,
                     stone,

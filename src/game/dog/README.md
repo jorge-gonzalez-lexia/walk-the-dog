@@ -10,13 +10,9 @@ It navigates obstacles by Jumping whenever it hits a mark. Obstacles have an opt
 stateDiagram-v2
   [*] --> Running
 
-  state toggle_direction <<choice>>
-  Running --> toggle_direction: Update
-  toggle_direction --> Running: too far
-  toggle_direction --> Running: too close
 
   Running --> Fleeing: Flee
-  Running --> Running: OffPlatform | Worry
+  Running --> Running: OffPlatform | TurnAround | Worry
   Running --> Jumping: Jump
 
   Jumping --> Jumping: Update | Worry
@@ -29,6 +25,15 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
   autonumber
+  WalkTheDogState(S)->>Walk: process_events()
+  Walk->>Dog: process_event(GameEvent)
+  Dog->>DogStateMachine: transition()
+  DogStateMachine->>DogState(S): some_method()
+  DogState(S)->>DogContext: some_method()
+  DogContext-->>DogState(S): revised context
+  DogState(S)-->>DogStateMachine: revised state
+  DogStateMachine-->>Dog: revised state machine
+
   WalkTheDogState(S)->>Dog: some_action()
   Dog->>DogStateMachine: transition()
   DogStateMachine->>DogState(S): some_method()
@@ -40,13 +45,21 @@ sequenceDiagram
 
 Notes:
 
-1. `WalkTheDogState.update` itself, or via `Obstacle.navigate` or `Obstacle.check_intersection`, calls a method on `Dog` (i.e. flee, jump, on_platform, off_platform, worry, update)
-2. `DogStateMachine.transition` is called with a relevant Dog Event (i.e. `Flee`, `Jump`, `Land`, `OffPlatform`, `Update`, `Worry`)
-3. Relevant method is called on `DogState(S)`, where `S` is `Running` or `Jumping`.
-4. `DogContext` is revised
-5. Revised context is typically replaced in `DogState`
-6. The same or a new `DogState` (with revised context) is returned in a new `DogStateMachine` variant instance
-7. `Dog.state_machine` is replaced with new `DogStateMachine` instance
+1. `WalkTheDogState.update` calls `Walk.process_events()` (See [Game Events Processing](../README.md#event-processing))
+2. `Walk` loops through pending `GameEvent`s (e.g. `GameEvent::DogTooFar`) and send each to `Dog` via `Dog.process_event`.
+3. `DogStateMachine.transition` is called with a relevant Dog Event (e.g. `TurnAround`)
+4. Relevant method is called on `DogState(S)`, where `S` is `Running` or `Jumping`.
+5. `DogContext` is revised
+6. Revised context is typically replaced in `DogState`
+7. The same or a new `DogState` (with revised context) is returned in a new `DogStateMachine` variant instance
+8. `Dog.state_machine` is replaced with new `DogStateMachine` instance
+9. `WalkTheDogState.update` itself, or via `Obstacle.navigate` or `Obstacle.check_intersection`, calls a method on `Dog` (i.e. flee, jump, on_platform, off_platform, worry, update)
+10. `DogStateMachine.transition` is called with a relevant Dog Event (i.e. `Flee`, `Jump`, `Land`, `OffPlatform`, `Update`, `Worry`). These are really commands. Similar to step 3.
+11. Same as 4
+12. Same as 5
+13. Same as 6
+14. Same as 7
+15. Same as 8
 
 ### Update
 
@@ -116,6 +129,14 @@ Sequence: `dog.off_platform()` -> `DogStateMachine.transition(Event::OffPlatform
 - Set `Platform.has_dog` to `false`
 - Error if `OffPlatform` event in `Jumping` state
 
+### TurnAround
+
+Conditions: Processing `GameEvent:DogTooClose` or `GameEvent:DogTooFar`. See [Game Events](#game-events)
+
+Sequence: `dog.process_event(GameEvent)` -> `DogStateMachine.transition(Event::TurnAround)` -> `DogState(S).turn_around()` -> `DogContext.turn_around()`
+
+- Reverse vx sign (multiply by -1)
+
 ### Worry
 
 Conditions: `Obstacle.check_intersection` detects `Boy` has hit the `Obstacle`
@@ -123,6 +144,18 @@ Sequence: `dog.worry()` -> `DogStateMachine.transition(Event::Worry)` -> `DogSta
 
 - set `vx` to 4 (since background has stopped scrolling) so Dog keeps moving away from Boy
 - set `distance_min` to 50 so Dog can get very close to `Boy`
+
+## Game Events
+
+### DogTooClose
+
+- Published by `DogContext` when `Dog` is on floor and has ventured too close to `Boy`
+- Maps to Dog `Event::TurnAround`
+
+### DogTooFar
+
+- Published by `DogContext` when `Dog` is on floor and has ventured too far from `Boy`
+- Maps to Dog `Event::TurnAround`
 
 ## Platform Navigation
 

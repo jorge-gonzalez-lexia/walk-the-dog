@@ -17,6 +17,8 @@ impl WalkTheDogState<GameOver> {
         if self._state.new_game_pressed() {
             GameOverEndState::Complete(self.new_game())
         } else {
+            self.walk.process_events();
+
             self.walk.dog.update();
             self.walk.obstacles.iter_mut().for_each(|obstacle| {
                 obstacle.navigate(&mut self.walk.dog);
@@ -64,12 +66,17 @@ mod tests {
         },
         game::{
             dog::Dog,
+            event_queue::EventPublisher,
             red_hat_boy::{context::Sfx, RedHatBoy},
             segments::SegmentFactory,
         },
     };
     use futures::channel::mpsc::unbounded;
-    use std::{collections::HashMap, rc::Rc};
+    use std::{
+        cell::RefCell,
+        collections::{HashMap, VecDeque},
+        rc::Rc,
+    };
     use wasm_bindgen_test::wasm_bindgen_test;
     use web_sys::{AudioBuffer, AudioBufferOptions, HtmlImageElement};
     wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
@@ -84,6 +91,9 @@ mod tests {
             buffer: AudioBuffer::new(&options).unwrap(),
         };
         let sfx = Sfx::new(sound.clone(), sound.clone(), sound.clone());
+        let events = Rc::new(RefCell::new(VecDeque::new()));
+        let event_publisher = EventPublisher::new(events.clone());
+
         let boy = RedHatBoy::new(
             audio,
             sfx,
@@ -97,6 +107,7 @@ mod tests {
                 frames: HashMap::new(),
             },
             image.clone(),
+            event_publisher.clone(),
         );
         let sprite_sheet = Rc::new(SpriteSheet::new(
             Sheet {
@@ -112,6 +123,8 @@ mod tests {
             ],
             boy,
             dog,
+            event_publisher,
+            events,
             obstacles: vec![],
             segment_factory,
             stone: image.clone(),
