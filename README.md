@@ -1,6 +1,7 @@
 # Walk The Dog
 
 - Built following Game Development with Rust and WebAssembly book
+- Repo:[https://github.com/jorge-gonzalez-lexia/walk-the-dog](https://github.com/jorge-gonzalez-lexia/walk-the-dog)
 - Deployed to [https://jorge-walk-the-dog.netlify.app/](https://jorge-walk-the-dog.netlify.app/)
 - Served from Netlify [https://app.netlify.com/sites/jorge-walk-the-dog/overview](https://app.netlify.com/sites/jorge-walk-the-dog/overview)
 
