@@ -17,6 +17,10 @@ impl WalkTheDogState<GameOver> {
         if self._state.new_game_pressed() {
             GameOverEndState::Complete(self.new_game())
         } else {
+            self.walk.dog.update();
+            self.walk.obstacles.iter_mut().for_each(|obstacle| {
+                obstacle.navigate(&mut self.walk.dog);
+            });
             GameOverEndState::Continue(self)
         }
     }
@@ -58,7 +62,11 @@ mod tests {
             sheet::Sheet,
             sprite_sheet::SpriteSheet,
         },
-        game::red_hat_boy::{context::Sfx, RedHatBoy},
+        game::{
+            dog::Dog,
+            red_hat_boy::{context::Sfx, RedHatBoy},
+            segments::SegmentFactory,
+        },
     };
     use futures::channel::mpsc::unbounded;
     use std::{collections::HashMap, rc::Rc};
@@ -76,7 +84,7 @@ mod tests {
             buffer: AudioBuffer::new(&options).unwrap(),
         };
         let sfx = Sfx::new(sound.clone(), sound.clone(), sound.clone());
-        let rhb = RedHatBoy::new(
+        let boy = RedHatBoy::new(
             audio,
             sfx,
             Sheet {
@@ -84,20 +92,28 @@ mod tests {
             },
             image.clone(),
         );
-        let sprite_sheet = SpriteSheet::new(
+        let dog = Dog::new(
             Sheet {
                 frames: HashMap::new(),
             },
             image.clone(),
         );
+        let sprite_sheet = Rc::new(SpriteSheet::new(
+            Sheet {
+                frames: HashMap::new(),
+            },
+            image.clone(),
+        ));
+        let segment_factory = SegmentFactory::new(sprite_sheet.clone(), image.clone());
         let walk = Walk {
             backgrounds: [
                 Image::new(image.clone(), Point { x: 0, y: 0 }),
                 Image::new(image.clone(), Point { x: 0, y: 0 }),
             ],
-            boy: rhb,
-            obstacle_sheet: Rc::new(sprite_sheet),
+            boy,
+            dog,
             obstacles: vec![],
+            segment_factory,
             stone: image.clone(),
             timeline: 9,
         };

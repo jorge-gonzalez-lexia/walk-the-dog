@@ -13,6 +13,11 @@ impl WalkTheDogState<Ready> {
 
     pub fn update(mut self, keystate: &KeyState) -> ReadyEndState {
         self.walk.boy.update();
+        self.walk.dog.update();
+
+        self.walk.obstacles.iter_mut().for_each(|obstacle| {
+            obstacle.navigate(&mut self.walk.dog);
+        });
 
         if keystate.is_pressed("ArrowRight") {
             ReadyEndState::Complete(self.start_running())
@@ -23,6 +28,7 @@ impl WalkTheDogState<Ready> {
 
     fn run_right(&mut self) {
         self.walk.boy.run_right();
+        self.walk.dog.flee();
     }
 
     fn start_running(mut self) -> WalkTheDogState<Walking> {

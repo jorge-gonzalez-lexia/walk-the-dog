@@ -6,12 +6,10 @@ use crate::{
     game,
 };
 
-pub const FLOOR: i16 = 479;
-const PLAYER_HEIGHT: i16 = game::HEIGHT - FLOOR;
+pub const FLOOR: i16 = game::HEIGHT - PLAYER_HEIGHT;
+const PLAYER_HEIGHT: i16 = 121;
 
-const GRAVITY: i16 = 1;
 const RUNNING_SPEED: i16 = 4;
-const TERMINAL_VELOCITY: i16 = 20;
 
 #[derive(Clone)]
 pub struct RedHatBoyContext {
@@ -92,8 +90,8 @@ impl RedHatBoyContext {
     /// Update the frame count or loop back to frame 0 when current frame hits
     ///  `frame_count` (the number of frames in the active state animation)
     pub fn update(mut self, frame_count: u8) -> Self {
-        if self.velocity.y < TERMINAL_VELOCITY {
-            self.velocity.y += GRAVITY;
+        if self.velocity.y < game::TERMINAL_VELOCITY {
+            self.velocity.y += game::GRAVITY;
         }
 
         if self.frame < frame_count {

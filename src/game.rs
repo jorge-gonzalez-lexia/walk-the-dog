@@ -1,4 +1,5 @@
 mod barrier;
+mod dog;
 pub mod game_states;
 mod obstacle;
 mod platform;
@@ -6,26 +7,27 @@ mod red_hat_boy;
 mod segments;
 mod walk;
 
-use crate::{
-    browser,
-    engine::{
-        audio::Audio,
-        image::{load_image, Image},
-        input::KeyState,
-        rect::{Point, Rect},
-        renderer::Renderer,
-        sheet::Sheet,
-        sprite_sheet::SpriteSheet,
-        Game,
-    },
+use crate::engine::{
+    audio::Audio,
+    image::{load_image, Image},
+    input::KeyState,
+    rect::{Point, Rect},
+    renderer::Renderer,
+    sheet::Sheet,
+    sprite_sheet::SpriteSheet,
+    Game,
 };
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
+use dog::Dog;
 use game_states::WalkTheDogStateMachine;
 use red_hat_boy::{context::Sfx, RedHatBoy};
-use segments::stone_and_platform;
+use segments::SegmentFactory;
 use std::rc::Rc;
 use walk::{rightmost, Walk};
+
+const GRAVITY: i16 = 1;
+const TERMINAL_VELOCITY: i16 = 20;
 
 const HEIGHT: i16 = 600;
 
@@ -59,28 +61,28 @@ impl Game for WalkTheDog {
                     audio.load_sound("slide.wav").await?,
                 );
                 let background_music = audio.load_sound("background_song.mp3").await?;
-                let json = browser::fetch_json("rhb.json").await?;
 
                 audio.play_looping_sound(&background_music)?;
 
-                let rhb = RedHatBoy::new(
+                let boy = RedHatBoy::new(
                     audio,
                     sfx,
-                    // TODO: into_serde is deprecated (presumably after book was written)
-                    json.into_serde::<Sheet>()?,
+                    Sheet::load("rhb.json").await?,
                     load_image("rhb.png").await?,
                 );
+                let dog = Dog::new(Sheet::load("dog.json").await?, load_image("dog.png").await?);
 
                 let background = load_image("BG.png").await?;
                 let stone = load_image("Stone.png").await?;
 
-                let tiles = browser::fetch_json("tiles.json").await?;
                 let sprite_sheet = Rc::new(SpriteSheet::new(
-                    tiles.into_serde::<Sheet>()?,
+                    Sheet::load("tiles.json").await?,
                     load_image("tiles.png").await?,
                 ));
 
-                let starting_obstacles = stone_and_platform(stone.clone(), sprite_sheet.clone(), 0);
+                let segment_factory = SegmentFactory::new(sprite_sheet.clone(), stone.clone());
+
+                let starting_obstacles = segment_factory.first();
                 let timeline = rightmost(&starting_obstacles);
 
                 let background_width = background.width() as i16;
@@ -96,9 +98,10 @@ impl Game for WalkTheDog {
                             },
                         ),
                     ],
-                    boy: rhb,
-                    obstacle_sheet: sprite_sheet,
+                    boy,
+                    dog,
                     obstacles: starting_obstacles,
+                    segment_factory,
                     stone,
                     timeline,
                 });

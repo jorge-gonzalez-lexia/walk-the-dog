@@ -1,19 +1,31 @@
+use anyhow::{anyhow, Result};
 use serde::Deserialize;
 use std::collections::HashMap;
 
-#[derive(Clone, Deserialize)]
+use crate::browser;
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct Sheet {
     pub frames: HashMap<String, Cell>,
 }
 
-#[derive(Clone, Deserialize)]
+impl Sheet {
+    pub async fn load(json_path: &str) -> Result<Self> {
+        let json = browser::fetch_json(json_path).await?;
+
+        serde_wasm_bindgen::from_value::<Sheet>(json)
+            .map_err(|err| anyhow!("Error deserializing {} {:#?}", json_path, err))
+    }
+}
+
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Cell {
     pub frame: SheetRect,
     pub sprite_source_size: SheetRect,
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct SheetRect {
     pub x: i16,
     pub y: i16,

@@ -1,7 +1,7 @@
 use super::{falling::Falling, running::Running, RedHatBoyState};
 use crate::game::{
     self,
-    red_hat_boy::{context, state_machine::RedHatBoyStateMachine},
+    red_hat_boy::{context::FLOOR, state_machine::RedHatBoyStateMachine},
 };
 
 const JUMP_FRAME_NAME: &str = "Jump";
@@ -36,7 +36,7 @@ impl RedHatBoyState<Jumping> {
     pub fn update(mut self) -> JumpingEndState {
         self.context = self.context.update(JUMPING_FRAMES);
 
-        if self.context.position.y >= context::FLOOR {
+        if self.context.position.y >= FLOOR {
             JumpingEndState::Landing(self.land_on(game::HEIGHT))
         } else {
             JumpingEndState::Jumping(self)

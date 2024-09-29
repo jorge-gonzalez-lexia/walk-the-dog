@@ -1,4 +1,4 @@
-use super::obstacle::Obstacle;
+use super::{dog::Dog, obstacle::Obstacle, red_hat_boy::RedHatBoy, HEIGHT};
 use crate::engine::{
     rect::{Point, Rect},
     renderer::Renderer,
@@ -7,9 +7,16 @@ use crate::engine::{
 };
 use std::rc::Rc;
 
+const MARK_OFFSET: i16 = 80;
+
+#[derive(Debug)]
 pub struct Platform {
     pub position: Point,
     bounding_boxes: Vec<Rect>,
+    /// True when dog is running on platform
+    has_dog: bool,
+    has_mark_left: bool,
+    has_mark_right: bool,
     sheet: Rc<SpriteSheet>,
     sprites: Vec<Cell>,
 }
@@ -32,6 +39,9 @@ impl Platform {
 
         Platform {
             bounding_boxes,
+            has_dog: false,
+            has_mark_left: false,
+            has_mark_right: false,
             position,
             sheet,
             sprites,
@@ -41,10 +51,91 @@ impl Platform {
     pub fn bounding_boxes(&self) -> &Vec<Rect> {
         &self.bounding_boxes
     }
+
+    pub fn with_left_mark(mut self) -> Self {
+        self.has_mark_left = true;
+
+        self
+    }
+
+    pub fn with_right_mark(mut self) -> Self {
+        self.has_mark_right = true;
+
+        self
+    }
+
+    fn draw_marks(&self, renderer: &Renderer) {
+        if self.has_mark_left {
+            renderer.draw_rect_colored(&self.mark_left(), "#000000");
+        }
+
+        if self.has_mark_right {
+            renderer.draw_rect_colored(&self.mark_right(), "#FFFF00");
+        }
+    }
+
+    fn on_platform(&self, dog: &Dog) -> bool {
+        self.bounding_boxes()
+            .iter()
+            .any(|b| dog.bounding_box().intersects(b))
+    }
+
+    fn mark_left(&self) -> Rect {
+        Rect::new(
+            Point {
+                x: self.position.x - MARK_OFFSET,
+                y: self.position.y,
+            },
+            1,
+            HEIGHT - self.position.y,
+        )
+    }
+
+    fn mark_right(&self) -> Rect {
+        Rect::new(
+            Point {
+                x: self.right() + MARK_OFFSET,
+                y: self.position.y,
+            },
+            1,
+            HEIGHT - self.position.y,
+        )
+    }
+
+    fn on_left_mark(&self, dog: &Dog) -> bool {
+        if !self.has_mark_left || !dog.moving_right() {
+            return false;
+        }
+
+        dog.bounding_box().intersects(&self.mark_left())
+    }
+
+    fn on_right_mark(&self, dog: &Dog) -> bool {
+        if !self.has_mark_right || !dog.moving_left() {
+            return false;
+        }
+
+        dog.bounding_box().intersects(&self.mark_right())
+    }
+
+    #[allow(dead_code)]
+    fn hit_info(&self, dog: &Dog) -> String {
+        let bb = self.bounding_boxes().last().unwrap();
+
+        format!(
+            "has_dog={} platform left,top=({},{}) right,bottom({}.{})\nDog {}",
+            self.has_dog,
+            self.position.x,
+            self.position.y,
+            bb.right(),
+            bb.bottom(),
+            dog.info()
+        )
+    }
 }
 
 impl Obstacle for Platform {
-    fn check_intersection(&self, boy: &mut super::red_hat_boy::RedHatBoy) {
+    fn check_intersection(&self, boy: &mut RedHatBoy, dog: &mut Dog) {
         if let Some(box_to_land_on) = self
             .bounding_boxes()
             .iter()
@@ -54,6 +145,7 @@ impl Obstacle for Platform {
                 boy.land_on(box_to_land_on.top());
             } else {
                 boy.knock_out();
+                dog.worry();
             }
         }
     }
@@ -84,6 +176,7 @@ impl Obstacle for Platform {
         self.bounding_boxes
             .iter()
             .for_each(|b| renderer.draw_rect(b));
+        self.draw_marks(renderer);
     }
 
     fn move_horizontally(&mut self, x: i16) {
@@ -91,6 +184,30 @@ impl Obstacle for Platform {
         self.bounding_boxes
             .iter_mut()
             .for_each(|b| b.set_x(b.position.x + x));
+    }
+
+    /// Navigate the platform based on hitting the mark (when moving right or
+    /// left), at which point jump. Otherwise, if you hit the platform, assume
+    /// it is on the way down from a jump, at which point the dog lands on the
+    /// platform and we set the `has_dog` flag. Otherwise, if the dog was last
+    /// on the platform, it must have run off so unset `has_dog` and notify
+    /// dog its floor has changed.
+    fn navigate(&mut self, dog: &mut Dog) {
+        if self.on_left_mark(dog) || self.on_right_mark(dog) {
+            // log!(
+            //     "Hit mark left={} right={}",
+            //     self.on_left_mark(dog),
+            //     self.on_right_mark(dog)
+            // );
+            dog.jump();
+        } else if self.on_platform(dog) {
+            // log!("Hit platform {}", self.hit_info(dog));
+            self.has_dog = true;
+            dog.on_platform(self.position.y);
+        } else if self.has_dog {
+            self.has_dog = false;
+            dog.off_platform();
+        }
     }
 
     fn right(&self) -> i16 {
