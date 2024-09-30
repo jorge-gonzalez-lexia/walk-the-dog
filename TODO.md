@@ -14,6 +14,14 @@ Formal events:
 - Update. But this one we ideally do not fire continuously.
 - Worry
 
+Hitting mark
+
+OffPlatform
+
+- GameEvent::DogExitsPlatform {id}
+- Platform.process_event has_dog = false
+- Dog.process_event OffPlatform
+
 Landing
 
 - Jump

@@ -73,6 +73,9 @@ impl Dog {
     pub fn process_event(&mut self, event: &GameEvent) {
         log!("Dog: process game event {event:?}");
         self.state_machine = match event {
+            GameEvent::DogExitsPlatform { .. } => {
+                self.state_machine.clone().transition(Event::OffPlatform)
+            }
             GameEvent::DogLanded => self.state_machine.clone().transition(Event::LandOnGround),
             GameEvent::DogLandedOnPlatform { platform_top, .. } => self
                 .state_machine

@@ -1,5 +1,9 @@
 use super::{
-    dog::Dog, event_queue::EventPublisher, obstacle::Obstacle, red_hat_boy::RedHatBoy, HEIGHT,
+    dog::Dog,
+    event_queue::{EventPublisher, GameEvent},
+    obstacle::Obstacle,
+    red_hat_boy::RedHatBoy,
+    HEIGHT,
 };
 use crate::engine::{
     rect::{Point, Rect},
@@ -211,22 +215,27 @@ impl Obstacle for Platform {
         } else if self.on_platform(dog) {
             if !self.has_dog {
                 self.event_publisher
-                    .publish(super::event_queue::GameEvent::DogLandedOnPlatform {
+                    .publish(GameEvent::DogLandedOnPlatform {
                         id: self.id.to_string(),
                         platform_top: self.position.y,
                     });
             } // else, already on the platform
         } else if self.has_dog {
-            self.has_dog = false;
-            dog.off_platform();
+            self.event_publisher.publish(GameEvent::DogExitsPlatform {
+                id: self.id.to_string(),
+            });
         }
     }
 
     fn process_event(&mut self, event: &super::event_queue::GameEvent) {
         match event {
-            crate::game::event_queue::GameEvent::DogLandedOnPlatform { id, .. } => {
-                log!("Platform {}: has dog = {}", self.id, *id == self.id);
-                self.has_dog = *id == self.id
+            GameEvent::DogExitsPlatform { .. } => {
+                log!("Platform {}: Dog exited platform", self.id);
+                self.has_dog = false;
+            }
+            GameEvent::DogLandedOnPlatform { id, .. } if *id == self.id => {
+                log!("Platform {}: Dog landed on platform", self.id);
+                self.has_dog = true
             }
             _ => (),
         }
