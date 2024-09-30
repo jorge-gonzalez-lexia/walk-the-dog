@@ -38,13 +38,6 @@ impl DogContext {
         }
     }
 
-    pub fn info(&self) -> String {
-        format!(
-            "pos={:?} v={:?} floor={:?}",
-            self.position, self.velocity, self.floor
-        )
-    }
-
     pub fn flee(mut self) -> Self {
         self.velocity.x = if self.position.x > 550 { -1 } else { 0 };
         log!("Dog starts fleeing {}", self.info());
@@ -52,8 +45,11 @@ impl DogContext {
         self
     }
 
-    pub fn floor(&self) -> i16 {
-        self.floor
+    pub fn info(&self) -> String {
+        format!(
+            "pos={:?} v={:?} floor={:?}",
+            self.position, self.velocity, self.floor
+        )
     }
 
     pub fn reset_frame(mut self) -> Self {
@@ -84,23 +80,30 @@ impl DogContext {
     }
 
     pub fn update(mut self, frame_count: u8) -> Self {
-        if self.velocity.y < game::TERMINAL_VELOCITY {
-            self.velocity.y += game::GRAVITY;
-        }
-
         if self.frame < frame_count {
             self.frame += 1;
         } else {
             self.frame = 0
         }
 
-        self.position.x += self.velocity.x;
+        // vertical movement
+        let was_on_floor = self.on_floor();
+        if self.velocity.y < game::TERMINAL_VELOCITY {
+            self.velocity.y += game::GRAVITY;
+        }
+
         self.position.y += self.velocity.y;
 
         if self.position.y > self.floor {
             self.position.y = self.floor;
         }
 
+        if self.on_floor() && !was_on_floor {
+            self.event_publisher.publish(GameEvent::DogLanded);
+        }
+
+        // horizontal movement
+        self.position.x += self.velocity.x;
         if self.too_close() {
             self.event_publisher.publish(GameEvent::DogTooClose);
         } else if self.too_far() {

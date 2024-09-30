@@ -2,7 +2,6 @@
 
 - [] Convert to using more published events
   - DogTooFar and DogTooClose maybe during Jumping?
-  - DogLandsOnGround
   - See other events below
 - [] Consider using a more proper Observer pattern by creating a GameObject trait with process_event method that the various game objects (dog, boy, Obstacle?) would implement
 
@@ -14,18 +13,6 @@ Formal events:
 - OffPlatform
 - Update. But this one we ideally do not fire continuously.
 - Worry
-
-Informal events:
-
-- Toggle (reverse) direction
-- JumpToRun: when landing from a Jump onto the Ground. (Landing on a platform is handled via formal event when Dog hits the platform). But we could maybe combine these too.
-
-What about Land (on ground)
-
-- Jumping.update detects dog is falling and has reached floor (either ground or not). Queues Land event. It does not transition to a new state yet.
-- Jumping.update returns and stack unwinds etc
-- On next update iteration, Dog reacts to Land event by calling dog.land which sets the floor and transitions to Running
-- Rest of updates continue, but now Dog is running on new floor
 
 What about a formal event like Land?
 

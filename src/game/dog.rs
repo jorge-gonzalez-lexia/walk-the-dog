@@ -83,6 +83,7 @@ impl Dog {
     pub fn process_event(&mut self, event: &GameEvent) {
         log!("Dog: process game event {event:?}");
         self.state_machine = match event {
+            GameEvent::DogLanded => self.state_machine.clone().transition(Event::LandOnGround),
             GameEvent::DogTooClose => self.state_machine.clone().transition(Event::TurnAround),
             GameEvent::DogTooFar => self.state_machine.clone().transition(Event::TurnAround),
         }

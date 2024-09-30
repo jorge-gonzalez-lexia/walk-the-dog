@@ -10,6 +10,8 @@ const TIMELINE_MINIMUM: i16 = 1000;
 
 impl WalkTheDogState<Walking> {
     pub fn update(mut self, keystate: &KeyState) -> WalkingEndState {
+        self.walk.process_events();
+
         if keystate.is_pressed("Space") {
             self.walk.boy.jump();
         }
