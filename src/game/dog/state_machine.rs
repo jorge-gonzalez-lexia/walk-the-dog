@@ -58,6 +58,7 @@ impl DogStateMachine {
 
             (DogStateMachine::Running(state), Event::Flee) => state.flee().into(),
             (DogStateMachine::Running(state), Event::Jump) => state.jump().into(),
+            (DogStateMachine::Running(state), Event::LandOnGround) => state.land().into(),
             (DogStateMachine::Running(state), Event::OffPlatform) => {
                 state.drop_from_platform().into()
             }

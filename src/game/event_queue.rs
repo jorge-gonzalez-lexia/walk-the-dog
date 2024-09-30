@@ -1,7 +1,7 @@
 use std::{cell::RefCell, collections::VecDeque, rc::Rc};
 
 /// Used by game objects to publish (dispatch) GameEvents
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct EventPublisher {
     events: EventQueue,
 }
@@ -23,6 +23,7 @@ pub type EventQueue = Rc<RefCell<VecDeque<GameEvent>>>;
 #[derive(Debug)]
 pub enum GameEvent {
     DogLanded,
+    DogLandedOnPlatform { id: String, platform_top: i16 },
     DogTooClose,
     DogTooFar,
 }

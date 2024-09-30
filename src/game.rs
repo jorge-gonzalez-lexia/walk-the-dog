@@ -89,7 +89,11 @@ impl Game for WalkTheDog {
                     load_image("tiles.png").await?,
                 ));
 
-                let segment_factory = SegmentFactory::new(sprite_sheet.clone(), stone.clone());
+                let mut segment_factory = SegmentFactory::new(
+                    sprite_sheet.clone(),
+                    stone.clone(),
+                    event_publisher.clone(),
+                );
 
                 let starting_obstacles = segment_factory.first();
                 let timeline = rightmost(&starting_obstacles);

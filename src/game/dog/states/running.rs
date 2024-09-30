@@ -42,6 +42,12 @@ impl DogState<Running> {
         }
     }
 
+    pub fn land(self) -> DogState<Running> {
+        log!("Dog landed on ground {}", self.context.info());
+
+        self
+    }
+
     pub fn update(mut self) -> DogState<Running> {
         self.context = self.context.update(RUNNING_FRAMES);
 

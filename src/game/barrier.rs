@@ -104,6 +104,10 @@ impl Obstacle for Barrier {
         }
     }
 
+    fn process_event(&mut self, _event: &super::event_queue::GameEvent) {
+        // Nothing of interest for now
+    }
+
     fn right(&self) -> i16 {
         self.image.right()
     }

@@ -1,4 +1,6 @@
-use super::{dog::Dog, obstacle::Obstacle, red_hat_boy::RedHatBoy, HEIGHT};
+use super::{
+    dog::Dog, event_queue::EventPublisher, obstacle::Obstacle, red_hat_boy::RedHatBoy, HEIGHT,
+};
 use crate::engine::{
     rect::{Point, Rect},
     renderer::Renderer,
@@ -13,20 +15,24 @@ const MARK_OFFSET: i16 = 80;
 pub struct Platform {
     pub position: Point,
     bounding_boxes: Vec<Rect>,
+    event_publisher: EventPublisher,
     /// True when dog is running on platform
     has_dog: bool,
     has_mark_left: bool,
     has_mark_right: bool,
+    id: String,
     sheet: Rc<SpriteSheet>,
     sprites: Vec<Cell>,
 }
 
 impl Platform {
     pub fn new(
+        id: String,
         sheet: Rc<SpriteSheet>,
         position: Point,
         sprite_names: &[&str],
         bounding_boxes: &[Rect],
+        event_publisher: EventPublisher,
     ) -> Self {
         let sprites = sprite_names
             .iter()
@@ -39,6 +45,8 @@ impl Platform {
 
         Platform {
             bounding_boxes,
+            event_publisher,
+            id,
             has_dog: false,
             has_mark_left: false,
             has_mark_right: false,
@@ -201,12 +209,27 @@ impl Obstacle for Platform {
             // );
             dog.jump();
         } else if self.on_platform(dog) {
-            // log!("Hit platform {}", self.hit_info(dog));
-            self.has_dog = true;
-            dog.on_platform(self.position.y);
+            if !self.has_dog {
+                self.event_publisher
+                    .publish(super::event_queue::GameEvent::DogLandedOnPlatform {
+                        id: self.id.to_string(),
+                        platform_top: self.position.y,
+                    });
+            } // else, already on the platform
         } else if self.has_dog {
             self.has_dog = false;
             dog.off_platform();
+        }
+    }
+
+    fn process_event(&mut self, event: &super::event_queue::GameEvent) {
+        log!("Platform {}: process game event {event:?}", self.id);
+        match event {
+            crate::game::event_queue::GameEvent::DogLandedOnPlatform { id, platform_top } => {
+                log!("Platform {}: has dog", self.id);
+                self.has_dog = *id == self.id
+            }
+            _ => (),
         }
     }
 

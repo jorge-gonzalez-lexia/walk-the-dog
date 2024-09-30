@@ -71,19 +71,14 @@ impl Dog {
         self.state_machine = self.state_machine.clone().transition(Event::OffPlatform);
     }
 
-    pub fn on_platform(&mut self, top: i16) {
-        assert!(self.state_machine.context().velocity.y > 0);
-
-        if self.state_machine.context().floor == DOG_GROUND {
-            // log!("Hit platform {} floor={DOG_FLOOR}", self.info());
-            self.state_machine = self.state_machine.clone().transition(Event::Land(top))
-        }
-    }
-
     pub fn process_event(&mut self, event: &GameEvent) {
         log!("Dog: process game event {event:?}");
         self.state_machine = match event {
             GameEvent::DogLanded => self.state_machine.clone().transition(Event::LandOnGround),
+            GameEvent::DogLandedOnPlatform { id, platform_top } => self
+                .state_machine
+                .clone()
+                .transition(Event::Land(*platform_top)),
             GameEvent::DogTooClose => self.state_machine.clone().transition(Event::TurnAround),
             GameEvent::DogTooFar => self.state_machine.clone().transition(Event::TurnAround),
         }

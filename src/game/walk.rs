@@ -24,7 +24,7 @@ pub struct Walk {
 
 impl Walk {
     pub fn reset(walk: Self) -> Self {
-        let segment_factory = walk.segment_factory;
+        let mut segment_factory = walk.segment_factory;
         let starting_obstacles = segment_factory.first();
         let timeline = rightmost(&starting_obstacles);
 
@@ -62,6 +62,9 @@ impl Walk {
 
     pub fn process_events(&mut self) {
         while let Some(event) = self.events.borrow_mut().pop_front() {
+            self.obstacles.iter_mut().for_each(|o| {
+                o.process_event(&event);
+            });
             self.dog.process_event(&event);
         }
     }
