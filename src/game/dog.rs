@@ -8,7 +8,6 @@ use crate::engine::{
     renderer::{DrawImageOptions, Renderer},
     sheet::{Cell, Sheet},
 };
-use context::DOG_GROUND;
 use state_machine::{DogStateMachine, Event};
 use states::DogState;
 use web_sys::HtmlImageElement;
@@ -75,12 +74,13 @@ impl Dog {
         log!("Dog: process game event {event:?}");
         self.state_machine = match event {
             GameEvent::DogLanded => self.state_machine.clone().transition(Event::LandOnGround),
-            GameEvent::DogLandedOnPlatform { id, platform_top } => self
+            GameEvent::DogLandedOnPlatform { platform_top, .. } => self
                 .state_machine
                 .clone()
-                .transition(Event::Land(*platform_top)),
-            GameEvent::DogTooClose => self.state_machine.clone().transition(Event::TurnAround),
-            GameEvent::DogTooFar => self.state_machine.clone().transition(Event::TurnAround),
+                .transition(Event::LandOn(*platform_top)),
+            GameEvent::DogTooClose | GameEvent::DogTooFar => {
+                self.state_machine.clone().transition(Event::TurnAround)
+            }
         }
     }
 

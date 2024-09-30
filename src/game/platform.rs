@@ -223,10 +223,9 @@ impl Obstacle for Platform {
     }
 
     fn process_event(&mut self, event: &super::event_queue::GameEvent) {
-        log!("Platform {}: process game event {event:?}", self.id);
         match event {
-            crate::game::event_queue::GameEvent::DogLandedOnPlatform { id, platform_top } => {
-                log!("Platform {}: has dog", self.id);
+            crate::game::event_queue::GameEvent::DogLandedOnPlatform { id, .. } => {
+                log!("Platform {}: has dog = {}", self.id, *id == self.id);
                 self.has_dog = *id == self.id
             }
             _ => (),

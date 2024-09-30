@@ -42,8 +42,11 @@ impl DogState<Running> {
         }
     }
 
-    pub fn land(self) -> DogState<Running> {
-        log!("Dog landed on ground {}", self.context.info());
+    pub fn land_on_ground(self) -> DogState<Running> {
+        log!(
+            "Dog: landed on ground while running. {}",
+            self.context.info()
+        );
 
         self
     }

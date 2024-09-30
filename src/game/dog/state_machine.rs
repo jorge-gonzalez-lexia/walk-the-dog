@@ -7,7 +7,7 @@ use super::{
 pub enum Event {
     Flee,
     Jump,
-    Land(i16),
+    LandOn(i16), // param is platform top
     LandOnGround,
     OffPlatform,
     TurnAround,
@@ -51,14 +51,14 @@ impl DogStateMachine {
         match (self.clone(), event) {
             (DogStateMachine::Jumping(state), Event::Flee) => state.flee().into(),
             (DogStateMachine::Jumping(state), Event::Jump) => state.into(), // explicitly ignore
-            (DogStateMachine::Jumping(state), Event::Land(p)) => state.land_on(p).into(),
-            (DogStateMachine::Jumping(state), Event::LandOnGround) => state.land(None).into(),
+            (DogStateMachine::Jumping(state), Event::LandOn(p)) => state.land_on(p).into(),
+            (DogStateMachine::Jumping(state), Event::LandOnGround) => state.land_on_ground().into(),
             (DogStateMachine::Jumping(state), Event::Update) => state.update().into(),
             (DogStateMachine::Jumping(state), Event::Worry) => state.worry().into(),
 
             (DogStateMachine::Running(state), Event::Flee) => state.flee().into(),
             (DogStateMachine::Running(state), Event::Jump) => state.jump().into(),
-            (DogStateMachine::Running(state), Event::LandOnGround) => state.land().into(),
+            (DogStateMachine::Running(state), Event::LandOnGround) => state.land_on_ground().into(),
             (DogStateMachine::Running(state), Event::OffPlatform) => {
                 state.drop_from_platform().into()
             }
