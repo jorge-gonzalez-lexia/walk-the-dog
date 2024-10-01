@@ -29,4 +29,5 @@ pub enum GameEvent {
     DogLandedOnPlatform { id: String, platform_top: i16 },
     DogTooClose,
     DogTooFar,
+    GameStarted,
 }

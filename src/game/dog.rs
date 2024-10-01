@@ -31,10 +31,6 @@ impl Dog {
         }
     }
 
-    pub fn flee(&mut self) {
-        self.state_machine = self.state_machine.clone().transition(Event::Flee);
-    }
-
     pub fn info(&self) -> String {
         let ctx = self.state_machine.context();
         let bb = self.bounding_box();
@@ -50,14 +46,6 @@ impl Dog {
         )
     }
 
-    pub fn jump(&mut self) {
-        if self.state_machine.context().velocity.y < 0 {
-            return;
-        }
-
-        self.state_machine = self.state_machine.clone().transition(Event::Jump);
-    }
-
     pub fn moving_left(&self) -> bool {
         self.state_machine.context().velocity.x < 0
     }
@@ -67,22 +55,17 @@ impl Dog {
     }
 
     pub fn process_event(&mut self, event: &GameEvent) {
-        log!("Dog: process game event {event:?}");
-        self.state_machine = match event {
-            GameEvent::DogExitsPlatform { .. } => {
-                self.state_machine.clone().transition(Event::OffPlatform)
+        match event {
+            GameEvent::DogExitsPlatform { .. } => self.transition(Event::OffPlatform),
+            GameEvent::DogHitMark { .. } => self.transition(Event::Jump),
+            GameEvent::DogLanded => self.transition(Event::LandOnGround),
+            GameEvent::DogLandedOnPlatform { platform_top, .. } => {
+                self.transition(Event::LandOn(*platform_top))
             }
-            GameEvent::DogHitMark { .. } => self.state_machine.clone().transition(Event::Jump),
-            GameEvent::DogLanded => self.state_machine.clone().transition(Event::LandOnGround),
-            GameEvent::DogLandedOnPlatform { platform_top, .. } => self
-                .state_machine
-                .clone()
-                .transition(Event::LandOn(*platform_top)),
-            GameEvent::DogTooClose | GameEvent::DogTooFar => {
-                self.state_machine.clone().transition(Event::TurnAround)
-            }
-            _ => self.state_machine.clone(),
-        }
+            GameEvent::DogTooClose | GameEvent::DogTooFar => self.transition(Event::TurnAround),
+            GameEvent::GameStarted => self.transition(Event::Flee),
+            _ => (),
+        };
     }
 
     pub fn reset(dog: Self) -> Self {
@@ -153,5 +136,11 @@ impl Dog {
             sprite.frame.w,
             sprite.frame.h,
         )
+    }
+
+    fn transition(&mut self, event: Event) {
+        log!("Dog: process game event {event:?}");
+
+        self.state_machine = self.state_machine.clone().transition(event);
     }
 }

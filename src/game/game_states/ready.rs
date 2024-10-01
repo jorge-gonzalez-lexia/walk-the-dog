@@ -1,5 +1,8 @@
 use super::{walking::Walking, WalkTheDogState, WalkTheDogStateMachine};
-use crate::{engine::input::KeyState, game::walk::Walk};
+use crate::{
+    engine::input::KeyState,
+    game::{event_queue::GameEvent, walk::Walk},
+};
 
 pub struct Ready;
 
@@ -30,7 +33,7 @@ impl WalkTheDogState<Ready> {
 
     fn run_right(&mut self) {
         self.walk.boy.run_right();
-        self.walk.dog.flee();
+        self.walk.event_publisher.publish(GameEvent::GameStarted);
     }
 
     fn start_running(mut self) -> WalkTheDogState<Walking> {

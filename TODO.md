@@ -7,10 +7,6 @@
 
 Formal events:
 
-- Flee. The event here really is Boy starts running (or game starts)
-- Jump. This is actually hitting a mark (which may trigger a Jump)
-- Land
-- OffPlatform
 - Update. But this one we ideally do not fire continuously.
 - Worry
 

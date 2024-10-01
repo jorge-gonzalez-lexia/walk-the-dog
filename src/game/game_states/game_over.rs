@@ -115,7 +115,8 @@ mod tests {
             },
             image.clone(),
         ));
-        let segment_factory = SegmentFactory::new(sprite_sheet.clone(), image.clone());
+        let segment_factory =
+            SegmentFactory::new(sprite_sheet.clone(), image.clone(), event_publisher.clone());
         let walk = Walk {
             backgrounds: [
                 Image::new(image.clone(), Point { x: 0, y: 0 }),
