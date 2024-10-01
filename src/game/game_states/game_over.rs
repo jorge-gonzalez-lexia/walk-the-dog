@@ -21,7 +21,7 @@ impl WalkTheDogState<GameOver> {
 
             self.walk.dog.update();
             self.walk.obstacles.iter_mut().for_each(|obstacle| {
-                obstacle.navigate(&mut self.walk.dog);
+                obstacle.navigate(&self.walk.dog);
             });
             GameOverEndState::Continue(self)
         }

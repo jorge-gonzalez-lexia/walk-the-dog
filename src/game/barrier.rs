@@ -1,4 +1,9 @@
-use super::{dog::Dog, obstacle::Obstacle, red_hat_boy::RedHatBoy};
+use super::{
+    dog::Dog,
+    event_queue::{EventPublisher, GameEvent},
+    obstacle::Obstacle,
+    red_hat_boy::RedHatBoy,
+};
 use crate::engine::{
     image::Image,
     rect::{Point, Rect},
@@ -6,14 +11,20 @@ use crate::engine::{
 };
 
 pub struct Barrier {
+    dog_on_mark: bool,
+    event_publisher: EventPublisher,
+    id: String,
     image: Image,
     has_mark_left: bool,
     has_mark_right: bool,
 }
 
 impl Barrier {
-    pub fn new(image: Image) -> Self {
+    pub fn new(id: String, image: Image, event_publisher: EventPublisher) -> Self {
         Barrier {
+            dog_on_mark: false,
+            event_publisher,
+            id,
             image,
             has_mark_left: false,
             has_mark_right: false,
@@ -98,14 +109,32 @@ impl Obstacle for Barrier {
         self.image.move_horizontally(x);
     }
 
-    fn navigate(&mut self, dog: &mut Dog) {
-        if self.on_left_mark(dog) || self.on_right_mark(dog) {
-            dog.jump();
+    fn navigate(&mut self, dog: &Dog) {
+        let is_on_mark = self.on_left_mark(dog) || self.on_right_mark(dog);
+        if is_on_mark && !self.dog_on_mark {
+            self.event_publisher.publish(GameEvent::DogHitMark {
+                id: self.id.clone(),
+            });
+        }
+        if !is_on_mark && self.dog_on_mark {
+            self.event_publisher.publish(GameEvent::DogOffMark {
+                id: self.id.clone(),
+            });
         }
     }
 
-    fn process_event(&mut self, _event: &super::event_queue::GameEvent) {
-        // Nothing of interest for now
+    fn process_event(&mut self, event: &super::event_queue::GameEvent) {
+        match event {
+            GameEvent::DogHitMark { id } if *id == self.id => {
+                log!("Barrier {}: Dog hit mark", self.id);
+                self.dog_on_mark = true;
+            }
+            GameEvent::DogOffMark { id } if *id == self.id => {
+                log!("Barrier {}: Dog off mark", self.id);
+                self.dog_on_mark = false;
+            }
+            _ => (),
+        }
     }
 
     fn right(&self) -> i16 {

@@ -19,6 +19,7 @@ const MARK_OFFSET: i16 = 80;
 pub struct Platform {
     pub position: Point,
     bounding_boxes: Vec<Rect>,
+    dog_on_mark: bool,
     event_publisher: EventPublisher,
     /// True when dog is running on platform
     has_dog: bool,
@@ -50,6 +51,7 @@ impl Platform {
         Platform {
             bounding_boxes,
             event_publisher,
+            dog_on_mark: false,
             id,
             has_dog: false,
             has_mark_left: false,
@@ -198,40 +200,48 @@ impl Obstacle for Platform {
             .for_each(|b| b.set_x(b.position.x + x));
     }
 
-    /// Navigate the platform based on hitting the mark (when moving right or
-    /// left), at which point jump. Otherwise, if you hit the platform, assume
-    /// it is on the way down from a jump, at which point the dog lands on the
-    /// platform and we set the `has_dog` flag. Otherwise, if the dog was last
-    /// on the platform, it must have run off so unset `has_dog` and notify
-    /// dog its floor has changed.
-    fn navigate(&mut self, dog: &mut Dog) {
-        if self.on_left_mark(dog) || self.on_right_mark(dog) {
-            // log!(
-            //     "Hit mark left={} right={}",
-            //     self.on_left_mark(dog),
-            //     self.on_right_mark(dog)
-            // );
-            dog.jump();
-        } else if self.on_platform(dog) {
-            if !self.has_dog {
-                self.event_publisher
-                    .publish(GameEvent::DogLandedOnPlatform {
-                        id: self.id.to_string(),
-                        platform_top: self.position.y,
-                    });
-            } // else, already on the platform
-        } else if self.has_dog {
-            self.event_publisher.publish(GameEvent::DogExitsPlatform {
-                id: self.id.to_string(),
+    /// Publish GameEvents when Dog interacts with the platform or a mark that
+    /// should trigger the Dog to jump.
+    fn navigate(&mut self, dog: &Dog) {
+        let is_on_mark = self.on_left_mark(dog) || self.on_right_mark(dog);
+        if is_on_mark && !self.dog_on_mark {
+            self.event_publisher.publish(GameEvent::DogHitMark {
+                id: self.id.clone(),
             });
+        }
+        if !is_on_mark && self.dog_on_mark {
+            self.event_publisher.publish(GameEvent::DogOffMark {
+                id: self.id.clone(),
+            });
+        }
+
+        let is_on_platform = self.on_platform(dog);
+        if is_on_platform && !self.has_dog {
+            self.event_publisher
+                .publish(GameEvent::DogLandedOnPlatform {
+                    id: self.id.clone(),
+                    platform_top: self.position.y,
+                });
+        }
+
+        if !is_on_platform && self.has_dog {
+            self.event_publisher.publish(GameEvent::DogExitsPlatform);
         }
     }
 
     fn process_event(&mut self, event: &super::event_queue::GameEvent) {
         match event {
-            GameEvent::DogExitsPlatform { .. } => {
+            GameEvent::DogExitsPlatform => {
                 log!("Platform {}: Dog exited platform", self.id);
                 self.has_dog = false;
+            }
+            GameEvent::DogHitMark { id } if *id == self.id => {
+                log!("Platform {}: Dog hit mark", self.id);
+                self.dog_on_mark = true;
+            }
+            GameEvent::DogOffMark { id } if *id == self.id => {
+                log!("Platform {}: Dog off mark", self.id);
+                self.dog_on_mark = false;
             }
             GameEvent::DogLandedOnPlatform { id, .. } if *id == self.id => {
                 log!("Platform {}: Dog landed on platform", self.id);

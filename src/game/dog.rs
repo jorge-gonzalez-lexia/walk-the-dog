@@ -66,16 +66,13 @@ impl Dog {
         self.state_machine.context().velocity.x >= 0
     }
 
-    pub fn off_platform(&mut self) {
-        self.state_machine = self.state_machine.clone().transition(Event::OffPlatform);
-    }
-
     pub fn process_event(&mut self, event: &GameEvent) {
         log!("Dog: process game event {event:?}");
         self.state_machine = match event {
             GameEvent::DogExitsPlatform { .. } => {
                 self.state_machine.clone().transition(Event::OffPlatform)
             }
+            GameEvent::DogHitMark { .. } => self.state_machine.clone().transition(Event::Jump),
             GameEvent::DogLanded => self.state_machine.clone().transition(Event::LandOnGround),
             GameEvent::DogLandedOnPlatform { platform_top, .. } => self
                 .state_machine
@@ -84,6 +81,7 @@ impl Dog {
             GameEvent::DogTooClose | GameEvent::DogTooFar => {
                 self.state_machine.clone().transition(Event::TurnAround)
             }
+            _ => self.state_machine.clone(),
         }
     }
 

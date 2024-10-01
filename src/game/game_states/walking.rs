@@ -37,7 +37,7 @@ impl WalkTheDogState<Walking> {
 
         self.walk.obstacles.iter_mut().for_each(|obstacle| {
             obstacle.move_horizontally(walking_speed);
-            obstacle.navigate(&mut self.walk.dog);
+            obstacle.navigate(&self.walk.dog);
             obstacle.check_intersection(&mut self.walk.boy, &mut self.walk.dog);
         });
 

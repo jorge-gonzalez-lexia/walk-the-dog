@@ -16,7 +16,6 @@ const HIGH_PLATFORM: i16 = 375;
 const LOW_PLATFORM: i16 = 420;
 
 const STONE_ON_GROUND: i16 = 546;
-const STONE_ON_PLATFORM: i16 = 322;
 
 // -1 means random segments. Set to 0, 3, 4, 5 for testing specific segments
 const REPEAT: i32 = -1;
@@ -76,25 +75,30 @@ impl SegmentFactory {
         )
     }
 
-    fn platform_and_stone(&self, offset_x: i16) -> Vec<Box<dyn Obstacle>> {
-        const INITIAL_STONE_OFFSET: i16 = 350;
-        const PLATFORM_OFFSET: i16 = 200;
+    fn create_stone(&self, offset_x: i16) -> Barrier {
+        Barrier::new(
+            format!("b{}", self.id),
+            Image::new(
+                self.stone_image.clone(),
+                Point {
+                    x: offset_x,
+                    y: STONE_ON_GROUND,
+                },
+            ),
+            self.event_publisher.clone(),
+        )
+    }
 
+    fn platform_and_stone(&self, offset_x: i16) -> Vec<Box<dyn Obstacle>> {
         let platform = self
             .create_floating_platform(Point {
-                x: offset_x + PLATFORM_OFFSET,
+                x: offset_x + 200,
                 y: HIGH_PLATFORM,
             })
             .with_left_mark()
             .with_right_mark();
 
-        let stone = Barrier::new(Image::new(
-            self.stone_image.clone(),
-            Point {
-                x: offset_x + INITIAL_STONE_OFFSET,
-                y: STONE_ON_GROUND,
-            },
-        ));
+        let stone = self.create_stone(offset_x + 350);
 
         vec![Box::new(platform), Box::new(stone)]
     }
@@ -118,30 +122,15 @@ impl SegmentFactory {
     }
 
     fn stone(&self, offset_x: i16) -> Vec<Box<dyn Obstacle>> {
-        const INITIAL_STONE_OFFSET: i16 = 150;
-        let stone = Barrier::new(Image::new(
-            self.stone_image.clone(),
-            Point {
-                x: offset_x + INITIAL_STONE_OFFSET,
-                y: STONE_ON_GROUND,
-            },
-        ))
-        .with_left_mark()
-        .with_right_mark();
-
-        vec![Box::new(stone)]
+        vec![Box::new(
+            self.create_stone(offset_x + 150)
+                .with_left_mark()
+                .with_right_mark(),
+        )]
     }
 
     fn stone_and_platform(&self, offset_x: i16) -> Vec<Box<dyn Obstacle>> {
-        const INITIAL_STONE_OFFSET: i16 = 130;
-        let stone = Barrier::new(Image::new(
-            self.stone_image.clone(),
-            Point {
-                x: offset_x + INITIAL_STONE_OFFSET,
-                y: STONE_ON_GROUND,
-            },
-        ))
-        .with_left_mark();
+        let stone = self.create_stone(offset_x + 130).with_left_mark();
 
         let platform = self
             .create_floating_platform(Point {
@@ -154,14 +143,7 @@ impl SegmentFactory {
     }
 
     fn stone_on_platform(&self, offset_x: i16) -> Vec<Box<dyn Obstacle>> {
-        const INITIAL_STONE_OFFSET: i16 = 390;
-        let stone = Barrier::new(Image::new(
-            self.stone_image.clone(),
-            Point {
-                x: offset_x + INITIAL_STONE_OFFSET,
-                y: STONE_ON_PLATFORM,
-            },
-        ));
+        let stone = self.create_stone(offset_x + 390);
         let platform = self.create_floating_platform(Point {
             x: offset_x + 200,
             y: HIGH_PLATFORM,
