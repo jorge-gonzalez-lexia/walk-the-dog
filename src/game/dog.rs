@@ -56,14 +56,17 @@ impl Dog {
 
     pub fn process_event(&mut self, event: &GameEvent) {
         match event {
-            GameEvent::DogExitsPlatform { .. } => self.transition(Event::OffPlatform),
-            GameEvent::DogHitMark { .. } => self.transition(Event::Jump),
-            GameEvent::DogLanded => self.transition(Event::LandOnGround),
+            GameEvent::BoyHitsObstacle => self.transition(Event::Worry, event),
+            GameEvent::DogExitsPlatform { .. } => self.transition(Event::OffPlatform, event),
+            GameEvent::DogHitMark { .. } => self.transition(Event::Jump, event),
+            GameEvent::DogLanded => self.transition(Event::LandOnGround, event),
             GameEvent::DogLandedOnPlatform { platform_top, .. } => {
-                self.transition(Event::LandOn(*platform_top))
+                self.transition(Event::LandOn(*platform_top), event)
             }
-            GameEvent::DogTooClose | GameEvent::DogTooFar => self.transition(Event::TurnAround),
-            GameEvent::GameStarted => self.transition(Event::Flee),
+            GameEvent::DogTooClose | GameEvent::DogTooFar => {
+                self.transition(Event::TurnAround, event)
+            }
+            GameEvent::GameStarted => self.transition(Event::Flee, event),
             _ => (),
         };
     }
@@ -74,10 +77,6 @@ impl Dog {
             dog.image,
             dog.state_machine.context().event_publisher.clone(),
         )
-    }
-
-    pub fn worry(&mut self) {
-        self.state_machine = self.state_machine.clone().transition(Event::Worry);
     }
 
     pub fn bounding_box(&self) -> Rect {
@@ -138,8 +137,8 @@ impl Dog {
         )
     }
 
-    fn transition(&mut self, event: Event) {
-        log!("Dog: process game event {event:?}");
+    fn transition(&mut self, event: Event, game_event: &GameEvent) {
+        log!("Dog: GameEvent '{game_event:?}' => dog command '{event:?}'");
 
         self.state_machine = self.state_machine.clone().transition(event);
     }

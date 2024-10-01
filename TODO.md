@@ -1,16 +1,8 @@
 # TODO
 
-- [] Convert to using more published events
-  - DogTooFar and DogTooClose maybe during Jumping?
-  - See other events below
+- [] Factor out ObstacleMark
+- [] GameEvent::BoyKnockedOut should only fire once
 - [] Consider using a more proper Observer pattern by creating a GameObject trait with process_event method that the various game objects (dog, boy, Obstacle?) would implement
-
-Formal events:
-
-- Update. But this one we ideally do not fire continuously.
-- Worry
-
-Factor out ObstacleMark
 
 Landing
 

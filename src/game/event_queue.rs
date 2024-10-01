@@ -22,6 +22,7 @@ pub type EventQueue = Rc<RefCell<VecDeque<GameEvent>>>;
 
 #[derive(Debug)]
 pub enum GameEvent {
+    BoyHitsObstacle,
     DogExitsPlatform,
     DogHitMark { id: String },
     DogOffMark { id: String },

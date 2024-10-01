@@ -93,10 +93,10 @@ impl Barrier {
 }
 
 impl Obstacle for Barrier {
-    fn check_intersection(&self, boy: &mut RedHatBoy, dog: &mut Dog) {
+    fn check_intersection(&self, boy: &mut RedHatBoy) {
         if boy.bounding_box().intersects(self.image.bounding_box()) {
             boy.knock_out();
-            dog.worry();
+            self.event_publisher.publish(GameEvent::BoyHitsObstacle);
         }
     }
 

@@ -149,7 +149,7 @@ impl Platform {
 }
 
 impl Obstacle for Platform {
-    fn check_intersection(&self, boy: &mut RedHatBoy, dog: &mut Dog) {
+    fn check_intersection(&self, boy: &mut RedHatBoy) {
         if let Some(box_to_land_on) = self
             .bounding_boxes()
             .iter()
@@ -159,7 +159,7 @@ impl Obstacle for Platform {
                 boy.land_on(box_to_land_on.top());
             } else {
                 boy.knock_out();
-                dog.worry();
+                self.event_publisher.publish(GameEvent::BoyHitsObstacle);
             }
         }
     }
