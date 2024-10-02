@@ -1,9 +1,7 @@
-mod barrier;
 mod dog;
 mod event_queue;
 pub mod game_states;
-mod obstacle;
-mod platform;
+mod obstacles;
 mod red_hat_boy;
 mod segments;
 mod walk;

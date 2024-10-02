@@ -1,11 +1,11 @@
-use super::{event_queue::EventPublisher, obstacle::Obstacle, platform::Platform};
-use crate::{
-    engine::{
-        image::Image,
-        rect::{Point, Rect},
-        sprite_sheet::SpriteSheet,
-    },
-    game::barrier::Barrier,
+use super::{
+    event_queue::EventPublisher,
+    obstacles::{barrier::Barrier, platform::Platform, Obstacle, ObstacleMarkFactory},
+};
+use crate::engine::{
+    image::Image,
+    rect::{Point, Rect},
+    sprite_sheet::SpriteSheet,
 };
 use rand::{thread_rng, Rng};
 use std::rc::Rc;
@@ -16,9 +16,7 @@ const HIGH_PLATFORM: i16 = 375;
 const LOW_PLATFORM: i16 = 420;
 
 const STONE_ON_GROUND: i16 = 546;
-
-// -1 means random segments. Set to 0, 3, 4, 5 for testing specific segments
-const REPEAT: i32 = -1;
+const STONE_ON_PLATFORM: i16 = 322;
 
 const STONE_AND_PLATFORM_SEGMENT_ID: i32 = 4;
 
@@ -75,32 +73,30 @@ impl SegmentFactory {
         )
     }
 
-    fn create_stone(&self, offset_x: i16) -> Barrier {
+    fn create_stone(&self, x: i16, y: i16) -> Barrier {
         Barrier::new(
             format!("b{}", self.id),
-            Image::new(
-                self.stone_image.clone(),
-                Point {
-                    x: offset_x,
-                    y: STONE_ON_GROUND,
-                },
-            ),
+            Image::new(self.stone_image.clone(), Point { x, y }),
             self.event_publisher.clone(),
         )
     }
 
     fn platform_and_stone(&self, offset_x: i16) -> Vec<Box<dyn Obstacle>> {
-        let platform = self
-            .create_floating_platform(Point {
-                x: offset_x + 200,
-                y: HIGH_PLATFORM,
-            })
-            .with_left_mark()
-            .with_right_mark();
+        let platform = self.create_floating_platform(Point {
+            x: offset_x + 200,
+            y: HIGH_PLATFORM,
+        });
+        let stone = self.create_stone(offset_x + 350, STONE_ON_GROUND);
 
-        let stone = self.create_stone(offset_x + 350);
+        let mark_left = platform.mark_left();
+        let mark_right = platform.mark_right();
 
-        vec![Box::new(platform), Box::new(stone)]
+        vec![
+            Box::new(mark_left),
+            Box::new(platform),
+            Box::new(stone),
+            Box::new(mark_right),
+        ]
     }
 
     fn platform_high(&self, offset_x: i16) -> Vec<Box<dyn Obstacle>> {
@@ -122,28 +118,34 @@ impl SegmentFactory {
     }
 
     fn stone(&self, offset_x: i16) -> Vec<Box<dyn Obstacle>> {
-        vec![Box::new(
-            self.create_stone(offset_x + 150)
-                .with_left_mark()
-                .with_right_mark(),
-        )]
+        let stone = self.create_stone(offset_x + 150, STONE_ON_GROUND);
+
+        let mark_left = stone.mark_left();
+        let mark_right = stone.mark_right();
+
+        vec![Box::new(mark_left), Box::new(stone), Box::new(mark_right)]
     }
 
     fn stone_and_platform(&self, offset_x: i16) -> Vec<Box<dyn Obstacle>> {
-        let stone = self.create_stone(offset_x + 130).with_left_mark();
+        let stone = self.create_stone(offset_x + 130, STONE_ON_GROUND);
+        let platform = self.create_floating_platform(Point {
+            x: offset_x + FIRST_PLATFORM,
+            y: LOW_PLATFORM,
+        });
 
-        let platform = self
-            .create_floating_platform(Point {
-                x: offset_x + FIRST_PLATFORM,
-                y: LOW_PLATFORM,
-            })
-            .with_right_mark();
+        let mark_left = stone.mark_left();
+        let mark_right = platform.mark_right();
 
-        vec![Box::new(stone), Box::new(platform)]
+        vec![
+            Box::new(mark_left),
+            Box::new(stone),
+            Box::new(platform),
+            Box::new(mark_right),
+        ]
     }
 
     fn stone_on_platform(&self, offset_x: i16) -> Vec<Box<dyn Obstacle>> {
-        let stone = self.create_stone(offset_x + 390);
+        let stone = self.create_stone(offset_x + 390, STONE_ON_PLATFORM);
         let platform = self.create_floating_platform(Point {
             x: offset_x + 200,
             y: HIGH_PLATFORM,
@@ -174,3 +176,6 @@ const FLOATING_PLATFORM_BOUNDING_BOXES: [Rect; 3] = [
     Rect::new_from_x_y(384 - 60, 0, 60, 54),
 ];
 const FLOATING_PLATFORM_SPRITES: [&str; 3] = ["13.png", "14.png", "15.png"];
+
+// -1 means random segments. Set to 0, 3, 4, 5 for testing specific segments
+const REPEAT: i32 = -1;

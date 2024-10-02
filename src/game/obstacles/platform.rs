@@ -1,15 +1,19 @@
 use super::{
-    dog::Dog,
-    event_queue::{EventPublisher, GameEvent},
-    obstacle::Obstacle,
-    red_hat_boy::RedHatBoy,
-    HEIGHT,
+    obstacle_mark::{ObstacleMark, ObstacleMarkDirection},
+    Obstacle, ObstacleMarkFactory,
 };
-use crate::engine::{
-    rect::{Point, Rect},
-    renderer::Renderer,
-    sheet::Cell,
-    sprite_sheet::SpriteSheet,
+use crate::{
+    engine::{
+        rect::{Point, Rect},
+        renderer::Renderer,
+        sheet::Cell,
+        sprite_sheet::SpriteSheet,
+    },
+    game::{
+        dog::Dog,
+        event_queue::{EventPublisher, GameEvent},
+        red_hat_boy::RedHatBoy,
+    },
 };
 use std::rc::Rc;
 
@@ -19,12 +23,9 @@ const MARK_OFFSET: i16 = 80;
 pub struct Platform {
     pub position: Point,
     bounding_boxes: Vec<Rect>,
-    dog_on_mark: bool,
     event_publisher: EventPublisher,
     /// True when dog is running on platform
     has_dog: bool,
-    has_mark_left: bool,
-    has_mark_right: bool,
     id: String,
     sheet: Rc<SpriteSheet>,
     sprites: Vec<Cell>,
@@ -51,11 +52,8 @@ impl Platform {
         Platform {
             bounding_boxes,
             event_publisher,
-            dog_on_mark: false,
             id,
             has_dog: false,
-            has_mark_left: false,
-            has_mark_right: false,
             position,
             sheet,
             sprites,
@@ -66,70 +64,10 @@ impl Platform {
         &self.bounding_boxes
     }
 
-    pub fn with_left_mark(mut self) -> Self {
-        self.has_mark_left = true;
-
-        self
-    }
-
-    pub fn with_right_mark(mut self) -> Self {
-        self.has_mark_right = true;
-
-        self
-    }
-
-    fn draw_marks(&self, renderer: &Renderer) {
-        if self.has_mark_left {
-            renderer.draw_rect_colored(&self.mark_left(), "#000000");
-        }
-
-        if self.has_mark_right {
-            renderer.draw_rect_colored(&self.mark_right(), "#FFFF00");
-        }
-    }
-
     fn on_platform(&self, dog: &Dog) -> bool {
         self.bounding_boxes()
             .iter()
             .any(|b| dog.bounding_box().intersects(b))
-    }
-
-    fn mark_left(&self) -> Rect {
-        Rect::new(
-            Point {
-                x: self.position.x - MARK_OFFSET,
-                y: self.position.y,
-            },
-            1,
-            HEIGHT - self.position.y,
-        )
-    }
-
-    fn mark_right(&self) -> Rect {
-        Rect::new(
-            Point {
-                x: self.right() + MARK_OFFSET,
-                y: self.position.y,
-            },
-            1,
-            HEIGHT - self.position.y,
-        )
-    }
-
-    fn on_left_mark(&self, dog: &Dog) -> bool {
-        if !self.has_mark_left || !dog.moving_right() {
-            return false;
-        }
-
-        dog.bounding_box().intersects(&self.mark_left())
-    }
-
-    fn on_right_mark(&self, dog: &Dog) -> bool {
-        if !self.has_mark_right || !dog.moving_left() {
-            return false;
-        }
-
-        dog.bounding_box().intersects(&self.mark_right())
     }
 
     #[allow(dead_code)]
@@ -190,7 +128,6 @@ impl Obstacle for Platform {
         self.bounding_boxes
             .iter()
             .for_each(|b| renderer.draw_rect(b));
-        self.draw_marks(renderer);
     }
 
     fn move_horizontally(&mut self, x: i16) {
@@ -203,19 +140,8 @@ impl Obstacle for Platform {
     /// Publish GameEvents when Dog interacts with the platform or a mark that
     /// should trigger the Dog to jump.
     fn navigate(&mut self, dog: &Dog) {
-        let is_on_mark = self.on_left_mark(dog) || self.on_right_mark(dog);
-        if is_on_mark && !self.dog_on_mark {
-            self.event_publisher.publish(GameEvent::DogHitMark {
-                id: self.id.clone(),
-            });
-        }
-        if !is_on_mark && self.dog_on_mark {
-            self.event_publisher.publish(GameEvent::DogOffMark {
-                id: self.id.clone(),
-            });
-        }
-
         let is_on_platform = self.on_platform(dog);
+
         if is_on_platform && !self.has_dog {
             self.event_publisher
                 .publish(GameEvent::DogLandedOnPlatform {
@@ -229,21 +155,13 @@ impl Obstacle for Platform {
         }
     }
 
-    fn process_event(&mut self, event: &super::event_queue::GameEvent) {
+    fn process_event(&mut self, event: &GameEvent) {
         match event {
-            GameEvent::DogExitsPlatform => {
+            GameEvent::DogExitsPlatform if self.has_dog => {
                 log!("Platform {}: Dog exited platform", self.id);
                 self.has_dog = false;
             }
-            GameEvent::DogHitMark { id } if *id == self.id => {
-                log!("Platform {}: Dog hit mark", self.id);
-                self.dog_on_mark = true;
-            }
-            GameEvent::DogOffMark { id } if *id == self.id => {
-                log!("Platform {}: Dog off mark", self.id);
-                self.dog_on_mark = false;
-            }
-            GameEvent::DogLandedOnPlatform { id, .. } if *id == self.id => {
+            GameEvent::DogLandedOnPlatform { id, .. } if *id == self.id && !self.has_dog => {
                 log!("Platform {}: Dog landed on platform", self.id);
                 self.has_dog = true
             }
@@ -256,5 +174,31 @@ impl Obstacle for Platform {
             .last()
             .unwrap_or(&Rect::default())
             .right()
+    }
+}
+
+impl ObstacleMarkFactory for Platform {
+    fn mark_left(&self) -> ObstacleMark {
+        ObstacleMark::new(
+            Point {
+                x: self.position.x - MARK_OFFSET,
+                y: self.position.y,
+            },
+            ObstacleMarkDirection::Left,
+            self.id.clone(),
+            self.event_publisher.clone(),
+        )
+    }
+
+    fn mark_right(&self) -> ObstacleMark {
+        ObstacleMark::new(
+            Point {
+                x: self.right() + MARK_OFFSET,
+                y: self.position.y,
+            },
+            ObstacleMarkDirection::Right,
+            self.id.clone(),
+            self.event_publisher.clone(),
+        )
     }
 }

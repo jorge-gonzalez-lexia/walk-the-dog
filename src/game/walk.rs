@@ -1,7 +1,7 @@
 use super::{
     dog::Dog,
     event_queue::{EventPublisher, EventQueue},
-    obstacle::Obstacle,
+    obstacles::Obstacle,
     red_hat_boy::RedHatBoy,
     segments::SegmentFactory,
 };
