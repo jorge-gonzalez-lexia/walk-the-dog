@@ -22,9 +22,18 @@ Landing
   - Eventually dog reaches end of platform. OffPlatform -> eventually lands on ground (1st scenario)
     - There's no state change here. It is a no-op
 
-## Issues
+## Bugs
 
-- Saw at least one time dog running right but facing left
+- LandOn event fires in Running state.
+
+  - Reproduce:
+    1. set segment REPEAT to 0
+    2. Run boy into rock. When Dog is on the return path, somehow hits this state. (If boy dies earlier, this does not happen)
+
+- Dog runs backward:
+  - Reproduce:
+    1. Wait for Dog to be returning back, then start running
+    2. Catch up to Dog, who is running backward. Dog also mishandles some obstacles when running in this mode
 - Issue: when dropping from platform onto stone while returning. Need a left marker on the right of the stone that reaches past platform
 - Issue: Hitting OffPlatform while Jumping. Hard to reproduce
   - Dog Running on platform (offscreen) and toggles direction. This can happen when Dog starts fleeing when offscreen (so Boy catches up to Dog and Dog sprints away, probably to fast?)

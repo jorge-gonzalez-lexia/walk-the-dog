@@ -28,9 +28,9 @@ Notes:
 sequenceDiagram
   autonumber
   WalkTheDogState(S).update->>Walk: process_events()
-  loop Every GameEvent
+  loop GameEvents
     Walk->>EventQueue: pop_front()
-    loop Every GameObject
+    loop GameObjects
       Walk->>GameObject: process_event(GameEvent)
       GameObject->>StateMachine: transition(ObjectEvent)
       StateMachine-->>GameObject: revised state
@@ -41,7 +41,7 @@ sequenceDiagram
 Notes:
 
 1. The main `update` loop in `WalkTheDogState(S)` (where S is `Ready`, `Walking`, or `GameOver`) calls `process_events` on `Walk`
-2. `Walk` loops through all `GameEvent`s in the queue, popping each one.
+2. `Walk` loops through all `GameEvent`s in the queue, popping each one. (As of this writing, this is all `Obstacles` and `Dog`, did not implement for `Boy`.)
 3. For each `GameEvent`, `Walk` then sends the `GameEvent` to each game object.
 4. Each game object handles `GameEvent`s of interest by calling `transition` on its `StateMachine` with the relevant game object `Event`.
 5. The game object then updates its `StateMachine` with the (potentially revised) `StateMachine` returned from the `transition` method.
