@@ -88,6 +88,10 @@ impl Platform {
 
 impl Obstacle for Platform {
     fn check_intersection(&self, boy: &mut RedHatBoy) {
+        if !boy.is_running() {
+            return;
+        }
+
         if let Some(box_to_land_on) = self
             .bounding_boxes()
             .iter()

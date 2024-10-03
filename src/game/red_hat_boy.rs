@@ -66,6 +66,13 @@ impl RedHatBoy {
         renderer.draw_rect(&self.bounding_box());
     }
 
+    pub fn is_running(&self) -> bool {
+        matches!(
+            self.state_machine,
+            RedHatBoyStateMachine::Jumping(_) | RedHatBoyStateMachine::Running(_)
+        )
+    }
+
     pub fn jump(&mut self) {
         self.state_machine = self.state_machine.clone().transition(Event::Jump);
     }

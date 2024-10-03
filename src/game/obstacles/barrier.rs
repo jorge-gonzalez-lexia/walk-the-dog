@@ -29,7 +29,7 @@ impl Barrier {
 
 impl Obstacle for Barrier {
     fn check_intersection(&self, boy: &mut RedHatBoy) {
-        if boy.bounding_box().intersects(self.image.bounding_box()) {
+        if boy.is_running() && boy.bounding_box().intersects(self.image.bounding_box()) {
             boy.knock_out();
             self.event_publisher.publish(GameEvent::BoyHitsObstacle);
         }
