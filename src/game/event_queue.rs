@@ -26,7 +26,7 @@ pub enum GameEvent {
     DogExitsPlatform,
     DogHitMark { id: String },
     DogOffMark { id: String },
-    DogLanded,
+    DogLandedOnGround,
     DogLandedOnPlatform { id: String, platform_top: i16 },
     DogTooClose,
     DogTooFar,

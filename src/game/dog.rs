@@ -54,12 +54,18 @@ impl Dog {
         self.state_machine.context().moving_right()
     }
 
+    pub fn moving_up(&self) -> bool {
+        self.state_machine.context().velocity.y <= 0
+    }
+
     pub fn process_event(&mut self, event: &GameEvent) {
+        log!("{}", self.info());
+
         match event {
             GameEvent::BoyHitsObstacle => self.transition(Event::Worry, event),
             GameEvent::DogExitsPlatform { .. } => self.transition(Event::OffPlatform, event),
             GameEvent::DogHitMark { .. } => self.transition(Event::Jump, event),
-            GameEvent::DogLanded => self.transition(Event::LandOnGround, event),
+            GameEvent::DogLandedOnGround => self.transition(Event::LandOnGround, event),
             GameEvent::DogLandedOnPlatform { platform_top, .. } => {
                 self.transition(Event::LandOn(*platform_top), event)
             }

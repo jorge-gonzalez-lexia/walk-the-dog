@@ -35,7 +35,7 @@ stateDiagram-v2
 - Trigger: `Dog` already on mark and no longer intersecting with it. (See [ObstacleMark.navigate](../obstacles/obstacle_mark.rs))
 - Dog Command: N/A (unsets flag in `ObstacleMark`)
 
-### DogLanded
+### DogLandedOnGround
 
 - Trigger: `Dog` is not on floor and moves onto it. (See [DogContext.update](context.rs))
 - Dog Command: Event::LandOnGround

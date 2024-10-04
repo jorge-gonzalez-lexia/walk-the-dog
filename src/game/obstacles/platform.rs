@@ -17,7 +17,8 @@ use crate::{
 };
 use std::rc::Rc;
 
-const MARK_OFFSET: i16 = 80;
+const LEFT_MARK_OFFSET: i16 = 80;
+const RIGHT_MARK_OFFSET: i16 = 100;
 
 #[derive(Debug)]
 pub struct Platform {
@@ -147,6 +148,8 @@ impl Obstacle for Platform {
         let is_on_platform = self.on_platform(dog);
 
         if is_on_platform && !self.has_dog {
+            assert!(!dog.moving_up());
+
             self.event_publisher
                 .publish(GameEvent::DogLandedOnPlatform {
                     id: self.id.clone(),
@@ -185,7 +188,7 @@ impl ObstacleMarkFactory for Platform {
     fn mark_left(&self) -> ObstacleMark {
         ObstacleMark::new(
             Point {
-                x: self.position.x - MARK_OFFSET,
+                x: self.position.x - LEFT_MARK_OFFSET,
                 y: self.position.y,
             },
             ObstacleMarkDirection::Left,
@@ -197,7 +200,7 @@ impl ObstacleMarkFactory for Platform {
     fn mark_right(&self) -> ObstacleMark {
         ObstacleMark::new(
             Point {
-                x: self.right() + MARK_OFFSET,
+                x: self.right() + RIGHT_MARK_OFFSET,
                 y: self.position.y,
             },
             ObstacleMarkDirection::Right,

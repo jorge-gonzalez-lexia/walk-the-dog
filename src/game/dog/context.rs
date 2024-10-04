@@ -109,7 +109,7 @@ impl DogContext {
         }
 
         // vertical movement
-        let was_on_floor = self.on_floor();
+        let was_on_floor = self.on_ground();
         if self.velocity.y < game::TERMINAL_VELOCITY {
             self.velocity.y += game::GRAVITY;
         }
@@ -120,8 +120,8 @@ impl DogContext {
             self.position.y = self.floor;
         }
 
-        if self.on_floor() && !was_on_floor {
-            self.event_publisher.publish(GameEvent::DogLanded);
+        if self.on_ground() && !was_on_floor {
+            self.event_publisher.publish(GameEvent::DogLandedOnGround);
         }
 
         // horizontal movement
@@ -146,6 +146,10 @@ impl DogContext {
 
     fn on_floor(&self) -> bool {
         self.position.y == self.floor
+    }
+
+    fn on_ground(&self) -> bool {
+        self.floor == DOG_GROUND && self.on_floor()
     }
 
     fn too_close(&self) -> bool {
