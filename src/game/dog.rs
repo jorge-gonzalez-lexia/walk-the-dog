@@ -59,8 +59,6 @@ impl Dog {
     }
 
     pub fn process_event(&mut self, event: &GameEvent) {
-        log!("{}", self.info());
-
         match event {
             GameEvent::BoyHitsObstacle => self.transition(Event::Worry, event),
             GameEvent::DogExitsPlatform { .. } => self.transition(Event::OffPlatform, event),
