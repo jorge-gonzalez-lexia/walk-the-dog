@@ -1,62 +1,42 @@
 use super::{running::Running, DogState};
-use crate::game::dog::{context::JUMPING_FRAMES, state_machine::DogStateMachine};
+use crate::game::dog::context::JUMPING_FRAMES;
 
 #[derive(Clone)]
 pub struct Jumping;
 
 impl DogState<Jumping> {
-    pub fn land_on(self, platform: i16) -> JumpingEndState {
-        self.land(Some(platform))
-    }
-
     pub fn frame_name(&self) -> String {
         let animation_frame = self.context().frame / 3;
         format!("l_{animation_frame:03}.png")
     }
 
-    pub fn update(mut self) -> JumpingEndState {
-        self.context = self.context.update(JUMPING_FRAMES);
-
-        if self.context.velocity.y > 0 && self.context.position.y == self.context.floor() {
-            self.land(None)
-        } else {
-            JumpingEndState::Jumping(self)
-        }
-    }
-
-    fn land(self, platform: Option<i16>) -> JumpingEndState {
+    pub fn land_on(self, platform: i16) -> DogState<Running> {
         log!(
-            "Dog Jumping->Running (lands{})",
-            if platform.is_some() {
-                " on platform"
-            } else {
-                ""
-            }
+            "Dog: Jumping->Running (landed on platform) {}",
+            self.context.info()
         );
 
-        let context = if let Some(platform) = platform {
-            self.context.set_floor(platform).reset_frame()
-        } else {
-            self.context.reset_frame()
-        };
-
-        JumpingEndState::Lands(DogState {
-            context,
+        DogState {
+            context: self.context.set_floor(platform).reset_frame(),
             _state: Running,
-        })
-    }
-}
-
-pub enum JumpingEndState {
-    Jumping(DogState<Jumping>),
-    Lands(DogState<Running>),
-}
-
-impl From<JumpingEndState> for DogStateMachine {
-    fn from(end_state: JumpingEndState) -> Self {
-        match end_state {
-            JumpingEndState::Jumping(jumping) => jumping.into(),
-            JumpingEndState::Lands(s) => s.into(),
         }
+    }
+
+    pub fn land_on_ground(self) -> DogState<Running> {
+        log!(
+            "Dog: Jumping->Running (landed on ground) {}",
+            self.context.info()
+        );
+
+        DogState {
+            context: self.context.reset_frame(),
+            _state: Running,
+        }
+    }
+
+    pub fn update(mut self) -> DogState<Jumping> {
+        self.context = self.context.update(JUMPING_FRAMES);
+
+        self
     }
 }

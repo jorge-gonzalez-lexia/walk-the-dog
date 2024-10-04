@@ -1,32 +1,45 @@
-use super::{dog::Dog, obstacle::Obstacle, red_hat_boy::RedHatBoy, HEIGHT};
-use crate::engine::{
-    rect::{Point, Rect},
-    renderer::Renderer,
-    sheet::Cell,
-    sprite_sheet::SpriteSheet,
+use super::{
+    obstacle_mark::{ObstacleMark, ObstacleMarkDirection},
+    Obstacle, ObstacleMarkFactory,
+};
+use crate::{
+    engine::{
+        rect::{Point, Rect},
+        renderer::Renderer,
+        sheet::Cell,
+        sprite_sheet::SpriteSheet,
+    },
+    game::{
+        dog::Dog,
+        event_queue::{EventPublisher, GameEvent},
+        red_hat_boy::RedHatBoy,
+    },
 };
 use std::rc::Rc;
 
-const MARK_OFFSET: i16 = 80;
+const LEFT_MARK_OFFSET: i16 = 80;
+const RIGHT_MARK_OFFSET: i16 = 100;
 
 #[derive(Debug)]
 pub struct Platform {
     pub position: Point,
     bounding_boxes: Vec<Rect>,
+    event_publisher: EventPublisher,
     /// True when dog is running on platform
     has_dog: bool,
-    has_mark_left: bool,
-    has_mark_right: bool,
+    id: String,
     sheet: Rc<SpriteSheet>,
     sprites: Vec<Cell>,
 }
 
 impl Platform {
     pub fn new(
+        id: String,
         sheet: Rc<SpriteSheet>,
         position: Point,
         sprite_names: &[&str],
         bounding_boxes: &[Rect],
+        event_publisher: EventPublisher,
     ) -> Self {
         let sprites = sprite_names
             .iter()
@@ -39,9 +52,9 @@ impl Platform {
 
         Platform {
             bounding_boxes,
+            event_publisher,
+            id,
             has_dog: false,
-            has_mark_left: false,
-            has_mark_right: false,
             position,
             sheet,
             sprites,
@@ -52,70 +65,10 @@ impl Platform {
         &self.bounding_boxes
     }
 
-    pub fn with_left_mark(mut self) -> Self {
-        self.has_mark_left = true;
-
-        self
-    }
-
-    pub fn with_right_mark(mut self) -> Self {
-        self.has_mark_right = true;
-
-        self
-    }
-
-    fn draw_marks(&self, renderer: &Renderer) {
-        if self.has_mark_left {
-            renderer.draw_rect_colored(&self.mark_left(), "#000000");
-        }
-
-        if self.has_mark_right {
-            renderer.draw_rect_colored(&self.mark_right(), "#FFFF00");
-        }
-    }
-
     fn on_platform(&self, dog: &Dog) -> bool {
         self.bounding_boxes()
             .iter()
             .any(|b| dog.bounding_box().intersects(b))
-    }
-
-    fn mark_left(&self) -> Rect {
-        Rect::new(
-            Point {
-                x: self.position.x - MARK_OFFSET,
-                y: self.position.y,
-            },
-            1,
-            HEIGHT - self.position.y,
-        )
-    }
-
-    fn mark_right(&self) -> Rect {
-        Rect::new(
-            Point {
-                x: self.right() + MARK_OFFSET,
-                y: self.position.y,
-            },
-            1,
-            HEIGHT - self.position.y,
-        )
-    }
-
-    fn on_left_mark(&self, dog: &Dog) -> bool {
-        if !self.has_mark_left || !dog.moving_right() {
-            return false;
-        }
-
-        dog.bounding_box().intersects(&self.mark_left())
-    }
-
-    fn on_right_mark(&self, dog: &Dog) -> bool {
-        if !self.has_mark_right || !dog.moving_left() {
-            return false;
-        }
-
-        dog.bounding_box().intersects(&self.mark_right())
     }
 
     #[allow(dead_code)]
@@ -135,7 +88,11 @@ impl Platform {
 }
 
 impl Obstacle for Platform {
-    fn check_intersection(&self, boy: &mut RedHatBoy, dog: &mut Dog) {
+    fn check_intersection(&self, boy: &mut RedHatBoy) {
+        if !boy.is_running() {
+            return;
+        }
+
         if let Some(box_to_land_on) = self
             .bounding_boxes()
             .iter()
@@ -145,7 +102,7 @@ impl Obstacle for Platform {
                 boy.land_on(box_to_land_on.top());
             } else {
                 boy.knock_out();
-                dog.worry();
+                self.event_publisher.publish(GameEvent::BoyHitsObstacle);
             }
         }
     }
@@ -176,7 +133,6 @@ impl Obstacle for Platform {
         self.bounding_boxes
             .iter()
             .for_each(|b| renderer.draw_rect(b));
-        self.draw_marks(renderer);
     }
 
     fn move_horizontally(&mut self, x: i16) {
@@ -186,27 +142,37 @@ impl Obstacle for Platform {
             .for_each(|b| b.set_x(b.position.x + x));
     }
 
-    /// Navigate the platform based on hitting the mark (when moving right or
-    /// left), at which point jump. Otherwise, if you hit the platform, assume
-    /// it is on the way down from a jump, at which point the dog lands on the
-    /// platform and we set the `has_dog` flag. Otherwise, if the dog was last
-    /// on the platform, it must have run off so unset `has_dog` and notify
-    /// dog its floor has changed.
-    fn navigate(&mut self, dog: &mut Dog) {
-        if self.on_left_mark(dog) || self.on_right_mark(dog) {
-            // log!(
-            //     "Hit mark left={} right={}",
-            //     self.on_left_mark(dog),
-            //     self.on_right_mark(dog)
-            // );
-            dog.jump();
-        } else if self.on_platform(dog) {
-            // log!("Hit platform {}", self.hit_info(dog));
-            self.has_dog = true;
-            dog.on_platform(self.position.y);
-        } else if self.has_dog {
-            self.has_dog = false;
-            dog.off_platform();
+    /// Publish GameEvents when Dog interacts with the platform or a mark that
+    /// should trigger the Dog to jump.
+    fn navigate(&mut self, dog: &Dog) {
+        let is_on_platform = self.on_platform(dog);
+
+        if is_on_platform && !self.has_dog {
+            assert!(!dog.moving_up());
+
+            self.event_publisher
+                .publish(GameEvent::DogLandedOnPlatform {
+                    id: self.id.clone(),
+                    platform_top: self.position.y,
+                });
+        }
+
+        if !is_on_platform && self.has_dog {
+            self.event_publisher.publish(GameEvent::DogExitsPlatform);
+        }
+    }
+
+    fn process_event(&mut self, event: &GameEvent) {
+        match event {
+            GameEvent::DogExitsPlatform if self.has_dog => {
+                log!("Platform {}: Dog exited platform", self.id);
+                self.has_dog = false;
+            }
+            GameEvent::DogLandedOnPlatform { id, .. } if *id == self.id && !self.has_dog => {
+                log!("Platform {}: Dog landed on platform", self.id);
+                self.has_dog = true
+            }
+            _ => (),
         }
     }
 
@@ -215,5 +181,31 @@ impl Obstacle for Platform {
             .last()
             .unwrap_or(&Rect::default())
             .right()
+    }
+}
+
+impl ObstacleMarkFactory for Platform {
+    fn mark_left(&self) -> ObstacleMark {
+        ObstacleMark::new(
+            Point {
+                x: self.position.x - LEFT_MARK_OFFSET,
+                y: self.position.y,
+            },
+            ObstacleMarkDirection::Left,
+            self.id.clone(),
+            self.event_publisher.clone(),
+        )
+    }
+
+    fn mark_right(&self) -> ObstacleMark {
+        ObstacleMark::new(
+            Point {
+                x: self.right() + RIGHT_MARK_OFFSET,
+                y: self.position.y,
+            },
+            ObstacleMarkDirection::Right,
+            self.id.clone(),
+            self.event_publisher.clone(),
+        )
     }
 }

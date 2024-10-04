@@ -1,36 +1,74 @@
 # Dog
 
-The Dog is always running either way or towards the boy. When it gets too far, it reverse direction and runs towards the boy. When too close, it reverses again.
+The `Dog` is always running either away or towards the boy. When it gets too far, it reverse direction and runs towards the `Boy`. When too close, it reverses again.
 
-It navigates obstacles by Jumping whenever it hits a mark. Obstacles have an optional "left" or "right" mark that trigger a Jump when intersected by the Dog. The Dog may then Land on either a Platform, or back on the ground. See [Platform Navigation](#platform-navigation).
+It navigates obstacles by `Jumping` whenever it hits (intersects with) a (jump) mark [ObstacleMark](../obstacles/obstacle_mark.rs). The Dog may then `Land` on either a `Platform`, or back on the ground. See [Platform Navigation](#obstacle-navigation).
 
 ## State Diagram
 
 ```mermaid
 stateDiagram-v2
   [*] --> Running
-
-  state toggle_direction <<choice>>
-  Running --> toggle_direction: Update
-  toggle_direction --> Running: too far
-  toggle_direction --> Running: too close
-
-  Running --> Fleeing: Flee
-  Running --> Running: OffPlatform | Worry
   Running --> Jumping: Jump
-
-  Jumping --> Jumping: Update | Worry
   Jumping --> Running: Land
-
 ```
 
-## Generic State Transition Sequence
+## Game Events Relevant to Dog
+
+### BoyHitsObstacle
+
+- Trigger: `Boy` intersects with `Obstacle` (See [Barrier.check_intersection](../obstacles/barrier.rs) and [Platform.check_intersection](../obstacles/platform.rs))
+- Dog Command: Event::Worry
+
+### DogExitsPlatform
+
+- Trigger: `Dog` was runs off the platform. (See [Platform.navigate](../obstacles/platform.rs))
+- Dog Command: Event::OffPlatform
+
+### DogHitMark
+
+- Trigger: `Dog` (not already on mark) intersects with jump mark. (See [ObstacleMark.navigate](../obstacles/obstacle_mark.rs))
+- Dog Command: Event::Jump
+
+### DogOffMark
+
+- Trigger: `Dog` already on mark and no longer intersecting with it. (See [ObstacleMark.navigate](../obstacles/obstacle_mark.rs))
+- Dog Command: N/A (unsets flag in `ObstacleMark`)
+
+### DogLandedOnGround
+
+- Trigger: `Dog` is not on floor and moves onto it. (See [DogContext.update](context.rs))
+- Dog Command: Event::LandOnGround
+
+### DogLandedOnPlatform
+
+- Trigger: `Dog` is not on platform and intersects with it. (See [Platform.navigate](../obstacles/platform.rs))
+- Dog Command: Event::LandOn
+
+### DogTooClose
+
+- Trigger: `Dog` is moving left and gets too close to `Boy`. (See [DogContext.update](context.rs))
+- Dog Command: Event::TurnAround
+
+### DogTooFar
+
+- Trigger: `Dog` is moving right and gets too far from `Boy`. (See [DogContext.update](context.rs))
+- Dog Command: Event::TurnAround
+
+### GameStarted
+
+- Trigger: User presses "ArrowRight". (See [WalkTheDogState(Ready).update](../game_states/ready.rs))
+- Dog Command: Event::Flee
+
+### Sequence Diagram
+
+See [Game Events](../README.md#game-events) for the sequence diagrams for event publishing and processing. Below is how [Dog](../dog.rs) processes [GameEvent](../event_queue.rs) when its `process_event(GameEvent)` method is called.
 
 ```mermaid
 sequenceDiagram
   autonumber
-  WalkTheDogState(S)->>Dog: some_action()
-  Dog->>DogStateMachine: transition()
+  Walk->>Dog: process_event(GameEvent)
+  Dog->>DogStateMachine: transition(Event)
   DogStateMachine->>DogState(S): some_method()
   DogState(S)->>DogContext: some_method()
   DogContext-->>DogState(S): revised context
@@ -40,15 +78,15 @@ sequenceDiagram
 
 Notes:
 
-1. `WalkTheDogState.update` itself, or via `Obstacle.navigate` or `Obstacle.check_intersection`, calls a method on `Dog` (i.e. flee, jump, on_platform, off_platform, worry, update)
-2. `DogStateMachine.transition` is called with a relevant Dog Event (i.e. `Flee`, `Jump`, `Land`, `OffPlatform`, `Update`, `Worry`)
+1. `Walk` loops through pending `GameEvent`s (e.g. `GameEvent::DogTooFar`) and send each to `Dog` via `Dog.process_event`. (Not shown: `Walk` also calls process_event on each `Obstacle`.)
+2. `DogStateMachine.transition` is called with a relevant `Dog` `Event` (e.g. `TurnAround`)
 3. Relevant method is called on `DogState(S)`, where `S` is `Running` or `Jumping`.
 4. `DogContext` is revised
 5. Revised context is typically replaced in `DogState`
 6. The same or a new `DogState` (with revised context) is returned in a new `DogStateMachine` variant instance
 7. `Dog.state_machine` is replaced with new `DogStateMachine` instance
 
-### Update
+### Game Loop Update
 
 - `WalkTheDogStateMachine` is an enum with 3 variants of `WalkTheDogState`:
   - `Ready` when the game is waiting to start. Here the background is not scrolling and so the Dog has vx of 4 or -4. It initially runs away and then returns when it gets too far.
@@ -56,88 +94,20 @@ Notes:
   - `GameOver`. Here the background is once again still and the Dog's vx toggles between 4 and -4.
 - `WalkTheDogStateMachine.update` is called on every frame. It, in turn,
   - calls `update` on the Boy and the Dog
-  - calls `Obstacle.navigate` on every Obstacle, which makes the Dog navigate the Platform or Barrier (stone) Obstacles.
-  - calls `Obstacle.check_intersection` on every Obstacle to check if the Boy hit anything when moving, in which case it calls `Dog.worry`.
+  - calls `Obstacle.navigate` on every Obstacle, which helps the Dog navigate the Platform or Barrier (stone) Obstacles.
+  - calls `Obstacle.check_intersection` on every Obstacle to check if the Boy hit anything when moving, in which case it publishes `GameEvent::BoyHitsObstacle`.
 - `Dog.update` -> `DogStateMachine(S).update`
 - `DogContext.update`
-  - Increases vy unless the Dog has reached `TERMINAL_VELOCITY`
   - Increments the animation frame
+  - Increases vy unless the Dog has reached `TERMINAL_VELOCITY`
   - Updates the x,y position based on vx and vy, ensuring y is > floor
-  - Toggles direction if the Dog is on the floor (Ground or platform) and it has run too far from or too close to the Boy.
-- `DogState(Jumping).update` transitions to `Running` if the Dog is falling (vx > 0) and is already on the floor (Ground or Platform).
+  - Publishes `GameEvent::DogLanded` if it detects `Dog` just landed on the floor or `GameEvent::DogTooClose` or `GameEvent::DogTooFar` if the `Dog` has ventured to close/far from `Boy`.
 
-### Flee
+## Obstacle Navigation
 
-Conditions:
+A `Segment` with a `Platform` onto which a `Dog` must jump, or a `Barrier` to jump over, has an [ObstacleMark](../obstacles/obstacle_mark.rs) set on either side of the `Obstacle`. `ObstacleMark` is a special `Obstacle` with which only the `Dog` interacts, at which point it publishes `GameEvent::HitMark`. `ObstacleMark` keeps a flag so as to ignore consecutive intersections. When the `Dog` moves past the mark, `ObstacleMark` publishes `GameEvent::OffMark` to unset the internal flag.
 
-- Game is in `Ready` state
-- `ArrowRight` pressed (detected in `WalkTheDogState(Ready).update`)
-
-Sequence: `dog.flee()` -> `DogStateMachine.transition(Event::Flee)` -> `DogState<S>.flee()` -> `DogContext.flee()`:
-
-- Set vx to 0 to account for the fact that the background will start moving left. If the Dog has run too far from the Boy, vx is set to -1, which will allow the Boy to catch up with the Dog, at which point the Dog will reverse direction and run away.
-- The top `update` method also transitions game to `WalkTheDogState(Walking)`
-
-### Jump
-
-Conditions:
-
-- `Obstacle.navigate` (Obstacle is either `Barrier` (stone) or `Platform`) detects the Dog has hit either the left mark when moving right or the right mark when moving left
-
-Sequence: `dog.jump()` -> `DogStateMachine(S).transition(Event::Jump)`:
-
-- set `vy` to `JUMP_SPEED`
-- transition to `Jumping`
-- The `jump` command is ignored if `vy` < 0 (meaning Dog is on the upward arc of a Jump). This can easily happen since the mark is hit repeatedly.
-
-### Land
-
-Conditions:
-
-- `Platform.navigate` -> detects dog is hitting the Platform (should always be when falling on it during the downward arc of a Jump).
-- `DogContext.floor` is `DOG_GROUND`
-
-Sequence: `dog.on_platform()` -> `DogStateMachine.transition(Event::Land(platform top)` -> `DogState(Jumping).land_on` -> `DogContext.set_floor(platform top)`:
-
-- transition to `Running`
-- Error (bug) if `Land` triggered when NOT (jumping and falling)
-- set `Platform.has_dog` to true, so we can trigger `OffPlatform` later
-
-Note: landing on the floor is not a formal event. It is detected in `DogState(Jumping).update` and also results in transitioning to `Running`.
-
-### OffPlatform
-
-Conditions:
-
-- `Platform.navigate` detects when not on a mark or dog intersecting with platform BUT previously dog was on the platform (i.e. `has_dog` is `true`):
-
-Sequence: `dog.off_platform()` -> `DogStateMachine.transition(Event::OffPlatform)` -> `DogState(Running).drop_from_platform()` -> `DogContext.set_floor(GROUND)`
-
-- Set `Platform.has_dog` to `false`
-- Error if `OffPlatform` event in `Jumping` state
-
-### Worry
-
-Conditions: `Obstacle.check_intersection` detects `Boy` has hit the `Obstacle`
-Sequence: `dog.worry()` -> `DogStateMachine.transition(Event::Worry)` -> `DogState(S).worry()` -> `DogContext.worry()`
-
-- set `vx` to 4 (since background has stopped scrolling) so Dog keeps moving away from Boy
-- set `distance_min` to 50 so Dog can get very close to `Boy`
-
-## Platform Navigation
-
-A segment with a platform onto which a Dog must jump has a mark set on either side of the platform. The mark may be on the Platform object itself (or, if a Barrier immediately precedes a Platform, on a Barrier). The mark (left or right) is an indicator that the Dog should Jump. Hence, both a Barrier and Platform Obstacle has logic that fires the Dog Event::Jump when the Dog hits a mark.
-
-The Platform Obstacle also checks if the Dog hits the platform itself, which we assume must mean the Dog was on the descending cycle of a jump and has landed on the platform (since a Dog should never otherwise hit the platform). The Platform then:
-
-- sets its `has_dog` flag
-- notifies the Dog via `dog.on_platform`
-- which in turn fires `Dog Event::Land`
-- which calls `state.land_on`
-  - which calls `context.set_floor`
-    - which stores the floor value
-      At this point, every context update will check to ensure the Dog does not drop below the Platform floor.
-  - and returns `DogState(Running)` (or similar)
+The `Platform` `Obstacle` checks if the `Dog` is intersecting it. When it first intersects (presumably on the downward arc of a Jump), it publishes `GameEvent::DogLandedOnPlatform`. If the `Dog` is already on the platform and is detected to no longer intersect with it, `Platform.navigate` publishes `GameEvent::DogExitsPlatform`. The Platform processes these `GameEvents` to set its internal `has_dog` flag to true/false so to avoid republishing the events on consecutive intersections.
 
 ## Sprites
 

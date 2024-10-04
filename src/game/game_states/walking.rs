@@ -10,6 +10,8 @@ const TIMELINE_MINIMUM: i16 = 1000;
 
 impl WalkTheDogState<Walking> {
     pub fn update(mut self, keystate: &KeyState) -> WalkingEndState {
+        self.walk.process_events();
+
         if keystate.is_pressed("Space") {
             self.walk.boy.jump();
         }
@@ -35,8 +37,8 @@ impl WalkTheDogState<Walking> {
 
         self.walk.obstacles.iter_mut().for_each(|obstacle| {
             obstacle.move_horizontally(walking_speed);
-            obstacle.navigate(&mut self.walk.dog);
-            obstacle.check_intersection(&mut self.walk.boy, &mut self.walk.dog);
+            obstacle.navigate(&self.walk.dog);
+            obstacle.check_intersection(&mut self.walk.boy);
         });
 
         if self.walk.timeline < TIMELINE_MINIMUM {

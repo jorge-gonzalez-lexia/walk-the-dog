@@ -1,5 +1,8 @@
 use super::{walking::Walking, WalkTheDogState, WalkTheDogStateMachine};
-use crate::{engine::input::KeyState, game::walk::Walk};
+use crate::{
+    engine::input::KeyState,
+    game::{event_queue::GameEvent, walk::Walk},
+};
 
 pub struct Ready;
 
@@ -12,11 +15,13 @@ impl WalkTheDogState<Ready> {
     }
 
     pub fn update(mut self, keystate: &KeyState) -> ReadyEndState {
+        self.walk.process_events();
+
         self.walk.boy.update();
         self.walk.dog.update();
 
         self.walk.obstacles.iter_mut().for_each(|obstacle| {
-            obstacle.navigate(&mut self.walk.dog);
+            obstacle.navigate(&self.walk.dog);
         });
 
         if keystate.is_pressed("ArrowRight") {
@@ -28,7 +33,7 @@ impl WalkTheDogState<Ready> {
 
     fn run_right(&mut self) {
         self.walk.boy.run_right();
-        self.walk.dog.flee();
+        self.walk.event_publisher.publish(GameEvent::GameStarted);
     }
 
     fn start_running(mut self) -> WalkTheDogState<Walking> {

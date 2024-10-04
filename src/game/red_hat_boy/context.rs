@@ -9,8 +9,6 @@ use crate::{
 pub const FLOOR: i16 = game::HEIGHT - PLAYER_HEIGHT;
 const PLAYER_HEIGHT: i16 = 121;
 
-const RUNNING_SPEED: i16 = 4;
-
 #[derive(Clone)]
 pub struct RedHatBoyContext {
     pub audio: Audio,
@@ -62,7 +60,7 @@ impl RedHatBoyContext {
     }
 
     pub fn run_right(mut self) -> Self {
-        self.velocity.x += RUNNING_SPEED;
+        self.velocity.x += game::RUNNING_SPEED;
 
         self
     }

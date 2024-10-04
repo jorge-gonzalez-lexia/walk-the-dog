@@ -20,6 +20,12 @@ impl<S> DogState<S> {
         self
     }
 
+    pub fn turn_around(mut self) -> DogState<S> {
+        self.context = self.context.turn_around();
+
+        self
+    }
+
     pub fn worry(mut self) -> DogState<S> {
         self.context = self.context.worry();
 

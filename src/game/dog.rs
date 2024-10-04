@@ -2,12 +2,12 @@ mod context;
 mod state_machine;
 mod states;
 
+use super::event_queue::{self, GameEvent};
 use crate::engine::{
     rect::Rect,
     renderer::{DrawImageOptions, Renderer},
     sheet::{Cell, Sheet},
 };
-use context::DOG_GROUND;
 use state_machine::{DogStateMachine, Event};
 use states::DogState;
 use web_sys::HtmlImageElement;
@@ -19,24 +19,16 @@ pub struct Dog {
 }
 
 impl Dog {
-    pub fn new(sprite_sheet: Sheet, image: HtmlImageElement) -> Self {
+    pub fn new(
+        sprite_sheet: Sheet,
+        image: HtmlImageElement,
+        event_publisher: event_queue::EventPublisher,
+    ) -> Self {
         Dog {
             image,
             sprite_sheet,
-            state_machine: DogStateMachine::Running(DogState::new()),
+            state_machine: DogStateMachine::Running(DogState::new(event_publisher)),
         }
-    }
-
-    pub fn flee(&mut self) {
-        self.state_machine = self.state_machine.clone().transition(Event::Flee);
-    }
-
-    pub fn jump(&mut self) {
-        if self.state_machine.context().velocity.y < 0 {
-            return;
-        }
-
-        self.state_machine = self.state_machine.clone().transition(Event::Jump);
     }
 
     pub fn info(&self) -> String {
@@ -55,32 +47,42 @@ impl Dog {
     }
 
     pub fn moving_left(&self) -> bool {
-        self.state_machine.context().velocity.x < 0
+        self.state_machine.context().moving_left()
     }
 
     pub fn moving_right(&self) -> bool {
-        self.state_machine.context().velocity.x >= 0
+        self.state_machine.context().moving_right()
     }
 
-    pub fn off_platform(&mut self) {
-        self.state_machine = self.state_machine.clone().transition(Event::OffPlatform);
+    pub fn moving_up(&self) -> bool {
+        self.state_machine.context().velocity.y <= 0
     }
 
-    pub fn on_platform(&mut self, top: i16) {
-        assert!(self.state_machine.context().velocity.y > 0);
+    pub fn process_event(&mut self, event: &GameEvent) {
+        log!("{}", self.info());
 
-        if self.state_machine.context().floor == DOG_GROUND {
-            // log!("Hit platform {} floor={DOG_FLOOR}", self.info());
-            self.state_machine = self.state_machine.clone().transition(Event::Land(top))
-        }
+        match event {
+            GameEvent::BoyHitsObstacle => self.transition(Event::Worry, event),
+            GameEvent::DogExitsPlatform { .. } => self.transition(Event::OffPlatform, event),
+            GameEvent::DogHitMark { .. } => self.transition(Event::Jump, event),
+            GameEvent::DogLandedOnGround => self.transition(Event::LandOnGround, event),
+            GameEvent::DogLandedOnPlatform { platform_top, .. } => {
+                self.transition(Event::LandOn(*platform_top), event)
+            }
+            GameEvent::DogTooClose | GameEvent::DogTooFar => {
+                self.transition(Event::TurnAround, event)
+            }
+            GameEvent::GameStarted => self.transition(Event::Flee, event),
+            _ => (),
+        };
     }
 
     pub fn reset(dog: Self) -> Self {
-        Dog::new(dog.sprite_sheet, dog.image)
-    }
-
-    pub fn worry(&mut self) {
-        self.state_machine = self.state_machine.clone().transition(Event::Worry);
+        Dog::new(
+            dog.sprite_sheet,
+            dog.image,
+            dog.state_machine.context().event_publisher.clone(),
+        )
     }
 
     pub fn bounding_box(&self) -> Rect {
@@ -139,5 +141,11 @@ impl Dog {
             sprite.frame.w,
             sprite.frame.h,
         )
+    }
+
+    fn transition(&mut self, event: Event, game_event: &GameEvent) {
+        log!("Dog: GameEvent '{game_event:?}' => dog command '{event:?}'");
+
+        self.state_machine = self.state_machine.clone().transition(event);
     }
 }
