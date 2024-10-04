@@ -178,4 +178,4 @@ const FLOATING_PLATFORM_BOUNDING_BOXES: [Rect; 3] = [
 const FLOATING_PLATFORM_SPRITES: [&str; 3] = ["13.png", "14.png", "15.png"];
 
 // -1 means random segments. Set to 0, 3, 4, 5 for testing specific segments
-const REPEAT: i32 = -1;
+const REPEAT: i32 = 0;

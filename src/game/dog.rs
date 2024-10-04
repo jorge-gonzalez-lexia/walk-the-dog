@@ -47,11 +47,11 @@ impl Dog {
     }
 
     pub fn moving_left(&self) -> bool {
-        self.state_machine.context().velocity.x < 0
+        self.state_machine.context().moving_left()
     }
 
     pub fn moving_right(&self) -> bool {
-        self.state_machine.context().velocity.x >= 0
+        self.state_machine.context().moving_right()
     }
 
     pub fn process_event(&mut self, event: &GameEvent) {

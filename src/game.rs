@@ -31,6 +31,8 @@ const TERMINAL_VELOCITY: i16 = 20;
 
 const HEIGHT: i16 = 600;
 
+const RUNNING_SPEED: i16 = 4;
+
 pub struct WalkTheDog {
     machine: Option<WalkTheDogStateMachine>,
 }

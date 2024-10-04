@@ -1,12 +1,12 @@
 use crate::{
     engine::rect::Point,
-    game::{self, event_queue::GameEvent},
+    game::{self, event_queue::GameEvent, RUNNING_SPEED},
 };
 
-pub const RUNNING_FRAMES: u8 = 60;
 pub const DOG_GROUND: i16 = game::HEIGHT - DOG_HEIGHT;
 pub const DOG_HEIGHT: i16 = 81;
 
+pub const RUNNING_FRAMES: u8 = 60;
 pub const JUMPING_FRAMES: u8 = 17 * 3;
 pub const JUMP_SPEED: i16 = -25;
 
@@ -18,6 +18,7 @@ pub struct DogContext {
     pub floor: i16,
     pub frame: u8,
     pub position: Point,
+    pub scrolling_velocity: i16,
     pub velocity: Point,
 }
 
@@ -25,7 +26,10 @@ impl DogContext {
     pub fn new(event_publisher: game::event_queue::EventPublisher) -> Self {
         let floor = DOG_GROUND;
         let position = Point { x: 10, y: floor };
-        let velocity = Point { x: 4, y: 0 };
+        let velocity = Point {
+            x: RUNNING_SPEED,
+            y: 0,
+        };
 
         DogContext {
             distance_max: 1000,
@@ -34,12 +38,18 @@ impl DogContext {
             floor,
             frame: 0,
             position,
+            scrolling_velocity: 0,
             velocity,
         }
     }
 
     pub fn flee(mut self) -> Self {
-        self.velocity.x = if self.position.x > 550 { -1 } else { 0 };
+        self.scrolling_velocity = -RUNNING_SPEED;
+        self.velocity.x = if self.position.x > 550 {
+            -2 * RUNNING_SPEED
+        } else {
+            0
+        };
         log!("Dog starts fleeing {}", self.info());
 
         self
@@ -50,6 +60,14 @@ impl DogContext {
             "pos={:?} v={:?} floor={:?}",
             self.position, self.velocity, self.floor
         )
+    }
+
+    pub fn moving_left(&self) -> bool {
+        self.velocity.x < self.scrolling_velocity
+    }
+
+    pub fn moving_right(&self) -> bool {
+        self.velocity.x >= self.scrolling_velocity
     }
 
     pub fn reset_frame(mut self) -> Self {
@@ -73,7 +91,11 @@ impl DogContext {
     }
 
     pub fn turn_around(mut self) -> Self {
-        self.velocity.x *= -1;
+        if self.scrolling_velocity < 0 {
+            self.velocity.x = RUNNING_SPEED + self.scrolling_velocity;
+        } else {
+            self.velocity.x *= -1;
+        }
         log!("Dog: turned around {}", self.info());
 
         self
@@ -114,7 +136,8 @@ impl DogContext {
     }
 
     pub fn worry(mut self) -> Self {
-        self.velocity.x = 4;
+        self.scrolling_velocity = 0;
+        self.velocity.x = RUNNING_SPEED;
         self.distance_min = 50;
         log!("Dog worries {}", self.info());
 
@@ -126,10 +149,10 @@ impl DogContext {
     }
 
     fn too_close(&self) -> bool {
-        self.on_floor() && self.position.x < self.distance_min && self.velocity.x < 0
+        self.moving_left() && self.on_floor() && self.position.x < self.distance_min
     }
 
     fn too_far(&self) -> bool {
-        self.on_floor() && self.position.x > self.distance_max && self.velocity.x >= 0
+        self.moving_right() && self.on_floor() && self.position.x > self.distance_max
     }
 }
