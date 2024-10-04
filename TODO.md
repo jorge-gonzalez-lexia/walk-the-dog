@@ -4,10 +4,8 @@
 
 ## Bugs
 
-### Hitting OffPlatform while Jumping.
+### Dog hits platform on jump
 
-- Dog Running on platform (offscreen) and toggles direction. This can happen when Dog starts fleeing when offscreen (so Boy catches up to Dog and Dog sprints away, probably to fast?)
-- Dog then Jumps (why? it was already on the platform)
-- OffPlatform while Jumping
+If dog turns around right when dropping from platform, it can hit the platform.
 
-- Issue: when dropping from platform onto stone while returning. Need a left marker on the right of the stone that reaches past platform
+Reproduce by starting to run right when dog is dropping from platform

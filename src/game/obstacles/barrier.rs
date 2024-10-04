@@ -65,11 +65,13 @@ impl ObstacleMarkFactory for Barrier {
         )
     }
 
+    // Note we want the right marker to be tall enough to surpass any platform
+    // such as in the stone-and_platform segment
     fn mark_right(&self) -> ObstacleMark {
         ObstacleMark::new(
             Point {
                 x: self.image.bounding_box().right() + 20,
-                y: self.image.bounding_box().y(),
+                y: self.image.bounding_box().y() - 200,
             },
             ObstacleMarkDirection::Right,
             self.id.clone(),

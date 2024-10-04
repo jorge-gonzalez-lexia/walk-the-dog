@@ -1,5 +1,5 @@
 use super::{running::Running, DogState};
-use crate::game::dog::context::JUMPING_FRAMES;
+use crate::game::{dog::context::JUMPING_FRAMES, HEIGHT};
 
 #[derive(Clone)]
 pub struct Jumping;
@@ -8,6 +8,15 @@ impl DogState<Jumping> {
     pub fn frame_name(&self) -> String {
         let animation_frame = self.context().frame / 3;
         format!("l_{animation_frame:03}.png")
+    }
+
+    pub fn jump_off_platform(self) -> DogState<Jumping> {
+        log!("Dog jumps off platform");
+
+        DogState {
+            context: self.context.set_floor(HEIGHT),
+            _state: Jumping,
+        }
     }
 
     pub fn land_on(self, platform: i16) -> DogState<Running> {

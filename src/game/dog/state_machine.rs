@@ -53,6 +53,9 @@ impl DogStateMachine {
             (DogStateMachine::Jumping(state), Event::Jump) => state.into(), // explicitly ignore
             (DogStateMachine::Jumping(state), Event::LandOn(p)) => state.land_on(p).into(),
             (DogStateMachine::Jumping(state), Event::LandOnGround) => state.land_on_ground().into(),
+            (DogStateMachine::Jumping(state), Event::OffPlatform) => {
+                state.jump_off_platform().into()
+            }
             (DogStateMachine::Jumping(state), Event::Update) => state.update().into(),
             (DogStateMachine::Jumping(state), Event::Worry) => state.worry().into(),
 

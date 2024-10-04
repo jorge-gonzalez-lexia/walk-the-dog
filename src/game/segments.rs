@@ -134,11 +134,13 @@ impl SegmentFactory {
         });
 
         let mark_left = stone.mark_left();
+        let mark_right_stone = stone.mark_right();
         let mark_right = platform.mark_right();
 
         vec![
             Box::new(mark_left),
             Box::new(stone),
+            Box::new(mark_right_stone),
             Box::new(platform),
             Box::new(mark_right),
         ]

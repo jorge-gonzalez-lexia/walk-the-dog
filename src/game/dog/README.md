@@ -22,7 +22,7 @@ stateDiagram-v2
 
 ### DogExitsPlatform
 
-- Trigger: `Dog` was runs off the platform. (See [Platform.navigate](../obstacles/platform.rs))
+- Trigger: `Dog` runs or jumps off the platform. (See [Platform.navigate](../obstacles/platform.rs))
 - Dog Command: Event::OffPlatform
 
 ### DogHitMark
