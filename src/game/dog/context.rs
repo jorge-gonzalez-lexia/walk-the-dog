@@ -45,7 +45,7 @@ impl DogContext {
 
     pub fn flee(mut self) -> Self {
         self.scrolling_velocity = -RUNNING_SPEED;
-        self.velocity.x = if self.position.x > 550 {
+        self.velocity.x = if self.position.x > 650 {
             -2 * RUNNING_SPEED
         } else {
             0
