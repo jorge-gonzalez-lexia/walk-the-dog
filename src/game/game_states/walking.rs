@@ -19,7 +19,7 @@ impl WalkTheDogState<Walking> {
             self.walk.boy.slide();
         }
 
-        self.walk.dog.update();
+        self.walk.dog().update();
         self.walk.boy.update();
         let walking_speed = self.walk.velocity();
 
@@ -37,9 +37,9 @@ impl WalkTheDogState<Walking> {
 
         self.walk.obstacles.iter_mut().for_each(|obstacle| {
             obstacle.move_horizontally(walking_speed);
-            obstacle.navigate(&self.walk.dog);
             obstacle.check_intersection(&mut self.walk.boy);
         });
+        self.walk.navigate_obstacles();
 
         if self.walk.timeline < TIMELINE_MINIMUM {
             self.walk.generate_next_segment();

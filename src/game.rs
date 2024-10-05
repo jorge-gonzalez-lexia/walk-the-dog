@@ -7,14 +7,8 @@ mod segments;
 mod walk;
 
 use crate::engine::{
-    audio::Audio,
-    image::{load_image, Image},
-    input::KeyState,
-    rect::{Point, Rect},
-    renderer::Renderer,
-    sheet::Sheet,
-    sprite_sheet::SpriteSheet,
-    Game,
+    audio::Audio, image::load_image, input::KeyState, rect::Rect, renderer::Renderer, sheet::Sheet,
+    sprite_sheet::SpriteSheet, Game,
 };
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
@@ -22,9 +16,8 @@ use dog::Dog;
 use event_queue::EventPublisher;
 use game_states::WalkTheDogStateMachine;
 use red_hat_boy::{context::Sfx, RedHatBoy};
-use segments::SegmentFactory;
 use std::{cell::RefCell, collections::VecDeque, rc::Rc};
-use walk::{rightmost, Walk};
+use walk::Walk;
 
 const GRAVITY: i16 = 1;
 const TERMINAL_VELOCITY: i16 = 20;
@@ -64,7 +57,7 @@ impl Game for WalkTheDog {
                 );
                 let background_music = audio.load_sound("background_song.mp3").await?;
 
-                audio.play_looping_sound(&background_music)?;
+                // audio.play_looping_sound(&background_music)?;
 
                 let events = Rc::new(RefCell::new(VecDeque::new()));
                 let event_publisher = EventPublisher::new(events.clone());
@@ -84,42 +77,20 @@ impl Game for WalkTheDog {
                 let background = load_image("BG.png").await?;
                 let stone = load_image("Stone.png").await?;
 
-                let sprite_sheet = Rc::new(SpriteSheet::new(
+                let segment_tiles = SpriteSheet::new(
                     Sheet::load("tiles.json").await?,
                     load_image("tiles.png").await?,
-                ));
-
-                let mut segment_factory = SegmentFactory::new(
-                    sprite_sheet.clone(),
-                    stone.clone(),
-                    event_publisher.clone(),
                 );
 
-                let starting_obstacles = segment_factory.first();
-                let timeline = rightmost(&starting_obstacles);
-
-                let background_width = background.width() as i16;
-
-                let machine = WalkTheDogStateMachine::new(Walk {
-                    backgrounds: [
-                        Image::new(background.clone(), Point { x: 0, y: 0 }),
-                        Image::new(
-                            background,
-                            Point {
-                                x: background_width,
-                                y: 0,
-                            },
-                        ),
-                    ],
+                let machine = WalkTheDogStateMachine::new(Walk::new(
+                    background,
                     boy,
                     dog,
-                    events,
                     event_publisher,
-                    obstacles: starting_obstacles,
-                    segment_factory,
+                    events,
                     stone,
-                    timeline,
-                });
+                    segment_tiles,
+                ));
 
                 Ok(Box::new(WalkTheDog {
                     machine: Some(machine),

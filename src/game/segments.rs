@@ -29,14 +29,14 @@ pub struct SegmentFactory {
 
 impl SegmentFactory {
     pub fn new(
-        sprite_sheet: Rc<SpriteSheet>,
+        sprite_sheet: SpriteSheet,
         stone_image: HtmlImageElement,
         event_publisher: EventPublisher,
     ) -> Self {
         SegmentFactory {
             event_publisher,
             id: 0,
-            obstacle_sheet: sprite_sheet.clone(),
+            obstacle_sheet: Rc::new(sprite_sheet),
             stone_image,
         }
     }
