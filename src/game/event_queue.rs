@@ -20,6 +20,11 @@ impl EventPublisher {
 /// and `Walk`, which deques `GameEvent`s and notifies relevant game objects
 pub type EventQueue = Rc<RefCell<VecDeque<GameEvent>>>;
 
+pub trait EventSubscriber {
+    fn name(&self) -> &str;
+    fn process_event(&mut self, event: &GameEvent);
+}
+
 #[derive(Debug)]
 pub enum GameEvent {
     BoyHitsObstacle,

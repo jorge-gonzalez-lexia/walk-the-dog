@@ -2,7 +2,7 @@ mod context;
 mod state_machine;
 mod states;
 
-use super::event_queue::{self, GameEvent};
+use super::event_queue::{self, EventSubscriber, GameEvent};
 use crate::engine::{
     rect::Rect,
     renderer::{DrawImageOptions, Renderer},
@@ -56,23 +56,6 @@ impl Dog {
 
     pub fn moving_up(&self) -> bool {
         self.state_machine.context().velocity.y <= 0
-    }
-
-    pub fn process_event(&mut self, event: &GameEvent) {
-        match event {
-            GameEvent::BoyHitsObstacle => self.transition(Event::Worry, event),
-            GameEvent::DogExitsPlatform { .. } => self.transition(Event::OffPlatform, event),
-            GameEvent::DogHitMark { .. } => self.transition(Event::Jump, event),
-            GameEvent::DogLandedOnGround => self.transition(Event::LandOnGround, event),
-            GameEvent::DogLandedOnPlatform { platform_top, .. } => {
-                self.transition(Event::LandOn(*platform_top), event)
-            }
-            GameEvent::DogTooClose | GameEvent::DogTooFar => {
-                self.transition(Event::TurnAround, event)
-            }
-            GameEvent::GameStarted => self.transition(Event::Flee, event),
-            _ => (),
-        };
     }
 
     pub fn reset(dog: Self) -> Self {
@@ -145,5 +128,28 @@ impl Dog {
         log!("Dog: GameEvent '{game_event:?}' => dog command '{event:?}'");
 
         self.state_machine = self.state_machine.clone().transition(event);
+    }
+}
+
+impl EventSubscriber for Dog {
+    fn name(&self) -> &str {
+        "Dog"
+    }
+
+    fn process_event(&mut self, event: &GameEvent) {
+        match event {
+            GameEvent::BoyHitsObstacle => self.transition(Event::Worry, event),
+            GameEvent::DogExitsPlatform { .. } => self.transition(Event::OffPlatform, event),
+            GameEvent::DogHitMark { .. } => self.transition(Event::Jump, event),
+            GameEvent::DogLandedOnGround => self.transition(Event::LandOnGround, event),
+            GameEvent::DogLandedOnPlatform { platform_top, .. } => {
+                self.transition(Event::LandOn(*platform_top), event)
+            }
+            GameEvent::DogTooClose | GameEvent::DogTooFar => {
+                self.transition(Event::TurnAround, event)
+            }
+            GameEvent::GameStarted => self.transition(Event::Flee, event),
+            _ => (),
+        };
     }
 }

@@ -22,7 +22,7 @@ pub struct Walk {
     pub timeline: i16,
 
     dog: Rc<RefCell<Dog>>,
-    // event_subscribers: Vec<Box<dyn EventSubscriber>>,
+    event_subscribers: Vec<Rc<RefCell<dyn EventSubscriber>>>,
     events: EventQueue,
     segment_factory: SegmentFactory,
     stone: HtmlImageElement,
@@ -39,8 +39,8 @@ impl Walk {
         segment_tiles: SpriteSheet,
     ) -> Self {
         let dog = Rc::new(RefCell::new(dog));
-        // let mut event_subscribers: Vec<Box<dyn EventSubscriber>> = Vec::new();
-        // event_subscribers.push(dog.clone());
+        let mut event_subscribers: Vec<Rc<RefCell<dyn EventSubscriber>>> = Vec::new();
+        event_subscribers.push(dog.clone() as Rc<RefCell<dyn EventSubscriber>>);
 
         let mut segment_factory =
             SegmentFactory::new(segment_tiles, stone.clone(), event_publisher.clone());
@@ -64,7 +64,7 @@ impl Walk {
             dog: dog.clone(),
             events,
             event_publisher,
-            // event_subscribers,
+            event_subscribers,
             obstacles: starting_obstacles,
             segment_factory,
             stone,
@@ -89,7 +89,7 @@ impl Walk {
             dog: Rc::new(RefCell::new(Dog::reset(dog))),
             events: walk.events,
             event_publisher: walk.event_publisher,
-            // event_subscribers: walk.event_subscribers,
+            event_subscribers: walk.event_subscribers,
             obstacles: starting_obstacles,
             segment_factory,
             stone: walk.stone,
@@ -131,7 +131,9 @@ impl Walk {
             self.obstacles.iter_mut().for_each(|o| {
                 o.process_event(&event);
             });
-            self.dog().process_event(&event);
+            self.event_subscribers.iter_mut().for_each(|s| {
+                s.borrow_mut().process_event(&event);
+            });
         }
     }
 
