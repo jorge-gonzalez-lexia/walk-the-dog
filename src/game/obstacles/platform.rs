@@ -11,7 +11,7 @@ use crate::{
     },
     game::{
         dog::Dog,
-        event_queue::{EventPublisher, GameEvent},
+        event_queue::{EventPublisher, EventSubscriber, GameEvent},
         red_hat_boy::RedHatBoy,
     },
 };
@@ -162,20 +162,6 @@ impl Obstacle for Platform {
         }
     }
 
-    fn process_event(&mut self, event: &GameEvent) {
-        match event {
-            GameEvent::DogExitsPlatform if self.has_dog => {
-                log!("Platform {}: Dog exited platform", self.id);
-                self.has_dog = false;
-            }
-            GameEvent::DogLandedOnPlatform { id, .. } if *id == self.id && !self.has_dog => {
-                log!("Platform {}: Dog landed on platform", self.id);
-                self.has_dog = true
-            }
-            _ => (),
-        }
-    }
-
     fn right(&self) -> i16 {
         self.bounding_boxes()
             .last()
@@ -207,5 +193,25 @@ impl ObstacleMarkFactory for Platform {
             self.id.clone(),
             self.event_publisher.clone(),
         )
+    }
+}
+
+impl EventSubscriber for Platform {
+    fn name(&self) -> &str {
+        self.id.as_str()
+    }
+
+    fn process_event(&mut self, event: &GameEvent) {
+        match event {
+            GameEvent::DogExitsPlatform if self.has_dog => {
+                log!("Platform {}: Dog exited platform", self.id);
+                self.has_dog = false;
+            }
+            GameEvent::DogLandedOnPlatform { id, .. } if *id == self.id && !self.has_dog => {
+                log!("Platform {}: Dog landed on platform", self.id);
+                self.has_dog = true
+            }
+            _ => (),
+        }
     }
 }

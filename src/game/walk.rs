@@ -38,14 +38,14 @@ impl Walk {
         stone: HtmlImageElement,
         segment_tiles: SpriteSheet,
     ) -> Self {
-        let dog = Rc::new(RefCell::new(dog));
-        let mut event_subscribers: Vec<Rc<RefCell<dyn EventSubscriber>>> = Vec::new();
-        event_subscribers.push(dog.clone() as Rc<RefCell<dyn EventSubscriber>>);
-
         let mut segment_factory =
             SegmentFactory::new(segment_tiles, stone.clone(), event_publisher.clone());
         let starting_obstacles = segment_factory.first();
         let timeline = rightmost(&starting_obstacles);
+
+        let mut event_subscribers: Vec<Rc<RefCell<dyn EventSubscriber>>> = Vec::new();
+        let dog = Rc::new(RefCell::new(dog));
+        event_subscribers.push(dog.clone() as Rc<RefCell<dyn EventSubscriber>>);
 
         let background_width = background.width() as i16;
 

@@ -6,7 +6,7 @@ use crate::{
     engine::{image::Image, rect::Point, renderer::Renderer},
     game::{
         dog::Dog,
-        event_queue::{EventPublisher, GameEvent},
+        event_queue::{EventPublisher, EventSubscriber, GameEvent},
         red_hat_boy::RedHatBoy,
     },
 };
@@ -45,8 +45,6 @@ impl Obstacle for Barrier {
 
     fn navigate(&mut self, _dog: &Dog) {}
 
-    fn process_event(&mut self, _event: &GameEvent) {}
-
     fn right(&self) -> i16 {
         self.image.right()
     }
@@ -78,4 +76,12 @@ impl ObstacleMarkFactory for Barrier {
             self.event_publisher.clone(),
         )
     }
+}
+
+impl EventSubscriber for Barrier {
+    fn name(&self) -> &str {
+        self.id.as_str()
+    }
+
+    fn process_event(&mut self, _event: &GameEvent) {}
 }
