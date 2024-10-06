@@ -70,7 +70,7 @@ impl Walk {
                 ),
             ],
             boy,
-            dog: dog.clone(),
+            dog,
             events,
             event_publisher,
             event_subscribers,
@@ -176,10 +176,10 @@ struct DogSubscriber(Rc<RefCell<Dog>>);
 impl EventSubscriber for DogSubscriber {
     fn name(&self) -> &str {
         "DogSubscriber"
+        // self.0.borrow().name()
     }
 
     fn process_event(&mut self, event: &GameEvent) {
-        log!("DogSubscriber: process_event {:?}", event);
         self.0.borrow_mut().process_event(event);
     }
 }
@@ -188,10 +188,10 @@ struct ObstacleSubscriber(Rc<RefCell<Box<dyn Obstacle>>>);
 impl EventSubscriber for ObstacleSubscriber {
     fn name(&self) -> &str {
         "ObstacleSubscriber"
+        // self.0.borrow().name()
     }
 
     fn process_event(&mut self, event: &GameEvent) {
-        log!("ObstacleSubscriber: process_event {:?}", event);
         self.0.borrow_mut().process_event(event);
     }
 }

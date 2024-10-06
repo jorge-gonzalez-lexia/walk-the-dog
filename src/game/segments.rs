@@ -64,7 +64,7 @@ impl SegmentFactory {
 
     fn create_floating_platform(&self, position: Point) -> Platform {
         Platform::new(
-            format!("p{}", self.id.to_string()),
+            format!("p{}", self.id),
             self.obstacle_sheet.clone(),
             position,
             &FLOATING_PLATFORM_SPRITES,
