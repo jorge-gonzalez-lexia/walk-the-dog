@@ -17,9 +17,7 @@ impl WalkTheDogState<GameOver> {
         if self._state.new_game_pressed() {
             GameOverEndState::Complete(self.new_game())
         } else {
-            self.walk.process_events();
-            self.walk.dog().update();
-            self.walk.navigate_obstacles();
+            self.walk.update();
 
             GameOverEndState::Continue(self)
         }

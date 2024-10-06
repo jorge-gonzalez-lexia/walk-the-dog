@@ -139,22 +139,28 @@ impl Walk {
         self.boy.knocked_out()
     }
 
-    pub fn navigate_obstacles(&mut self) {
+    pub fn update(&mut self) {
+        self.process_events();
+        self.dog().update();
+        self.navigate_obstacles();
+    }
+
+    pub fn velocity(&self) -> i16 {
+        -self.boy.walking_speed()
+    }
+
+    fn navigate_obstacles(&mut self) {
         for obstacle in self.obstacles.iter() {
             obstacle.as_ref().borrow_mut().navigate(&self.dog.borrow());
         }
     }
 
-    pub fn process_events(&mut self) {
+    fn process_events(&mut self) {
         while let Some(event) = self.events.as_ref().borrow_mut().pop_front() {
             for s in self.event_subscribers.iter() {
                 s.borrow_mut().process_event(&event);
             }
         }
-    }
-
-    pub fn velocity(&self) -> i16 {
-        -self.boy.walking_speed()
     }
 }
 

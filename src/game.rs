@@ -57,7 +57,7 @@ impl Game for WalkTheDog {
                 );
                 let background_music = audio.load_sound("background_song.mp3").await?;
 
-                // audio.play_looping_sound(&background_music)?;
+                audio.play_looping_sound(&background_music)?;
 
                 let events = Rc::new(RefCell::new(VecDeque::new()));
                 let event_publisher = EventPublisher::new(events.clone());
