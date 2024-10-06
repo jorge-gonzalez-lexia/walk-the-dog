@@ -11,7 +11,7 @@ use crate::{
     },
     game::{
         dog::Dog,
-        event_queue::{EventPublisher, GameEvent},
+        event_queue::{EventPublisher, EventSubscriber, GameEvent},
         red_hat_boy::RedHatBoy,
     },
 };
@@ -135,6 +135,10 @@ impl Obstacle for Platform {
             .for_each(|b| renderer.draw_rect(b));
     }
 
+    fn id(&self) -> String {
+        self.id.to_string()
+    }
+
     fn move_horizontally(&mut self, x: i16) {
         self.position.x += x;
         self.bounding_boxes
@@ -159,20 +163,6 @@ impl Obstacle for Platform {
 
         if !is_on_platform && self.has_dog {
             self.event_publisher.publish(GameEvent::DogExitsPlatform);
-        }
-    }
-
-    fn process_event(&mut self, event: &GameEvent) {
-        match event {
-            GameEvent::DogExitsPlatform if self.has_dog => {
-                log!("Platform {}: Dog exited platform", self.id);
-                self.has_dog = false;
-            }
-            GameEvent::DogLandedOnPlatform { id, .. } if *id == self.id && !self.has_dog => {
-                log!("Platform {}: Dog landed on platform", self.id);
-                self.has_dog = true
-            }
-            _ => (),
         }
     }
 
@@ -207,5 +197,31 @@ impl ObstacleMarkFactory for Platform {
             self.id.clone(),
             self.event_publisher.clone(),
         )
+    }
+}
+
+impl Drop for Platform {
+    fn drop(&mut self) {
+        log!("Platform {}: Dropped", self.id);
+    }
+}
+
+impl EventSubscriber for Platform {
+    fn name(&self) -> String {
+        self.id()
+    }
+
+    fn process_event(&mut self, event: &GameEvent) {
+        match event {
+            GameEvent::DogExitsPlatform if self.has_dog => {
+                log!("Platform {}: Dog exited platform", self.id);
+                self.has_dog = false;
+            }
+            GameEvent::DogLandedOnPlatform { id, .. } if *id == self.id && !self.has_dog => {
+                log!("Platform {}: Dog landed on platform", self.id);
+                self.has_dog = true
+            }
+            _ => (),
+        }
     }
 }

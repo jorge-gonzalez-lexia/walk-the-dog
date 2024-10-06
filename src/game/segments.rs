@@ -1,6 +1,6 @@
 use super::{
     event_queue::EventPublisher,
-    obstacles::{barrier::Barrier, platform::Platform, Obstacle, ObstacleMarkFactory},
+    obstacles::{barrier::Barrier, platform::Platform, Obstacle, ObstacleMarkFactory, ObstacleVec},
 };
 use crate::engine::{
     image::Image,
@@ -8,7 +8,7 @@ use crate::engine::{
     sprite_sheet::SpriteSheet,
 };
 use rand::{thread_rng, Rng};
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 use web_sys::HtmlImageElement;
 
 const FIRST_PLATFORM: i16 = 240;
@@ -29,19 +29,19 @@ pub struct SegmentFactory {
 
 impl SegmentFactory {
     pub fn new(
-        sprite_sheet: Rc<SpriteSheet>,
+        sprite_sheet: SpriteSheet,
         stone_image: HtmlImageElement,
         event_publisher: EventPublisher,
     ) -> Self {
         SegmentFactory {
             event_publisher,
             id: 0,
-            obstacle_sheet: sprite_sheet.clone(),
+            obstacle_sheet: Rc::new(sprite_sheet),
             stone_image,
         }
     }
 
-    pub fn first(&mut self) -> Vec<Box<dyn Obstacle>> {
+    pub fn first(&mut self) -> ObstacleVec {
         const OFFSET_X: i16 = 0;
 
         if REPEAT >= 0 {
@@ -51,7 +51,7 @@ impl SegmentFactory {
         }
     }
 
-    pub fn random(&mut self, offset_x: i16) -> Vec<Box<dyn Obstacle>> {
+    pub fn random(&mut self, offset_x: i16) -> ObstacleVec {
         let mut rng = thread_rng();
         let next_segment = if REPEAT >= 0 {
             REPEAT
@@ -64,7 +64,7 @@ impl SegmentFactory {
 
     fn create_floating_platform(&self, position: Point) -> Platform {
         Platform::new(
-            format!("p{}", self.id.to_string()),
+            format!("p{}", self.id),
             self.obstacle_sheet.clone(),
             position,
             &FLOATING_PLATFORM_SPRITES,
@@ -81,7 +81,7 @@ impl SegmentFactory {
         )
     }
 
-    fn platform_and_stone(&self, offset_x: i16) -> Vec<Box<dyn Obstacle>> {
+    fn platform_and_stone(&self, offset_x: i16) -> ObstacleVec {
         let platform = self.create_floating_platform(Point {
             x: offset_x + 200,
             y: HIGH_PLATFORM,
@@ -92,41 +92,45 @@ impl SegmentFactory {
         let mark_right = platform.mark_right();
 
         vec![
-            Box::new(mark_left),
-            Box::new(platform),
-            Box::new(stone),
-            Box::new(mark_right),
+            package(Box::new(mark_left)),
+            package(Box::new(platform)),
+            package(Box::new(stone)),
+            package(Box::new(mark_right)),
         ]
     }
 
-    fn platform_high(&self, offset_x: i16) -> Vec<Box<dyn Obstacle>> {
+    fn platform_high(&self, offset_x: i16) -> ObstacleVec {
         let platform = self.create_floating_platform(Point {
             x: offset_x + 200,
             y: HIGH_PLATFORM,
         });
 
-        vec![Box::new(platform)]
+        vec![package(Box::new(platform))]
     }
 
-    fn platform_low(&self, offset_x: i16) -> Vec<Box<dyn Obstacle>> {
+    fn platform_low(&self, offset_x: i16) -> ObstacleVec {
         let platform = self.create_floating_platform(Point {
             x: offset_x + 200,
             y: LOW_PLATFORM,
         });
 
-        vec![Box::new(platform)]
+        vec![package(Box::new(platform))]
     }
 
-    fn stone(&self, offset_x: i16) -> Vec<Box<dyn Obstacle>> {
+    fn stone(&self, offset_x: i16) -> ObstacleVec {
         let stone = self.create_stone(offset_x + 150, STONE_ON_GROUND);
 
         let mark_left = stone.mark_left();
         let mark_right = stone.mark_right();
 
-        vec![Box::new(mark_left), Box::new(stone), Box::new(mark_right)]
+        vec![
+            package(Box::new(mark_left)),
+            package(Box::new(stone)),
+            package(Box::new(mark_right)),
+        ]
     }
 
-    fn stone_and_platform(&self, offset_x: i16) -> Vec<Box<dyn Obstacle>> {
+    fn stone_and_platform(&self, offset_x: i16) -> ObstacleVec {
         let stone = self.create_stone(offset_x + 130, STONE_ON_GROUND);
         let platform = self.create_floating_platform(Point {
             x: offset_x + FIRST_PLATFORM,
@@ -138,25 +142,25 @@ impl SegmentFactory {
         let mark_right = platform.mark_right();
 
         vec![
-            Box::new(mark_left),
-            Box::new(stone),
-            Box::new(mark_right_stone),
-            Box::new(platform),
-            Box::new(mark_right),
+            package(Box::new(mark_left)),
+            package(Box::new(stone)),
+            package(Box::new(mark_right_stone)),
+            package(Box::new(platform)),
+            package(Box::new(mark_right)),
         ]
     }
 
-    fn stone_on_platform(&self, offset_x: i16) -> Vec<Box<dyn Obstacle>> {
+    fn stone_on_platform(&self, offset_x: i16) -> ObstacleVec {
         let stone = self.create_stone(offset_x + 390, STONE_ON_PLATFORM);
         let platform = self.create_floating_platform(Point {
             x: offset_x + 200,
             y: HIGH_PLATFORM,
         });
 
-        vec![Box::new(stone), Box::new(platform)]
+        vec![package(Box::new(stone)), package(Box::new(platform))]
     }
 
-    fn select(&mut self, segment: i32, offset_x: i16) -> Vec<Box<dyn Obstacle>> {
+    fn select(&mut self, segment: i32, offset_x: i16) -> ObstacleVec {
         self.id += 1;
 
         match segment {
@@ -170,6 +174,10 @@ impl SegmentFactory {
             _ => vec![],
         }
     }
+}
+
+fn package(obstacle: Box<dyn Obstacle>) -> Rc<RefCell<Box<dyn Obstacle>>> {
+    Rc::new(RefCell::new(obstacle))
 }
 
 const FLOATING_PLATFORM_BOUNDING_BOXES: [Rect; 3] = [

@@ -2,7 +2,7 @@ use super::Obstacle;
 use crate::{
     engine::rect::{Point, Rect},
     game::{
-        event_queue::{EventPublisher, GameEvent},
+        event_queue::{EventPublisher, EventSubscriber, GameEvent},
         red_hat_boy::RedHatBoy,
         HEIGHT,
     },
@@ -61,6 +61,10 @@ impl Obstacle for ObstacleMark {
         renderer.draw_rect_colored(&self.mark(), color);
     }
 
+    fn id(&self) -> String {
+        self.id.to_string()
+    }
+
     fn move_horizontally(&mut self, x: i16) {
         self.position.x += x;
     }
@@ -85,6 +89,16 @@ impl Obstacle for ObstacleMark {
         }
     }
 
+    fn right(&self) -> i16 {
+        self.position.x + 1
+    }
+}
+
+impl EventSubscriber for ObstacleMark {
+    fn name(&self) -> String {
+        self.id()
+    }
+
     fn process_event(&mut self, event: &crate::game::event_queue::GameEvent) {
         match event {
             GameEvent::DogHitMark { id } if *id == self.id => {
@@ -97,9 +111,5 @@ impl Obstacle for ObstacleMark {
             }
             _ => (),
         }
-    }
-
-    fn right(&self) -> i16 {
-        self.position.x + 1
     }
 }

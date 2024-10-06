@@ -2,16 +2,19 @@ pub mod barrier;
 pub mod obstacle_mark;
 pub mod platform;
 
-use super::{dog::Dog, event_queue::GameEvent, red_hat_boy::RedHatBoy};
+use super::{dog::Dog, event_queue::EventSubscriber, red_hat_boy::RedHatBoy};
 use crate::engine::renderer::Renderer;
 use obstacle_mark::ObstacleMark;
+use std::{cell::RefCell, rc::Rc};
 
-pub trait Obstacle {
+pub type ObstacleVec = Vec<Rc<RefCell<Box<dyn Obstacle>>>>;
+
+pub trait Obstacle: EventSubscriber {
     fn check_intersection(&self, boy: &mut RedHatBoy);
     fn draw(&self, renderer: &Renderer);
+    fn id(&self) -> String;
     fn move_horizontally(&mut self, x: i16);
     fn navigate(&mut self, dog: &Dog);
-    fn process_event(&mut self, event: &GameEvent);
     fn right(&self) -> i16;
 }
 

@@ -17,12 +17,8 @@ impl WalkTheDogState<GameOver> {
         if self._state.new_game_pressed() {
             GameOverEndState::Complete(self.new_game())
         } else {
-            self.walk.process_events();
+            self.walk.update();
 
-            self.walk.dog.update();
-            self.walk.obstacles.iter_mut().for_each(|obstacle| {
-                obstacle.navigate(&self.walk.dog);
-            });
             GameOverEndState::Continue(self)
         }
     }
@@ -59,8 +55,6 @@ mod tests {
     use crate::{
         engine::{
             audio::{Audio, Sound},
-            image::Image,
-            rect::Point,
             sheet::Sheet,
             sprite_sheet::SpriteSheet,
         },
@@ -68,7 +62,6 @@ mod tests {
             dog::Dog,
             event_queue::EventPublisher,
             red_hat_boy::{context::Sfx, RedHatBoy},
-            segments::SegmentFactory,
         },
     };
     use futures::channel::mpsc::unbounded;
@@ -109,28 +102,22 @@ mod tests {
             image.clone(),
             event_publisher.clone(),
         );
-        let sprite_sheet = Rc::new(SpriteSheet::new(
+        let segment_tiles = SpriteSheet::new(
             Sheet {
                 frames: HashMap::new(),
             },
             image.clone(),
-        ));
-        let segment_factory =
-            SegmentFactory::new(sprite_sheet.clone(), image.clone(), event_publisher.clone());
-        let walk = Walk {
-            backgrounds: [
-                Image::new(image.clone(), Point { x: 0, y: 0 }),
-                Image::new(image.clone(), Point { x: 0, y: 0 }),
-            ],
+        );
+
+        let walk = Walk::new(
+            image.clone(),
             boy,
             dog,
             event_publisher,
             events,
-            obstacles: vec![],
-            segment_factory,
-            stone: image.clone(),
-            timeline: 9,
-        };
+            image.clone(),
+            segment_tiles,
+        );
 
         let document = browser::document().unwrap();
         document
