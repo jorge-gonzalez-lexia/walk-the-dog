@@ -127,8 +127,13 @@ impl Walk {
             .filter(|o| o.borrow().right() <= 0)
             .map(|o| o.borrow().id().to_string())
             .collect();
+
+        if to_drop.len() == 0 {
+            return;
+        }
+
         self.obstacles
-            .retain(|obstacle| obstacle.borrow().right() > 0);
+            .retain(|o| !to_drop.contains(&o.borrow().id()));
         self.event_subscribers
             .retain(|s| !to_drop.contains(&s.borrow().name()));
 
