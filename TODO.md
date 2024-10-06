@@ -7,5 +7,6 @@
     - walk::navigate_obstacles
     - walk::process_events
 - [] weird walk::reset lines 89-93
+- [] CI is failing
 
 ## Bugs
