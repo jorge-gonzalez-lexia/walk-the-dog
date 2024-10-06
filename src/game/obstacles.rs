@@ -5,8 +5,9 @@ pub mod platform;
 use super::{dog::Dog, event_queue::EventSubscriber, red_hat_boy::RedHatBoy};
 use crate::engine::renderer::Renderer;
 use obstacle_mark::ObstacleMark;
+use std::{cell::RefCell, rc::Rc};
 
-pub type ObstacleVec = Vec<Box<dyn Obstacle>>;
+pub type ObstacleVec = Vec<Rc<RefCell<Box<dyn Obstacle>>>>;
 
 pub trait Obstacle: EventSubscriber {
     fn check_intersection(&self, boy: &mut RedHatBoy);

@@ -1,7 +1,7 @@
 use super::{
     dog::Dog,
-    event_queue::{EventPublisher, EventQueue, EventSubscriber},
-    obstacles::Obstacle,
+    event_queue::{EventPublisher, EventQueue, EventSubscriber, GameEvent},
+    obstacles::{Obstacle, ObstacleVec},
     red_hat_boy::RedHatBoy,
     segments::SegmentFactory,
 };
@@ -18,11 +18,11 @@ pub struct Walk {
     pub backgrounds: [Image; 2],
     pub boy: RedHatBoy,
     pub event_publisher: EventPublisher,
-    pub obstacles: Vec<Rc<RefCell<Box<dyn Obstacle>>>>,
+    pub obstacles: ObstacleVec,
     pub timeline: i16,
 
     dog: Rc<RefCell<Dog>>,
-    event_subscribers: Vec<Rc<RefCell<dyn EventSubscriber>>>,
+    event_subscribers: Vec<Rc<RefCell<Box<dyn EventSubscriber>>>>,
     events: EventQueue,
     segment_factory: SegmentFactory,
     stone: HtmlImageElement,
@@ -40,12 +40,21 @@ impl Walk {
     ) -> Self {
         let mut segment_factory =
             SegmentFactory::new(segment_tiles, stone.clone(), event_publisher.clone());
-        let starting_obstacles = into_rc_obstacles(segment_factory.first());
+        let starting_obstacles = segment_factory.first();
         let timeline = rightmost(&starting_obstacles);
 
-        let mut event_subscribers: Vec<Rc<RefCell<dyn EventSubscriber>>> = Vec::new();
+        let mut event_subscribers: Vec<Rc<RefCell<Box<dyn EventSubscriber>>>> = Vec::new();
         let dog = Rc::new(RefCell::new(dog));
-        event_subscribers.push(dog.clone() as Rc<RefCell<dyn EventSubscriber>>);
+        let s = DogSubscriber(Rc::clone(&dog));
+        event_subscribers.push(Rc::new(RefCell::new(
+            Box::new(s) as Box<dyn EventSubscriber>
+        )));
+        for obstacle in &starting_obstacles {
+            let s = ObstacleSubscriber(Rc::clone(obstacle));
+            event_subscribers.push(Rc::new(RefCell::new(
+                Box::new(s) as Box<dyn EventSubscriber>
+            )));
+        }
 
         let background_width = background.width() as i16;
 
@@ -74,7 +83,7 @@ impl Walk {
 
     pub fn reset(walk: Self) -> Self {
         let mut segment_factory = walk.segment_factory;
-        let starting_obstacles = into_rc_obstacles(segment_factory.first());
+        let starting_obstacles = segment_factory.first();
         let timeline = rightmost(&starting_obstacles);
 
         let dog = if let Ok(dog) = Rc::try_unwrap(walk.dog) {
@@ -112,7 +121,7 @@ impl Walk {
 
     pub fn generate_next_segment(&mut self) {
         let offset_x = self.timeline + OBSTACLE_BUFFER;
-        let mut next_obstacles = into_rc_obstacles(self.segment_factory.random(offset_x));
+        let mut next_obstacles = self.segment_factory.random(offset_x);
 
         self.timeline = rightmost(&next_obstacles);
         self.obstacles.append(&mut next_obstacles);
@@ -130,11 +139,11 @@ impl Walk {
 
     pub fn process_events(&mut self) {
         while let Some(event) = self.events.as_ref().borrow_mut().pop_front() {
-            for o in self.obstacles.iter() {
-                o.as_ref().borrow_mut().process_event(&event);
-            }
+            // for o in self.obstacles.iter() {
+            //     o.as_ref().borrow_mut().process_event(&event);
+            // }
             for s in self.event_subscribers.iter() {
-                s.as_ref().borrow_mut().process_event(&event);
+                s.borrow_mut().process_event(&event);
             }
         }
     }
@@ -144,17 +153,34 @@ impl Walk {
     }
 }
 
-fn into_rc_obstacles(obstacles: Vec<Box<dyn Obstacle>>) -> Vec<Rc<RefCell<Box<dyn Obstacle>>>> {
-    obstacles
-        .into_iter()
-        .map(|o| Rc::new(RefCell::new(o)))
-        .collect()
-}
-
 fn rightmost(obstacle_list: &[Rc<RefCell<Box<dyn Obstacle>>>]) -> i16 {
     obstacle_list
         .iter()
         .map(|o| o.borrow().right())
         .max_by(|x, y| x.cmp(y))
         .unwrap_or(0)
+}
+
+struct DogSubscriber(Rc<RefCell<Dog>>);
+impl EventSubscriber for DogSubscriber {
+    fn name(&self) -> &str {
+        "DogSubscriber"
+    }
+
+    fn process_event(&mut self, event: &GameEvent) {
+        log!("DogSubscriber: process_event {:?}", event);
+        self.0.borrow_mut().process_event(event);
+    }
+}
+
+struct ObstacleSubscriber(Rc<RefCell<Box<dyn Obstacle>>>);
+impl EventSubscriber for ObstacleSubscriber {
+    fn name(&self) -> &str {
+        "ObstacleSubscriber"
+    }
+
+    fn process_event(&mut self, event: &GameEvent) {
+        log!("ObstacleSubscriber: process_event {:?}", event);
+        self.0.borrow_mut().process_event(event);
+    }
 }
