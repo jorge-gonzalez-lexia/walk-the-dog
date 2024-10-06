@@ -6,6 +6,8 @@ use super::{dog::Dog, event_queue::EventSubscriber, red_hat_boy::RedHatBoy};
 use crate::engine::renderer::Renderer;
 use obstacle_mark::ObstacleMark;
 
+pub type ObstacleVec = Vec<Box<dyn Obstacle>>;
+
 pub trait Obstacle: EventSubscriber {
     fn check_intersection(&self, boy: &mut RedHatBoy);
     fn draw(&self, renderer: &Renderer);
