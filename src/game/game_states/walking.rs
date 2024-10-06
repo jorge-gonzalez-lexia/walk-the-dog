@@ -33,12 +33,14 @@ impl WalkTheDogState<Walking> {
             second_background.set_x(first_background.right());
         }
 
-        self.walk.obstacles.retain(|obstacle| obstacle.right() > 0);
+        self.walk
+            .obstacles
+            .retain(|obstacle| obstacle.borrow().right() > 0);
 
-        self.walk.obstacles.iter_mut().for_each(|obstacle| {
-            obstacle.move_horizontally(walking_speed);
-            obstacle.check_intersection(&mut self.walk.boy);
-        });
+        for obstacle in self.walk.obstacles.iter() {
+            obstacle.borrow_mut().move_horizontally(walking_speed);
+            obstacle.borrow_mut().check_intersection(&mut self.walk.boy);
+        }
         self.walk.navigate_obstacles();
 
         if self.walk.timeline < TIMELINE_MINIMUM {

@@ -18,7 +18,7 @@ pub struct Walk {
     pub backgrounds: [Image; 2],
     pub boy: RedHatBoy,
     pub event_publisher: EventPublisher,
-    pub obstacles: Vec<Box<dyn Obstacle>>,
+    pub obstacles: Vec<Rc<RefCell<Box<dyn Obstacle>>>>,
     pub timeline: i16,
 
     dog: Rc<RefCell<Dog>>,
@@ -40,7 +40,7 @@ impl Walk {
     ) -> Self {
         let mut segment_factory =
             SegmentFactory::new(segment_tiles, stone.clone(), event_publisher.clone());
-        let starting_obstacles = segment_factory.first();
+        let starting_obstacles = into_rc_obstacles(segment_factory.first());
         let timeline = rightmost(&starting_obstacles);
 
         let mut event_subscribers: Vec<Rc<RefCell<dyn EventSubscriber>>> = Vec::new();
@@ -74,7 +74,7 @@ impl Walk {
 
     pub fn reset(walk: Self) -> Self {
         let mut segment_factory = walk.segment_factory;
-        let starting_obstacles = segment_factory.first();
+        let starting_obstacles = into_rc_obstacles(segment_factory.first());
         let timeline = rightmost(&starting_obstacles);
 
         let dog = if let Ok(dog) = Rc::try_unwrap(walk.dog) {
@@ -105,12 +105,14 @@ impl Walk {
         self.backgrounds.iter().for_each(|b| b.draw(renderer));
         self.boy.draw(renderer);
         self.dog().draw(renderer);
-        self.obstacles.iter().for_each(|o| o.draw(renderer));
+        self.obstacles
+            .iter()
+            .for_each(|o| o.borrow().draw(renderer));
     }
 
     pub fn generate_next_segment(&mut self) {
         let offset_x = self.timeline + OBSTACLE_BUFFER;
-        let mut next_obstacles = self.segment_factory.random(offset_x);
+        let mut next_obstacles = into_rc_obstacles(self.segment_factory.random(offset_x));
 
         self.timeline = rightmost(&next_obstacles);
         self.obstacles.append(&mut next_obstacles);
@@ -121,19 +123,19 @@ impl Walk {
     }
 
     pub fn navigate_obstacles(&mut self) {
-        self.obstacles.iter_mut().for_each(|o| {
-            o.navigate(&self.dog.as_ref().borrow_mut());
-        });
+        for obstacle in self.obstacles.iter() {
+            obstacle.as_ref().borrow_mut().navigate(&self.dog.borrow());
+        }
     }
 
     pub fn process_events(&mut self) {
         while let Some(event) = self.events.as_ref().borrow_mut().pop_front() {
-            self.obstacles.iter_mut().for_each(|o| {
-                o.process_event(&event);
-            });
-            self.event_subscribers.iter_mut().for_each(|s| {
-                s.borrow_mut().process_event(&event);
-            });
+            for o in self.obstacles.iter() {
+                o.as_ref().borrow_mut().process_event(&event);
+            }
+            for s in self.event_subscribers.iter() {
+                s.as_ref().borrow_mut().process_event(&event);
+            }
         }
     }
 
@@ -142,10 +144,17 @@ impl Walk {
     }
 }
 
-pub fn rightmost(obstacle_list: &[Box<dyn Obstacle>]) -> i16 {
+fn into_rc_obstacles(obstacles: Vec<Box<dyn Obstacle>>) -> Vec<Rc<RefCell<Box<dyn Obstacle>>>> {
+    obstacles
+        .into_iter()
+        .map(|o| Rc::new(RefCell::new(o)))
+        .collect()
+}
+
+fn rightmost(obstacle_list: &[Rc<RefCell<Box<dyn Obstacle>>>]) -> i16 {
     obstacle_list
         .iter()
-        .map(|o| o.right())
+        .map(|o| o.borrow().right())
         .max_by(|x, y| x.cmp(y))
         .unwrap_or(0)
 }
