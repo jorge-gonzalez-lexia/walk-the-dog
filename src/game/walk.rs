@@ -124,6 +124,14 @@ impl Walk {
         let mut next_obstacles = self.segment_factory.random(offset_x);
 
         self.timeline = rightmost(&next_obstacles);
+
+        for obstacle in &next_obstacles {
+            let s = ObstacleSubscriber(Rc::clone(obstacle));
+            self.event_subscribers.push(Rc::new(RefCell::new(
+                Box::new(s) as Box<dyn EventSubscriber>
+            )));
+        }
+
         self.obstacles.append(&mut next_obstacles);
     }
 
@@ -139,9 +147,6 @@ impl Walk {
 
     pub fn process_events(&mut self) {
         while let Some(event) = self.events.as_ref().borrow_mut().pop_front() {
-            // for o in self.obstacles.iter() {
-            //     o.as_ref().borrow_mut().process_event(&event);
-            // }
             for s in self.event_subscribers.iter() {
                 s.borrow_mut().process_event(&event);
             }
