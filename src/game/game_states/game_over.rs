@@ -55,8 +55,6 @@ mod tests {
     use crate::{
         engine::{
             audio::{Audio, Sound},
-            image::Image,
-            rect::Point,
             sheet::Sheet,
             sprite_sheet::SpriteSheet,
         },
@@ -64,7 +62,6 @@ mod tests {
             dog::Dog,
             event_queue::EventPublisher,
             red_hat_boy::{context::Sfx, RedHatBoy},
-            segments::SegmentFactory,
         },
     };
     use futures::channel::mpsc::unbounded;
