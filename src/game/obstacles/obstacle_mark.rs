@@ -61,6 +61,10 @@ impl Obstacle for ObstacleMark {
         renderer.draw_rect_colored(&self.mark(), color);
     }
 
+    fn id(&self) -> String {
+        self.id.to_string()
+    }
+
     fn move_horizontally(&mut self, x: i16) {
         self.position.x += x;
     }
@@ -91,8 +95,8 @@ impl Obstacle for ObstacleMark {
 }
 
 impl EventSubscriber for ObstacleMark {
-    fn name(&self) -> &str {
-        self.id.as_str()
+    fn name(&self) -> String {
+        self.id()
     }
 
     fn process_event(&mut self, event: &crate::game::event_queue::GameEvent) {

@@ -12,6 +12,7 @@ pub type ObstacleVec = Vec<Rc<RefCell<Box<dyn Obstacle>>>>;
 pub trait Obstacle: EventSubscriber {
     fn check_intersection(&self, boy: &mut RedHatBoy);
     fn draw(&self, renderer: &Renderer);
+    fn id(&self) -> String;
     fn move_horizontally(&mut self, x: i16);
     fn navigate(&mut self, dog: &Dog);
     fn right(&self) -> i16;

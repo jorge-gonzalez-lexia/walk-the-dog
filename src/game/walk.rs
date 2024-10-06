@@ -8,6 +8,7 @@ use super::{
 use crate::engine::{image::Image, rect::Point, renderer::Renderer, sprite_sheet::SpriteSheet};
 use std::{
     cell::{RefCell, RefMut},
+    collections::HashSet,
     rc::Rc,
 };
 use web_sys::HtmlImageElement;
@@ -119,6 +120,26 @@ impl Walk {
             .for_each(|o| o.borrow().draw(renderer));
     }
 
+    pub fn drop_surpassed_obstacles(&mut self) {
+        let to_drop: HashSet<String> = self
+            .obstacles
+            .iter()
+            .filter(|o| o.borrow().right() <= 0)
+            .map(|o| o.borrow().id().to_string())
+            .collect();
+        self.obstacles
+            .retain(|obstacle| obstacle.borrow().right() > 0);
+        self.event_subscribers
+            .retain(|s| !to_drop.contains(&s.borrow().name()));
+
+        log!(
+            "Dropped {} obstacles left behind. Total={} Subscribers={}",
+            to_drop.len(),
+            self.obstacles.len(),
+            self.event_subscribers.len()
+        );
+    }
+
     pub fn generate_next_segment(&mut self) {
         let offset_x = self.timeline + OBSTACLE_BUFFER;
         let mut next_obstacles = self.segment_factory.random(offset_x);
@@ -131,8 +152,15 @@ impl Walk {
                 Box::new(s) as Box<dyn EventSubscriber>
             )));
         }
+        let to_add = next_obstacles.len();
 
         self.obstacles.append(&mut next_obstacles);
+
+        log!(
+            "Appended {to_add} obstacles. Total={} Subscribers={}",
+            self.obstacles.len(),
+            self.event_subscribers.len()
+        );
     }
 
     pub fn knocked_out(&self) -> bool {
@@ -174,9 +202,8 @@ fn rightmost(obstacle_list: &[Rc<RefCell<Box<dyn Obstacle>>>]) -> i16 {
 
 struct DogSubscriber(Rc<RefCell<Dog>>);
 impl EventSubscriber for DogSubscriber {
-    fn name(&self) -> &str {
-        "DogSubscriber"
-        // self.0.borrow().name()
+    fn name(&self) -> String {
+        self.0.borrow().name()
     }
 
     fn process_event(&mut self, event: &GameEvent) {
@@ -186,9 +213,8 @@ impl EventSubscriber for DogSubscriber {
 
 struct ObstacleSubscriber(Rc<RefCell<Box<dyn Obstacle>>>);
 impl EventSubscriber for ObstacleSubscriber {
-    fn name(&self) -> &str {
-        "ObstacleSubscriber"
-        // self.0.borrow().name()
+    fn name(&self) -> String {
+        self.0.borrow().id()
     }
 
     fn process_event(&mut self, event: &GameEvent) {

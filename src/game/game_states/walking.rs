@@ -30,9 +30,7 @@ impl WalkTheDogState<Walking> {
             second_background.set_x(first_background.right());
         }
 
-        self.walk
-            .obstacles
-            .retain(|obstacle| obstacle.borrow().right() > 0);
+        self.walk.drop_surpassed_obstacles();
 
         for obstacle in self.walk.obstacles.iter() {
             obstacle.borrow_mut().move_horizontally(walking_speed);

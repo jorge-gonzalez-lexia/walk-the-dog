@@ -1,8 +1,6 @@
 # TODO
 
-- [] unsubscribe obstacles. or what happens as they get dropped
-- [] fix DogSubscriber and ObstaclerSubscriber name method
-- [] understand the weirdness of adding items to event_subscribers
+- [] understand the weirdness of adding items to event_subscribers. I wonder if event subscribers need to be Rc<RefCell>. Maybe we just have the Box<dyn EventSubscriber> directly (clones)
   - \*\*walk::new lines 46-57 (esp need of EventSubscriber wrappers)
   - \*\*walk::generate_next_segment lines 128-133
   - to a lesser extent:

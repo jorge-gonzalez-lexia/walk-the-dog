@@ -135,6 +135,10 @@ impl Obstacle for Platform {
             .for_each(|b| renderer.draw_rect(b));
     }
 
+    fn id(&self) -> String {
+        self.id.to_string()
+    }
+
     fn move_horizontally(&mut self, x: i16) {
         self.position.x += x;
         self.bounding_boxes
@@ -196,9 +200,15 @@ impl ObstacleMarkFactory for Platform {
     }
 }
 
+impl Drop for Platform {
+    fn drop(&mut self) {
+        log!("Platform {}: Dropped", self.id);
+    }
+}
+
 impl EventSubscriber for Platform {
-    fn name(&self) -> &str {
-        self.id.as_str()
+    fn name(&self) -> String {
+        self.id()
     }
 
     fn process_event(&mut self, event: &GameEvent) {

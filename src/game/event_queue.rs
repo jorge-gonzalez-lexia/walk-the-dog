@@ -21,7 +21,7 @@ impl EventPublisher {
 pub type EventQueue = Rc<RefCell<VecDeque<GameEvent>>>;
 
 pub trait EventSubscriber {
-    fn name(&self) -> &str;
+    fn name(&self) -> String;
     fn process_event(&mut self, event: &GameEvent);
 }
 

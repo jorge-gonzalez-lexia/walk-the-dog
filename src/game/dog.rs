@@ -132,8 +132,8 @@ impl Dog {
 }
 
 impl EventSubscriber for Dog {
-    fn name(&self) -> &str {
-        "Dog"
+    fn name(&self) -> String {
+        "Dog".to_string()
     }
 
     fn process_event(&mut self, event: &GameEvent) {

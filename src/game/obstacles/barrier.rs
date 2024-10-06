@@ -39,6 +39,10 @@ impl Obstacle for Barrier {
         self.image.draw(renderer);
     }
 
+    fn id(&self) -> String {
+        self.id.to_string()
+    }
+
     fn move_horizontally(&mut self, x: i16) {
         self.image.move_horizontally(x);
     }
@@ -79,8 +83,8 @@ impl ObstacleMarkFactory for Barrier {
 }
 
 impl EventSubscriber for Barrier {
-    fn name(&self) -> &str {
-        self.id.as_str()
+    fn name(&self) -> String {
+        self.id()
     }
 
     fn process_event(&mut self, _event: &GameEvent) {}
