@@ -46,15 +46,13 @@ impl Walk {
 
         let mut event_subscribers: Vec<Rc<RefCell<Box<dyn EventSubscriber>>>> = Vec::new();
         let dog = Rc::new(RefCell::new(dog));
-        let s = DogSubscriber(Rc::clone(&dog));
-        event_subscribers.push(Rc::new(RefCell::new(
-            Box::new(s) as Box<dyn EventSubscriber>
-        )));
+        event_subscribers.push(Rc::new(RefCell::new(Box::new(Subscriber::Dog(Rc::clone(
+            &dog,
+        ))))));
         for obstacle in &starting_obstacles {
-            let s = ObstacleSubscriber(Rc::clone(obstacle));
-            event_subscribers.push(Rc::new(RefCell::new(
-                Box::new(s) as Box<dyn EventSubscriber>
-            )));
+            event_subscribers.push(Rc::new(RefCell::new(Box::new(Subscriber::Obstacle(
+                Rc::clone(obstacle),
+            )))));
         }
 
         let background_width = background.width() as i16;
@@ -152,7 +150,7 @@ impl Walk {
         self.timeline = rightmost(&next_obstacles);
 
         for obstacle in &next_obstacles {
-            let s = ObstacleSubscriber(Rc::clone(obstacle));
+            let s = Subscriber::Obstacle(Rc::clone(obstacle));
             self.event_subscribers.push(Rc::new(RefCell::new(
                 Box::new(s) as Box<dyn EventSubscriber>
             )));
@@ -205,24 +203,27 @@ fn rightmost(obstacle_list: &[Rc<RefCell<Box<dyn Obstacle>>>]) -> i16 {
         .unwrap_or(0)
 }
 
-struct DogSubscriber(Rc<RefCell<Dog>>);
-impl EventSubscriber for DogSubscriber {
-    fn name(&self) -> String {
-        self.0.borrow().name()
-    }
-
-    fn process_event(&mut self, event: &GameEvent) {
-        self.0.borrow_mut().process_event(event);
-    }
+/*
+This is super annoying, but we seem forced to wrap Dog and Obstacle inside something
+that directly implements EventSubscriber
+*/
+enum Subscriber {
+    Dog(Rc<RefCell<Dog>>),
+    Obstacle(Rc<RefCell<Box<dyn Obstacle>>>),
 }
 
-struct ObstacleSubscriber(Rc<RefCell<Box<dyn Obstacle>>>);
-impl EventSubscriber for ObstacleSubscriber {
+impl EventSubscriber for Subscriber {
     fn name(&self) -> String {
-        self.0.borrow().id()
+        match self {
+            Subscriber::Dog(s) => s.borrow().name(),
+            Subscriber::Obstacle(s) => s.borrow().name(),
+        }
     }
 
     fn process_event(&mut self, event: &GameEvent) {
-        self.0.borrow_mut().process_event(event);
+        match self {
+            Subscriber::Dog(s) => s.borrow_mut().process_event(event),
+            Subscriber::Obstacle(s) => s.borrow_mut().process_event(event),
+        }
     }
 }
