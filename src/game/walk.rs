@@ -23,7 +23,7 @@ pub struct Walk {
     pub timeline: i16,
 
     dog: Rc<RefCell<Dog>>,
-    event_subscribers: Vec<Rc<RefCell<Box<dyn EventSubscriber>>>>,
+    event_subscribers: Vec<Subscriber>,
     events: EventQueue,
     segment_factory: SegmentFactory,
     stone: HtmlImageElement,
@@ -44,15 +44,11 @@ impl Walk {
         let starting_obstacles = segment_factory.first();
         let timeline = rightmost(&starting_obstacles);
 
-        let mut event_subscribers: Vec<Rc<RefCell<Box<dyn EventSubscriber>>>> = Vec::new();
+        let mut event_subscribers: Vec<Subscriber> = Vec::new();
         let dog = Rc::new(RefCell::new(dog));
-        event_subscribers.push(Rc::new(RefCell::new(Box::new(Subscriber::Dog(Rc::clone(
-            &dog,
-        ))))));
+        event_subscribers.push(Subscriber::Dog(Rc::clone(&dog)));
         for obstacle in &starting_obstacles {
-            event_subscribers.push(Rc::new(RefCell::new(Box::new(Subscriber::Obstacle(
-                Rc::clone(obstacle),
-            )))));
+            event_subscribers.push(Subscriber::Obstacle(Rc::clone(obstacle)));
         }
 
         let background_width = background.width() as i16;
@@ -133,7 +129,7 @@ impl Walk {
         self.obstacles
             .retain(|o| !to_drop.contains(&o.borrow().id()));
         self.event_subscribers
-            .retain(|s| !to_drop.contains(&s.borrow().name()));
+            .retain(|s| !to_drop.contains(&s.name()));
 
         log!(
             "Dropped {} obstacles left behind. Total={} Subscribers={}",
@@ -150,10 +146,8 @@ impl Walk {
         self.timeline = rightmost(&next_obstacles);
 
         for obstacle in &next_obstacles {
-            let s = Subscriber::Obstacle(Rc::clone(obstacle));
-            self.event_subscribers.push(Rc::new(RefCell::new(
-                Box::new(s) as Box<dyn EventSubscriber>
-            )));
+            self.event_subscribers
+                .push(Subscriber::Obstacle(Rc::clone(obstacle)));
         }
         let to_add = next_obstacles.len();
 
@@ -188,8 +182,8 @@ impl Walk {
 
     fn process_events(&mut self) {
         while let Some(event) = self.events.as_ref().borrow_mut().pop_front() {
-            for s in self.event_subscribers.iter() {
-                s.borrow_mut().process_event(&event);
+            for s in self.event_subscribers.iter_mut() {
+                s.process_event(&event);
             }
         }
     }
