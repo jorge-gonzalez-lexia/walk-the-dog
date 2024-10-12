@@ -84,18 +84,24 @@ impl Walk {
         walk.event_subscribers.clear();
 
         let dog = if let Ok(dog) = Rc::try_unwrap(walk.dog) {
-            dog.into_inner()
+            Rc::new(RefCell::new(Dog::reset(dog.into_inner())))
         } else {
             panic!("Unable to take dog ownership!");
         };
 
+        let mut event_subscribers: Vec<Subscriber> = Vec::new();
+        event_subscribers.push(Subscriber::Dog(Rc::clone(&dog)));
+        for obstacle in &starting_obstacles {
+            event_subscribers.push(Subscriber::Obstacle(Rc::clone(obstacle)));
+        }
+
         Walk {
             backgrounds: walk.backgrounds,
             boy: RedHatBoy::reset(walk.boy),
-            dog: Rc::new(RefCell::new(Dog::reset(dog))),
+            dog,
             events: walk.events,
             event_publisher: walk.event_publisher,
-            event_subscribers: walk.event_subscribers,
+            event_subscribers,
             obstacles: starting_obstacles,
             segment_factory,
             stone: walk.stone,
