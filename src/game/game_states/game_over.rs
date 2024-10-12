@@ -23,12 +23,10 @@ impl WalkTheDogState<GameOver> {
         }
     }
 
-    fn new_game(mut self) -> WalkTheDogState<Ready> {
+    fn new_game(self) -> WalkTheDogState<Ready> {
         if let Err(err) = browser::hide_ui() {
             error!("Error hiding the UI overlay {:#?}", err);
         }
-
-        self.walk.unsubscribe_all();
 
         WalkTheDogState {
             walk: Walk::reset(self.walk),

@@ -76,10 +76,12 @@ impl Walk {
         }
     }
 
-    pub fn reset(walk: Self) -> Self {
+    pub fn reset(mut walk: Self) -> Self {
         let mut segment_factory = walk.segment_factory;
         let starting_obstacles = segment_factory.first();
         let timeline = rightmost(&starting_obstacles);
+
+        walk.event_subscribers.clear();
 
         let dog = if let Ok(dog) = Rc::try_unwrap(walk.dog) {
             dog.into_inner()
@@ -162,10 +164,6 @@ impl Walk {
 
     pub fn knocked_out(&self) -> bool {
         self.boy.knocked_out()
-    }
-
-    pub fn unsubscribe_all(&mut self) {
-        self.event_subscribers.clear();
     }
 
     pub fn update(&mut self) {
