@@ -164,6 +164,10 @@ impl Walk {
         self.boy.knocked_out()
     }
 
+    pub fn unsubscribe_all(&mut self) {
+        self.event_subscribers.clear();
+    }
+
     pub fn update(&mut self) {
         self.process_events();
         self.dog().update();
